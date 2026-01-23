@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "task.schema.json",
+  "title": "Task",
+  "description": "Task definition schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z_]+$",
+      "description": "Unique task identifier"
+    },
+    "description": {
+      "type": "string",
+      "description": "Task description"
+    },
+    "prompt_file": {
+      "type": "string",
+      "pattern": "^tasks/.+\\.md$",
+      "description": "Path to prompt file"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Timeout in seconds"
+    }
+  },
+  "required": ["id", "description", "prompt_file"],
+  "additionalProperties": false
+}

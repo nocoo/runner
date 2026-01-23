@@ -1,0 +1,98 @@
+# =============================================================================
+# Runner Tasks Configuration
+# =============================================================================
+
+# Schedule rules
+# weekday: 0=Sunday, 1=Monday, ..., 6=Saturday, "*"=every day
+schedules:
+  # Heartbeat test - every 30 minutes starting at :20 and :50
+  - task: heartbeat
+    hour: 9
+    minute: 20
+    weekday: "*"
+
+  - task: heartbeat
+    hour: 9
+    minute: 50
+    weekday: "*"
+
+  - task: heartbeat
+    hour: 10
+    minute: 20
+    weekday: "*"
+
+  - task: heartbeat
+    hour: 10
+    minute: 50
+    weekday: "*"
+
+  - task: heartbeat
+    hour: 11
+    minute: 20
+    weekday: "*"
+
+  - task: heartbeat
+    hour: 11
+    minute: 50
+    weekday: "*"
+
+  - task: heartbeat
+    hour: 12
+    minute: 20
+    weekday: "*"
+
+  - task: heartbeat
+    hour: 12
+    minute: 50
+    weekday: "*"
+
+  - task: morning_briefing
+    hour: 9
+    minute: 0
+    weekday: "*"
+
+  - task: twitter_collect
+    hour: 10
+    minute: 0
+    weekday: "*"
+
+  - task: evening_review
+    hour: 21
+    minute: 0
+    weekday: "*"
+
+  - task: weekly_synthesis
+    hour: 20
+    minute: 0
+    weekday: 0          # Sunday
+
+  - task: memory_cleanup
+    hour: 3
+    minute: 0
+    weekday: 1          # Monday
+
+# Task metadata
+tasks:
+  heartbeat:
+    description: "Heartbeat test - speak to verify scheduler is running"
+    timeout: 30
+
+  morning_briefing:
+    description: "Daily morning briefing - summarize today's priorities and important info"
+    timeout: 300
+
+  twitter_collect:
+    description: "Collect Twitter content - gather notable tweets from followed accounts"
+    timeout: 600
+
+  evening_review:
+    description: "Daily evening review - reflect on day's activities and plan tomorrow"
+    timeout: 300
+
+  weekly_synthesis:
+    description: "Weekly summary - synthesize week's work and plan next week"
+    timeout: 600
+
+  memory_cleanup:
+    description: "Memory cleanup - archive old memories and clean up outdated data"
+    timeout: 300

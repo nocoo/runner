@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" 
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.runner.scheduler</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/nocoo/workspace/personal/runner/runner.sh</string>
+        <string>auto</string>
+    </array>
+    
+    <key>StartCalendarInterval</key>
+    <array>
+        <!-- Heartbeat: 09:20 -->
+        <dict>
+            <key>Hour</key><integer>9</integer>
+            <key>Minute</key><integer>20</integer>
+        </dict>
+        <!-- Heartbeat: 09:50 -->
+        <dict>
+            <key>Hour</key><integer>9</integer>
+            <key>Minute</key><integer>50</integer>
+        </dict>
+        <!-- Heartbeat: 10:20 -->
+        <dict>
+            <key>Hour</key><integer>10</integer>
+            <key>Minute</key><integer>20</integer>
+        </dict>
+        <!-- Heartbeat: 10:50 -->
+        <dict>
+            <key>Hour</key><integer>10</integer>
+            <key>Minute</key><integer>50</integer>
+        </dict>
+        <!-- Heartbeat: 11:20 -->
+        <dict>
+            <key>Hour</key><integer>11</integer>
+            <key>Minute</key><integer>20</integer>
+        </dict>
+        <!-- Heartbeat: 11:50 -->
+        <dict>
+            <key>Hour</key><integer>11</integer>
+            <key>Minute</key><integer>50</integer>
+        </dict>
+        <!-- Heartbeat: 12:20 -->
+        <dict>
+            <key>Hour</key><integer>12</integer>
+            <key>Minute</key><integer>20</integer>
+        </dict>
+        <!-- Heartbeat: 12:50 -->
+        <dict>
+            <key>Hour</key><integer>12</integer>
+            <key>Minute</key><integer>50</integer>
+        </dict>
+        
+        <!-- Original schedules -->
+        <!-- Monday 03:00 - memory_cleanup -->
+        <dict>
+            <key>Weekday</key><integer>1</integer>
+            <key>Hour</key><integer>3</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <!-- Daily 09:00 - morning_briefing -->
+        <dict>
+            <key>Hour</key><integer>9</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <!-- Daily 10:00 - twitter_collect -->
+        <dict>
+            <key>Hour</key><integer>10</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <!-- Sunday 20:00 - weekly_synthesis -->
+        <dict>
+            <key>Weekday</key><integer>0</integer>
+            <key>Hour</key><integer>20</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+        <!-- Daily 21:00 - evening_review -->
+        <dict>
+            <key>Hour</key><integer>21</integer>
+            <key>Minute</key><integer>0</integer>
+        </dict>
+    </array>
+    
+    <key>StandardOutPath</key>
+    <string>/Users/nocoo/workspace/personal/runner/logs/launchd.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/nocoo/workspace/personal/runner/logs/launchd.error.log</string>
+    
+    <key>WorkingDirectory</key>
+    <string>/Users/nocoo/workspace/personal/runner</string>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>

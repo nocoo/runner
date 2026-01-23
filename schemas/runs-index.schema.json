@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "runs-index.schema.json",
+  "title": "RunsIndex",
+  "description": "Runs index file schema",
+  "type": "object",
+  "properties": {
+    "runs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "task": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "finished_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "task", "exit_code", "finished_at"]
+      },
+      "description": "List of run summaries"
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of runs"
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Last update time"
+    }
+  },
+  "required": ["runs", "total", "updated_at"],
+  "additionalProperties": false
+}

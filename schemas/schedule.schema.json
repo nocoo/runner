@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "schedule.schema.json",
+  "title": "Schedule",
+  "description": "Schedule rule schema",
+  "type": "object",
+  "properties": {
+    "task": {
+      "type": "string",
+      "description": "Task name"
+    },
+    "hour": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 23,
+      "description": "Hour of execution (0-23)"
+    },
+    "weekday": {
+      "oneOf": [
+        { "type": "string", "enum": ["*"] },
+        { "type": "integer", "minimum": 0, "maximum": 6 }
+      ],
+      "description": "Day of week (0=Sunday, *=every day)"
+    }
+  },
+  "required": ["task", "hour", "weekday"],
+  "additionalProperties": false
+}

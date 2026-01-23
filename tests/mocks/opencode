@@ -1,0 +1,20 @@
+#!/bin/bash
+# =============================================================================
+# Mock opencode for testing
+# =============================================================================
+
+# Output marker so tests can verify opencode was called
+echo "MOCK_OPENCODE_CALLED"
+echo "MOCK_ARGS: $*"
+
+# Capture the prompt (first argument after 'run')
+if [[ "$1" == "run" ]]; then
+    shift
+    PROMPT="$1"
+    echo "MOCK_PROMPT_LENGTH: ${#PROMPT}"
+    # Output first 100 chars of prompt for verification
+    echo "MOCK_PROMPT_PREVIEW: ${PROMPT:0:100}..."
+fi
+
+# Exit with configurable exit code (default 0)
+exit "${MOCK_EXIT_CODE:-0}"

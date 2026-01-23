@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "run.schema.json",
+  "title": "Run",
+  "description": "Execution record schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "description": "Unique run ID (UUID)"
+    },
+    "task": {
+      "type": "string",
+      "description": "Task name"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": ["auto", "manual"],
+      "description": "How the task was triggered"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start time (ISO 8601)"
+    },
+    "finished_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End time (ISO 8601)"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Duration in seconds"
+    },
+    "exit_code": {
+      "type": "integer",
+      "description": "Exit code"
+    },
+    "output_preview": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Truncated output preview"
+    }
+  },
+  "required": ["id", "task", "trigger", "started_at", "exit_code"],
+  "additionalProperties": false
+}

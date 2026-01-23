@@ -1,0 +1,48 @@
+# =============================================================================
+# Test Fixtures - Tasks Configuration
+# =============================================================================
+
+# Schedule rules
+# weekday: 0=Sunday, 1=Monday, ..., 6=Saturday, "*"=every day
+schedules:
+  - task: morning_briefing
+    hour: 9
+    weekday: "*"
+
+  - task: twitter_collect
+    hour: 10
+    weekday: "*"
+
+  - task: evening_review
+    hour: 21
+    weekday: "*"
+
+  - task: weekly_synthesis
+    hour: 20
+    weekday: 0          # Sunday
+
+  - task: memory_cleanup
+    hour: 3
+    weekday: 1          # Monday
+
+# Task metadata
+tasks:
+  morning_briefing:
+    description: "Daily morning briefing"
+    timeout: 300
+
+  twitter_collect:
+    description: "Collect Twitter content"
+    timeout: 600
+
+  evening_review:
+    description: "Daily evening review"
+    timeout: 300
+
+  weekly_synthesis:
+    description: "Weekly summary"
+    timeout: 600
+
+  memory_cleanup:
+    description: "Memory cleanup"
+    timeout: 300

@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "status.schema.json",
+  "title": "Status",
+  "description": "System status schema",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "System version"
+    },
+    "last_run": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "task": { "type": "string" },
+            "exit_code": { "type": "integer" },
+            "finished_at": { "type": "string", "format": "date-time" }
+          },
+          "required": ["id", "task", "exit_code", "finished_at"]
+        }
+      ],
+      "description": "Last execution summary"
+    },
+    "next_scheduled": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "task": { "type": "string" },
+            "scheduled_at": { "type": "string", "format": "date-time" }
+          },
+          "required": ["task", "scheduled_at"]
+        }
+      ],
+      "description": "Next scheduled execution"
+    },
+    "total_runs_today": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total runs today"
+    },
+    "success_rate_today": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Success rate today (0-1)"
+    }
+  },
+  "required": ["version"],
+  "additionalProperties": false
+}
