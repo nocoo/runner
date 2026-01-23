@@ -1,0 +1,61 @@
+// ============================================
+// Status ViewModel
+// ============================================
+
+import { useState, useEffect, useCallback } from "react";
+import type { SystemState, LoadingState } from "@/models/types";
+import { fetchStatus } from "@/models/api";
+import { formatPercent, formatExitCode } from "@/lib/format";
+
+interface StatusVM {
+  data: SystemState | null;
+  state: LoadingState;
+  error: string | null;
+  refresh: () => Promise<void>;
+  // Derived values
+  successRatePercent: string;
+  lastRunStatus: string;
+  lastRunTask: string;
+  isOnline: boolean;
+}
+
+export function useStatusVM(): StatusVM {
+  const [data, setData] = useState<SystemState | null>(null);
+  const [state, setState] = useState<LoadingState>("loading");
+  const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    setState("loading");
+    setError(null);
+
+    try {
+      const result = await fetchStatus();
+      setData(result);
+      setState("success");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+      setState("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  // Derived values
+  const successRatePercent = data ? formatPercent(data.success_rate_today) : "-";
+  const lastRunStatus = data?.last_run ? formatExitCode(data.last_run.exit_code) : "-";
+  const lastRunTask = data?.last_run?.task ?? "-";
+  const isOnline = state === "success";
+
+  return {
+    data,
+    state,
+    error,
+    refresh,
+    successRatePercent,
+    lastRunStatus,
+    lastRunTask,
+    isOnline,
+  };
+}

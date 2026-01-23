@@ -9,3 +9,10 @@ logs/
 
 # macOS
 .DS_Store
+
+# Reference projects
+vibeusage/
+
+# Dashboard build output
+dashboard/dist/
+dashboard/node_modules/
