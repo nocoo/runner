@@ -118,6 +118,284 @@ ensure_data_dirs() {
 }
 
 # =============================================================================
+# Crontab Expression Parser
+# =============================================================================
+# Supported syntax:
+#   *     - any value
+#   N     - exact value (e.g., 9)
+#   N,M   - list of values (e.g., "0,15,30,45")
+#   N-M   - range of values (e.g., "9-17")
+#   */N   - step/interval (e.g., "*/10")
+# =============================================================================
+
+# Check if a value matches a crontab expression
+# Usage: cron_match <expression> <value> <min> <max>
+# Returns: 0 if matches, 1 if not
+cron_match() {
+    local expr="$1"
+    local value="$2"
+    local min="$3"
+    local max="$4"
+    
+    # Remove leading zeros from value for comparison (08 -> 8)
+    value=$((10#$value))
+    
+    # Wildcard: matches everything
+    if [[ "$expr" == "*" ]]; then
+        return 0
+    fi
+    
+    # Step expression: */N
+    if [[ "$expr" =~ ^\*/([0-9]+)$ ]]; then
+        local step="${BASH_REMATCH[1]}"
+        if [[ "$step" -eq 0 ]]; then
+            return 1  # Invalid step
+        fi
+        if (( value % step == 0 )); then
+            return 0
+        fi
+        return 1
+    fi
+    
+    # Range expression: N-M
+    if [[ "$expr" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+        local range_start="${BASH_REMATCH[1]}"
+        local range_end="${BASH_REMATCH[2]}"
+        if (( value >= range_start && value <= range_end )); then
+            return 0
+        fi
+        return 1
+    fi
+    
+    # List expression: N,M,O
+    if [[ "$expr" =~ , ]]; then
+        IFS=',' read -ra values <<< "$expr"
+        for v in "${values[@]}"; do
+            # Each value in list could be a number
+            if [[ "$v" == "$value" ]]; then
+                return 0
+            fi
+        done
+        return 1
+    fi
+    
+    # Exact value: N
+    if [[ "$expr" =~ ^[0-9]+$ ]]; then
+        if [[ "$((10#$expr))" -eq "$value" ]]; then
+            return 0
+        fi
+        return 1
+    fi
+    
+    # Unknown expression format
+    return 1
+}
+
+# =============================================================================
+# Configuration Validation
+# =============================================================================
+
+# Validate a crontab expression
+# Usage: validate_cron_expr <expr> <field_name> <min> <max>
+validate_cron_expr() {
+    local expr="$1"
+    local field="$2"
+    local min="$3"
+    local max="$4"
+    
+    # Wildcard is always valid
+    if [[ "$expr" == "*" ]]; then
+        return 0
+    fi
+    
+    # Step expression: */N
+    if [[ "$expr" =~ ^\*/([0-9]+)$ ]]; then
+        local step="${BASH_REMATCH[1]}"
+        if [[ "$step" -eq 0 ]]; then
+            echo "Invalid $field: step value cannot be 0"
+            return 1
+        fi
+        if [[ "$step" -gt "$max" ]]; then
+            echo "Invalid $field: step value $step exceeds maximum $max"
+            return 1
+        fi
+        return 0
+    fi
+    
+    # Range expression: N-M
+    if [[ "$expr" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+        local range_start="${BASH_REMATCH[1]}"
+        local range_end="${BASH_REMATCH[2]}"
+        if [[ "$range_start" -lt "$min" ]] || [[ "$range_start" -gt "$max" ]]; then
+            echo "Invalid $field: range start $range_start outside $min-$max"
+            return 1
+        fi
+        if [[ "$range_end" -lt "$min" ]] || [[ "$range_end" -gt "$max" ]]; then
+            echo "Invalid $field: range end $range_end outside $min-$max"
+            return 1
+        fi
+        if [[ "$range_start" -gt "$range_end" ]]; then
+            echo "Invalid $field: range start $range_start > end $range_end"
+            return 1
+        fi
+        return 0
+    fi
+    
+    # List expression: N,M,O
+    if [[ "$expr" =~ , ]]; then
+        IFS=',' read -ra values <<< "$expr"
+        for v in "${values[@]}"; do
+            if ! [[ "$v" =~ ^[0-9]+$ ]]; then
+                echo "Invalid $field: list contains non-numeric value '$v'"
+                return 1
+            fi
+            if [[ "$v" -lt "$min" ]] || [[ "$v" -gt "$max" ]]; then
+                echo "Invalid $field: value $v outside $min-$max"
+                return 1
+            fi
+        done
+        return 0
+    fi
+    
+    # Exact value: N
+    if [[ "$expr" =~ ^-?[0-9]+$ ]]; then
+        if [[ "$expr" -lt "$min" ]] || [[ "$expr" -gt "$max" ]]; then
+            echo "Invalid $field: value $expr outside $min-$max"
+            return 1
+        fi
+        return 0
+    fi
+    
+    echo "Invalid $field: unrecognized expression '$expr'"
+    return 1
+}
+
+# Validate entire configuration file
+validate_config() {
+    local errors=()
+    local has_errors=false
+    
+    if [[ ! -f "$RUNNER_CONFIG_FILE" ]]; then
+        echo "[ERROR] Config file not found: $RUNNER_CONFIG_FILE"
+        return 1
+    fi
+    
+    # Check YAML syntax
+    if ! yq '.' "$RUNNER_CONFIG_FILE" > /dev/null 2>&1; then
+        echo "[ERROR] Invalid YAML syntax in config file"
+        return 1
+    fi
+    
+    # Validate schedules
+    local schedule_count=$(yq -o=json '.schedules // []' "$RUNNER_CONFIG_FILE" | jq 'length')
+    
+    for ((i=0; i<schedule_count; i++)); do
+        local schedule=$(yq -o=json ".schedules[$i]" "$RUNNER_CONFIG_FILE")
+        local task=$(echo "$schedule" | jq -r '.task // empty')
+        local hour=$(echo "$schedule" | jq -r '.hour // empty')
+        local minute=$(echo "$schedule" | jq -r '.minute // "0"')
+        local weekday=$(echo "$schedule" | jq -r '.weekday // empty')
+        
+        local prefix="Schedule #$((i+1))"
+        
+        # Required fields
+        if [[ -z "$task" ]]; then
+            errors+=("$prefix: missing 'task' field")
+            has_errors=true
+            continue
+        fi
+        
+        if [[ -z "$hour" ]]; then
+            errors+=("$prefix ($task): missing 'hour' field")
+            has_errors=true
+        fi
+        
+        if [[ -z "$weekday" ]]; then
+            errors+=("$prefix ($task): missing 'weekday' field")
+            has_errors=true
+        fi
+        
+        # Validate crontab expressions
+        local result
+        if [[ -n "$hour" ]]; then
+            result=$(validate_cron_expr "$hour" "hour" 0 23) || {
+                errors+=("$prefix ($task): $result")
+                has_errors=true
+            }
+        fi
+        
+        if [[ -n "$minute" ]]; then
+            result=$(validate_cron_expr "$minute" "minute" 0 59) || {
+                errors+=("$prefix ($task): $result")
+                has_errors=true
+            }
+        fi
+        
+        if [[ -n "$weekday" ]]; then
+            result=$(validate_cron_expr "$weekday" "weekday" 0 6) || {
+                errors+=("$prefix ($task): $result")
+                has_errors=true
+            }
+        fi
+        
+        # Check task exists in tasks section
+        if [[ -n "$task" ]] && ! yq -e ".tasks.${task}" "$RUNNER_CONFIG_FILE" > /dev/null 2>&1; then
+            errors+=("$prefix: task '$task' not found in tasks section")
+            has_errors=true
+        fi
+    done
+    
+    # Validate tasks
+    local task_names=$(yq -o=json '.tasks // {}' "$RUNNER_CONFIG_FILE" | jq -r 'keys[]')
+    
+    for task_name in $task_names; do
+        local task=$(yq -o=json ".tasks.${task_name}" "$RUNNER_CONFIG_FILE")
+        local description=$(echo "$task" | jq -r '.description // empty')
+        local timeout=$(echo "$task" | jq -r '.timeout // empty')
+        local workdir=$(echo "$task" | jq -r '.workdir // empty')
+        
+        # Required fields
+        if [[ -z "$description" ]]; then
+            errors+=("Task '$task_name': missing 'description' field")
+            has_errors=true
+        fi
+        
+        if [[ -z "$timeout" ]]; then
+            errors+=("Task '$task_name': missing 'timeout' field")
+            has_errors=true
+        elif ! [[ "$timeout" =~ ^[0-9]+$ ]] || [[ "$timeout" -le 0 ]]; then
+            errors+=("Task '$task_name': timeout must be a positive integer")
+            has_errors=true
+        fi
+        
+        # Check prompt file exists (skip for special tasks)
+        local prompt_file=$(get_prompt_file "$task_name")
+        if [[ ! -f "$prompt_file" ]] && [[ "$task_name" != "heartbeat" ]]; then
+            errors+=("Task '$task_name': prompt file not found: $prompt_file")
+            has_errors=true
+        fi
+        
+        # Check workdir exists if specified
+        if [[ -n "$workdir" ]] && [[ ! -d "$workdir" ]]; then
+            errors+=("Task '$task_name': workdir does not exist: $workdir")
+            has_errors=true
+        fi
+    done
+    
+    # Output results
+    if [[ "$has_errors" == true ]]; then
+        echo "[ERROR] Configuration validation failed:"
+        for err in "${errors[@]}"; do
+            echo "  - $err"
+        done
+        return 1
+    fi
+    
+    echo "[OK] Configuration is valid"
+    return 0
+}
+
+# =============================================================================
 # Task Functions
 # =============================================================================
 
@@ -166,22 +444,22 @@ find_scheduled_task() {
         
         log_debug "Checking schedule: task=$task, hour=$hour, minute=$minute, weekday=$weekday"
         
-        # Check hour match
-        if [[ "$hour" != "$current_hour" ]]; then
+        # Use crontab matcher for all fields
+        if ! cron_match "$hour" "$current_hour" 0 23; then
             continue
         fi
         
-        # Check minute match (default to 0 if not specified)
-        if [[ "$minute" != "$current_minute" ]]; then
+        if ! cron_match "$minute" "$current_minute" 0 59; then
             continue
         fi
         
-        # Check weekday match ("*" means every day)
-        if [[ "$weekday" == "*" ]] || [[ "$weekday" == "$current_weekday" ]]; then
-            log_debug "Match found: $task"
-            echo "$task"
-            return 0
+        if ! cron_match "$weekday" "$current_weekday" 0 6; then
+            continue
         fi
+        
+        log_debug "Match found: $task"
+        echo "$task"
+        return 0
     done
     
     # No match found
@@ -215,9 +493,14 @@ execute_task() {
     # Read prompt
     local prompt=$(cat "$prompt_file")
     
+    # Get workdir (if configured)
+    local workdir=$(yq -r ".tasks.${task_name}.workdir // \"\"" "$RUNNER_CONFIG_FILE")
+    log_debug "Workdir: ${workdir:-<default>}"
+    
     # Dry run mode - just output prompt
     if [[ "$DRY_RUN" == true ]]; then
         echo "# Task: $task_name"
+        echo "# Workdir: ${workdir:-<default>}"
         echo ""
         echo "$prompt"
         return 0
@@ -234,13 +517,26 @@ execute_task() {
     log_debug "Run ID: $run_id"
     log_debug "Started at: $started_at"
     
-    # Execute via opencode
+    # Execute via opencode (in workdir if configured)
+    # Special case: heartbeat task runs directly without opencode
     local output=""
     local exit_code=0
     
     set +e
-    output=$(opencode run "$prompt" --agent build 2>&1)
-    exit_code=$?
+    if [[ "$task_name" == "heartbeat" ]]; then
+        # Direct execution for heartbeat (fast, no opencode overhead)
+        log_debug "Executing heartbeat directly (no opencode)"
+        output=$(afplay /System/Library/Sounds/Pop.aiff 2>&1)
+        exit_code=$?
+        output="Heartbeat sound played"
+    elif [[ -n "$workdir" && -d "$workdir" ]]; then
+        log_debug "Changing to workdir: $workdir"
+        output=$(cd "$workdir" && opencode run "$prompt" --agent build 2>&1)
+        exit_code=$?
+    else
+        output=$(opencode run "$prompt" --agent build 2>&1)
+        exit_code=$?
+    fi
     set -e
     
     # Record end time
@@ -482,6 +778,7 @@ Commands:
   auto                    Select and execute task based on current time
   <task_name>             Execute specified task
   list                    List all available tasks
+  validate                Validate configuration file
   api <endpoint> [args]   Output JSON data for API
 
 API Endpoints:
@@ -501,6 +798,7 @@ Examples:
   $(basename "$0") auto                    # Auto-select and run task
   $(basename "$0") morning_briefing        # Run specific task
   $(basename "$0") morning_briefing --dry-run   # Preview prompt
+  $(basename "$0") validate                # Validate config
   $(basename "$0") api runs                # Get execution history
 EOF
 }
@@ -574,6 +872,9 @@ main() {
             ;;
         list)
             list_tasks
+            ;;
+        validate)
+            validate_config
             ;;
         api)
             handle_api "${args[@]:-}"

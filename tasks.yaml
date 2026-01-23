@@ -5,55 +5,46 @@
 # Schedule rules
 # weekday: 0=Sunday, 1=Monday, ..., 6=Saturday, "*"=every day
 schedules:
-  # Heartbeat test - every 30 minutes starting at :20 and :50
+  # Heartbeat - every 10 minutes, 24x7
+  # :00
   - task: heartbeat
-    hour: 9
+    hour: "*"
+    minute: 0
+    weekday: "*"
+  # :10
+  - task: heartbeat
+    hour: "*"
+    minute: 10
+    weekday: "*"
+  # :20
+  - task: heartbeat
+    hour: "*"
     minute: 20
     weekday: "*"
-
+  # :30
   - task: heartbeat
-    hour: 9
-    minute: 50
+    hour: "*"
+    minute: 30
     weekday: "*"
-
+  # :40
   - task: heartbeat
-    hour: 10
-    minute: 20
+    hour: "*"
+    minute: 40
     weekday: "*"
-
+  # :50
   - task: heartbeat
-    hour: 10
-    minute: 50
-    weekday: "*"
-
-  - task: heartbeat
-    hour: 11
-    minute: 20
-    weekday: "*"
-
-  - task: heartbeat
-    hour: 11
-    minute: 50
-    weekday: "*"
-
-  - task: heartbeat
-    hour: 12
-    minute: 20
-    weekday: "*"
-
-  - task: heartbeat
-    hour: 12
+    hour: "*"
     minute: 50
     weekday: "*"
 
   - task: morning_briefing
     hour: 9
-    minute: 0
+    minute: 5
     weekday: "*"
 
-  - task: twitter_collect
-    hour: 10
-    minute: 0
+  - task: xray_hourly
+    hour: 13
+    minute: 20
     weekday: "*"
 
   - task: evening_review
@@ -74,16 +65,17 @@ schedules:
 # Task metadata
 tasks:
   heartbeat:
-    description: "Heartbeat test - speak to verify scheduler is running"
+    description: "Heartbeat - play a short sound every 10 minutes"
     timeout: 30
 
   morning_briefing:
     description: "Daily morning briefing - summarize today's priorities and important info"
     timeout: 300
 
-  twitter_collect:
-    description: "Collect Twitter content - gather notable tweets from followed accounts"
+  xray_hourly:
+    description: "X-Ray pipeline - fetch, classify, and report X content"
     timeout: 600
+    workdir: /Users/nocoo/workspace/personal/xray
 
   evening_review:
     description: "Daily evening review - reflect on day's activities and plan tomorrow"

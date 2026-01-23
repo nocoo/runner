@@ -7,23 +7,58 @@
 schedules:
   - task: morning_briefing
     hour: 9
+    minute: 0
     weekday: "*"
 
   - task: twitter_collect
     hour: 10
+    minute: 0
     weekday: "*"
 
   - task: evening_review
     hour: 21
+    minute: 0
     weekday: "*"
 
   - task: weekly_synthesis
     hour: 20
+    minute: 0
     weekday: 0          # Sunday
 
   - task: memory_cleanup
     hour: 3
+    minute: 0
     weekday: 1          # Monday
+
+  # Edge case: task with workdir
+  - task: task_with_workdir
+    hour: 11
+    minute: 30
+    weekday: "*"
+
+  # Edge case: midnight task
+  - task: midnight_task
+    hour: 0
+    minute: 0
+    weekday: "*"
+
+  # Edge case: end of day task
+  - task: late_night_task
+    hour: 23
+    minute: 59
+    weekday: "*"
+
+  # Edge case: Saturday task
+  - task: saturday_task
+    hour: 14
+    minute: 0
+    weekday: 6          # Saturday
+
+  # Edge case: specific minute
+  - task: specific_minute_task
+    hour: 15
+    minute: 45
+    weekday: "*"
 
 # Task metadata
 tasks:
@@ -46,3 +81,33 @@ tasks:
   memory_cleanup:
     description: "Memory cleanup"
     timeout: 300
+
+  orphan_task:
+    description: "Task without prompt file"
+    timeout: 60
+
+  task_with_workdir:
+    description: "Task with custom workdir"
+    timeout: 60
+    workdir: /tmp/runner-test-workdir
+
+  task_with_invalid_workdir:
+    description: "Task with non-existent workdir"
+    timeout: 60
+    workdir: /nonexistent/path/that/does/not/exist
+
+  midnight_task:
+    description: "Midnight task for edge case testing"
+    timeout: 60
+
+  late_night_task:
+    description: "Late night task for edge case testing"
+    timeout: 60
+
+  saturday_task:
+    description: "Saturday only task"
+    timeout: 60
+
+  specific_minute_task:
+    description: "Task at specific minute"
+    timeout: 60

@@ -1,0 +1,161 @@
+# =============================================================================
+# Test Fixtures - Crontab-style Tasks Configuration
+# =============================================================================
+
+# Schedule rules (crontab-style)
+# Supported syntax:
+#   *     - any value
+#   N     - exact value
+#   N,M   - list of values
+#   N-M   - range of values
+#   */N   - step/interval
+#
+# Fields: hour, minute, weekday
+# weekday: 0=Sunday, 1=Monday, ..., 6=Saturday, "*"=every day
+#
+# IMPORTANT: First match wins! More specific rules should come before general ones.
+
+schedules:
+  # --- Basic exact match (most specific) ---
+  - task: morning_briefing
+    hour: 9
+    minute: 5
+    weekday: "*"
+
+  - task: end_of_day_task
+    hour: 23
+    minute: 59
+    weekday: "*"
+
+  - task: weekly_synthesis
+    hour: 20
+    minute: 0
+    weekday: 0          # Sunday only
+
+  # --- List syntax (specific times) ---
+  - task: list_task
+    hour: 8
+    minute: "0,15,30,45"
+    weekday: "*"
+
+  - task: hour_list_task
+    hour: "18,19,21"     # Changed to avoid conflict with range_task
+    minute: 0
+    weekday: "*"
+
+  - task: weekday_list_task
+    hour: 10
+    minute: 30
+    weekday: "1,3,5"    # Mon, Wed, Fri
+
+  # --- Range syntax ---
+  - task: range_task
+    hour: "9-17"
+    minute: 0
+    weekday: "*"
+
+  - task: minute_range_task
+    hour: 7
+    minute: "0-10"
+    weekday: "*"
+
+  # --- Step syntax ---
+  - task: step_task
+    hour: 6
+    minute: "*/10"
+    weekday: "*"
+
+  - task: step15_task
+    hour: 5
+    minute: "*/15"
+    weekday: "*"
+
+  - task: hour_step_task
+    hour: "*/2"
+    minute: 30
+    weekday: "*"
+
+  # --- Complex combinations ---
+  - task: work_hours_task
+    hour: "9,12,15,18"
+    minute: 1           # Use minute: 1 to avoid conflict with range_task (minute: 0)
+    weekday: "1-5"      # Mon-Fri
+
+  # --- Wildcard tests (less specific, put near end) ---
+  - task: continuous_task
+    hour: 12
+    minute: "*"
+    weekday: "*"
+
+  - task: heartbeat_any_hour
+    hour: "*"
+    minute: 0
+    weekday: "*"
+
+  # --- Most general (always matches, MUST be last) ---
+  - task: always_task
+    hour: "*"
+    minute: "*"
+    weekday: "*"
+
+# Task metadata
+tasks:
+  morning_briefing:
+    description: "Daily morning briefing"
+    timeout: 300
+
+  heartbeat_any_hour:
+    description: "Heartbeat at minute 0 of every hour"
+    timeout: 60
+
+  continuous_task:
+    description: "Runs every minute at hour 12"
+    timeout: 60
+
+  always_task:
+    description: "Runs every minute (testing only)"
+    timeout: 60
+
+  list_task:
+    description: "Runs at specific minutes"
+    timeout: 60
+
+  hour_list_task:
+    description: "Runs at specific hours"
+    timeout: 60
+
+  weekday_list_task:
+    description: "Runs on specific weekdays"
+    timeout: 60
+
+  range_task:
+    description: "Runs during work hours"
+    timeout: 60
+
+  minute_range_task:
+    description: "Runs in first 10 minutes"
+    timeout: 60
+
+  step_task:
+    description: "Runs every 10 minutes"
+    timeout: 60
+
+  step15_task:
+    description: "Runs every 15 minutes"
+    timeout: 60
+
+  hour_step_task:
+    description: "Runs every 2 hours"
+    timeout: 60
+
+  end_of_day_task:
+    description: "Runs at 23:59"
+    timeout: 60
+
+  weekly_synthesis:
+    description: "Weekly summary"
+    timeout: 600
+
+  work_hours_task:
+    description: "Runs during work hours on weekdays"
+    timeout: 60

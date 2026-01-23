@@ -81,3 +81,73 @@ load 'test_helper'
     assert_success
     assert_output --partial "evening_review"
 }
+
+# =============================================================================
+# Edge Cases - Boundary conditions
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Test: Midnight (hour=0) scheduling works
+# -----------------------------------------------------------------------------
+@test "auto at midnight (00:00) selects midnight_task" {
+    set_mock_time 0 3 0  # Wednesday 00:00
+    
+    run runner auto --dry-run
+    assert_success
+    assert_output --partial "midnight_task"
+}
+
+# -----------------------------------------------------------------------------
+# Test: End of day (23:59) scheduling works
+# -----------------------------------------------------------------------------
+@test "auto at 23:59 selects late_night_task" {
+    set_mock_time 23 3 59  # Wednesday 23:59
+    
+    run runner auto --dry-run
+    assert_success
+    assert_output --partial "late_night_task"
+}
+
+# -----------------------------------------------------------------------------
+# Test: Saturday (weekday=6) scheduling works
+# -----------------------------------------------------------------------------
+@test "auto at Saturday 14:00 selects saturday_task" {
+    set_mock_time 14 6 0  # Saturday 14:00
+    
+    run runner auto --dry-run
+    assert_success
+    assert_output --partial "saturday_task"
+}
+
+# -----------------------------------------------------------------------------
+# Test: Specific minute matching works
+# -----------------------------------------------------------------------------
+@test "auto at 15:45 selects specific_minute_task" {
+    set_mock_time 15 3 45  # Wednesday 15:45
+    
+    run runner auto --dry-run
+    assert_success
+    assert_output --partial "specific_minute_task"
+}
+
+# -----------------------------------------------------------------------------
+# Test: Wrong minute does not match
+# -----------------------------------------------------------------------------
+@test "auto at 15:44 does not select specific_minute_task" {
+    set_mock_time 15 3 44  # Wednesday 15:44 (1 min before)
+    
+    run runner auto
+    assert_success
+    assert_output ""  # No task matched
+}
+
+# -----------------------------------------------------------------------------
+# Test: Wrong weekday does not match
+# -----------------------------------------------------------------------------
+@test "auto at Sunday 14:00 does not select saturday_task" {
+    set_mock_time 14 0 0  # Sunday 14:00 (not Saturday)
+    
+    run runner auto
+    assert_success
+    assert_output ""  # No task matched
+}

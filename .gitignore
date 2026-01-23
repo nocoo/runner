@@ -1,0 +1,11 @@
+# Runtime data
+data/runs/*.json
+data/state.json
+data/tasks.json
+data/schedules.json
+
+# Logs
+logs/
+
+# macOS
+.DS_Store

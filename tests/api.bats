@@ -95,9 +95,9 @@ load 'test_helper'
     run runner api schedules
     assert_success
     
-    # Should have 5 schedule entries
+    # Should have 10 schedule entries (updated with edge case tests)
     local count=$(echo "$output" | jq 'length')
-    [[ "$count" -eq 5 ]]
+    [[ "$count" -eq 10 ]]
 }
 
 # -----------------------------------------------------------------------------
