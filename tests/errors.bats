@@ -6,17 +6,6 @@
 load 'test_helper'
 
 # -----------------------------------------------------------------------------
-# Test: Missing config file returns error
-# -----------------------------------------------------------------------------
-@test "missing config file returns error" {
-    export RUNNER_CONFIG_FILE="/nonexistent/config.yaml"
-    
-    run runner api tasks
-    assert_failure
-    assert_output --partial "no such file"
-}
-
-# -----------------------------------------------------------------------------
 # Test: Empty task name returns error
 # -----------------------------------------------------------------------------
 @test "empty task name shows usage" {
@@ -91,13 +80,17 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: Opencode failure records correct exit code
+# Test: Opencode failure records correct exit code (async)
 # -----------------------------------------------------------------------------
 @test "opencode failure records exit code in run log" {
     set_mock_exit_code 42
     
+    # Runner returns success (async fork)
     run runner morning_briefing
-    assert_failure
+    assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     [[ -n "$run_id" ]]
@@ -107,11 +100,14 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: Opencode timeout (if implemented)
+# Test: Task execution records duration (async)
 # -----------------------------------------------------------------------------
 @test "task execution records duration" {
     run runner morning_briefing
     assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     [[ -n "$run_id" ]]

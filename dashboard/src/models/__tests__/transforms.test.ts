@@ -14,11 +14,11 @@ import type { RunSummary, Task, Schedule } from "../types";
 
 describe("transforms", () => {
   const sampleRuns: RunSummary[] = [
-    { id: "1", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T10:00:00Z" },
-    { id: "2", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T11:00:00Z" },
-    { id: "3", task: "heartbeat", exit_code: 1, finished_at: "2026-01-20T12:00:00Z" },
-    { id: "4", task: "morning_briefing", exit_code: 0, finished_at: "2026-01-21T09:00:00Z" },
-    { id: "5", task: "heartbeat", exit_code: 0, finished_at: "2026-01-21T10:00:00Z" },
+    { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T10:00:00Z" },
+    { id: "2", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T11:00:00Z" },
+    { id: "3", task: "heartbeat", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T12:00:00Z" },
+    { id: "4", task: "morning_briefing", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-21T09:00:00Z" },
+    { id: "5", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-21T10:00:00Z" },
   ];
 
   describe("runsToHeatmap", () => {
@@ -44,9 +44,9 @@ describe("transforms", () => {
 
     test("aggregates multiple runs in same 2-hour slot", () => {
       const runsInSameSlot: RunSummary[] = [
-        { id: "1", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T10:05:00Z" },
-        { id: "2", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T10:15:00Z" },
-        { id: "3", task: "heartbeat", exit_code: 1, finished_at: "2026-01-20T11:25:00Z" },
+        { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T10:05:00Z" },
+        { id: "2", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T10:15:00Z" },
+        { id: "3", task: "heartbeat", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T11:25:00Z" },
       ];
       const result = runsToHeatmap(runsInSameSlot);
       
@@ -59,9 +59,9 @@ describe("transforms", () => {
 
     test("excludes runs outside 4am-8pm range", () => {
       const nightRuns: RunSummary[] = [
-        { id: "1", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T03:00:00Z" }, // before 4am
-        { id: "2", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T10:00:00Z" }, // within range
-        { id: "3", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T21:00:00Z" }, // after 8pm
+        { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T03:00:00Z" }, // before 4am
+        { id: "2", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T10:00:00Z" }, // within range
+        { id: "3", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T21:00:00Z" }, // after 8pm
       ];
       const result = runsToHeatmap(nightRuns);
       
@@ -91,11 +91,11 @@ describe("transforms", () => {
       };
 
       const recentRuns: RunSummary[] = [
-        { id: "1", task: "heartbeat", exit_code: 0, finished_at: makeTimeInHour(twoHoursAgoBase, 5) },  // 2 hours ago slot
-        { id: "2", task: "heartbeat", exit_code: 0, finished_at: makeTimeInHour(twoHoursAgoBase, 15) }, // 2 hours ago slot
-        { id: "3", task: "heartbeat", exit_code: 1, finished_at: makeTimeInHour(twoHoursAgoBase, 30) }, // 2 hours ago slot
-        { id: "4", task: "morning_briefing", exit_code: 0, finished_at: makeTimeInHour(fiveHoursAgoBase, 0) }, // 5 hours ago slot
-        { id: "5", task: "heartbeat", exit_code: 0, finished_at: makeTimeInHour(fiveHoursAgoBase, 30) },    // 5 hours ago slot
+        { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(twoHoursAgoBase, 5) },  // 2 hours ago slot
+        { id: "2", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(twoHoursAgoBase, 15) }, // 2 hours ago slot
+        { id: "3", task: "heartbeat", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(twoHoursAgoBase, 30) }, // 2 hours ago slot
+        { id: "4", task: "morning_briefing", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(fiveHoursAgoBase, 0) }, // 5 hours ago slot
+        { id: "5", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(fiveHoursAgoBase, 30) },    // 5 hours ago slot
       ];
 
       const result = runsToTrend(recentRuns);
@@ -122,7 +122,7 @@ describe("transforms", () => {
 
     test("excludes runs older than 24 hours", () => {
       const oldRuns: RunSummary[] = [
-        { id: "1", task: "heartbeat", exit_code: 0, finished_at: "2020-01-20T10:00:00Z" },
+        { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2020-01-20T10:00:00Z" },
       ];
       const result = runsToTrend(oldRuns);
 
@@ -201,16 +201,16 @@ describe("transforms", () => {
 
     test("returns 1 for all successful runs", () => {
       const allSuccess: RunSummary[] = [
-        { id: "1", task: "test", exit_code: 0, finished_at: "2026-01-20T10:00:00Z" },
-        { id: "2", task: "test", exit_code: 0, finished_at: "2026-01-20T11:00:00Z" },
+        { id: "1", task: "test", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T10:00:00Z" },
+        { id: "2", task: "test", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T11:00:00Z" },
       ];
       expect(calculateSuccessRate(allSuccess)).toBe(1);
     });
 
     test("returns 0 for all failed runs", () => {
       const allFailed: RunSummary[] = [
-        { id: "1", task: "test", exit_code: 1, finished_at: "2026-01-20T10:00:00Z" },
-        { id: "2", task: "test", exit_code: 2, finished_at: "2026-01-20T11:00:00Z" },
+        { id: "1", task: "test", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T10:00:00Z" },
+        { id: "2", task: "test", exit_code: 2, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T11:00:00Z" },
       ];
       expect(calculateSuccessRate(allFailed)).toBe(0);
     });
@@ -270,10 +270,10 @@ describe("transforms", () => {
       const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
 
       const recentRuns: RunSummary[] = [
-        { id: "1", task: "test", exit_code: 0, finished_at: now.toISOString() },
-        { id: "2", task: "test", exit_code: 0, finished_at: yesterday.toISOString() },
-        { id: "3", task: "test", exit_code: 0, finished_at: twoDaysAgo.toISOString() },
-        { id: "4", task: "test", exit_code: 0, finished_at: fiveDaysAgo.toISOString() },
+        { id: "1", task: "test", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: now.toISOString() },
+        { id: "2", task: "test", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: yesterday.toISOString() },
+        { id: "3", task: "test", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: twoDaysAgo.toISOString() },
+        { id: "4", task: "test", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: fiveDaysAgo.toISOString() },
       ];
 
       const result = getRunsLastNDays(recentRuns, 3);

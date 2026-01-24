@@ -74,9 +74,19 @@ export function useTasksVM(): TasksVM {
       const result = await triggerTask(taskId);
       setTriggerResult(result);
       setTriggerState("success");
+      // Auto-dismiss after 3 seconds
+      setTimeout(() => {
+        setTriggerState("idle");
+        setTriggerResult(null);
+      }, 3000);
     } catch (err) {
       setTriggerError(err instanceof Error ? err.message : String(err));
       setTriggerState("error");
+      // Auto-dismiss error after 5 seconds
+      setTimeout(() => {
+        setTriggerState("idle");
+        setTriggerError(null);
+      }, 5000);
     }
   }, []);
 

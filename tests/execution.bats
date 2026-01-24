@@ -6,11 +6,14 @@
 load 'test_helper'
 
 # -----------------------------------------------------------------------------
-# Test: Direct task execution calls opencode
+# Test: Direct task execution calls opencode (async)
 # -----------------------------------------------------------------------------
 @test "direct task execution calls opencode and creates run log" {
     run runner morning_briefing
     assert_success
+    
+    # Agent tasks are async, wait for completion
+    wait_for_any_completion 10
     
     # Verify a run log was created (which means opencode was called)
     local run_id=$(get_latest_run_id)
@@ -41,13 +44,17 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: opencode execution failure is handled
+# Test: opencode execution failure is handled (async)
 # -----------------------------------------------------------------------------
 @test "opencode failure is recorded correctly" {
     set_mock_exit_code 1
     
+    # Runner returns success (async fork), but the task will fail
     run runner morning_briefing
-    assert_failure
+    assert_success
+    
+    # Wait for async task to complete
+    wait_for_any_completion 10
     
     # Verify the run was logged with failure
     local run_id=$(get_latest_run_id)
@@ -58,11 +65,14 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: Trigger type is recorded correctly
+# Test: Trigger type is recorded correctly (async)
 # -----------------------------------------------------------------------------
 @test "manual trigger is recorded as manual" {
     run runner morning_briefing
     assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     local trigger=$(jq -r '.trigger' "$RUNNER_DATA_DIR/runs/${run_id}.json")
@@ -74,6 +84,9 @@ load 'test_helper'
     
     run runner auto
     assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     local trigger=$(jq -r '.trigger' "$RUNNER_DATA_DIR/runs/${run_id}.json")
@@ -103,30 +116,32 @@ load 'test_helper'
 # Test: Simple task without command fails
 # -----------------------------------------------------------------------------
 @test "simple task without command fails" {
-    # Create a temp config with simple task missing command
-    local temp_config=$(mktemp)
-    cat > "$temp_config" << 'EOF'
-schedules: []
-tasks:
-  bad_simple:
-    type: simple
-    description: "Missing command"
-    timeout: 10
+    # Add a bad simple task to tasks.json
+    cat > "$RUNNER_DATA_DIR/tasks.json" << 'EOF'
+[
+  {
+    "id": "bad_simple",
+    "type": "simple",
+    "description": "Missing command",
+    "timeout": 10
+  }
+]
 EOF
     
-    RUNNER_CONFIG_FILE="$temp_config" run runner bad_simple
+    run runner bad_simple
     assert_failure
     assert_output --partial "no command"
-    
-    rm -f "$temp_config"
 }
 
 # -----------------------------------------------------------------------------
-# Test: Agent task uses opencode
+# Test: Agent task uses opencode (async)
 # -----------------------------------------------------------------------------
 @test "agent task uses opencode" {
     run runner morning_briefing
     assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     [[ -n "$run_id" ]]

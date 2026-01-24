@@ -27,10 +27,13 @@ export interface NextScheduled {
 
 /**
  * Task definition from data/tasks.json
+ * - simple: execute command directly
+ * - agent: execute via opencode (can be scheduled)
+ * - manual: execute via opencode (manual trigger only)
  */
 export interface Task {
   id: string;
-  type: "simple" | "agent";
+  type: "simple" | "agent" | "manual";
   description: string;
   timeout: number;
   command?: string | null;
@@ -50,22 +53,24 @@ export interface Schedule {
 }
 
 /**
- * Run status
+ * Run status (derived from exit_code, not stored)
+ * - null exit_code = running
+ * - 0 = success
+ * - -1 = interrupted
+ * - other = failed
  */
-export type RunStatus = "running" | "success" | "failed" | "skipped";
+export type RunStatus = "running" | "success" | "failed" | "interrupted";
 
 /**
  * Run summary (from runs/index.json)
+ * Simplified: status and duration derived from exit_code and timestamps
  */
 export interface RunSummary {
   id: string;
   task: string;
-  status?: RunStatus; // New field, optional for backward compatibility
-  exit_code: number | null;
-  started_at?: string; // New field
-  finished_at: string | null;
-  duration_ms?: number | null;
-  skip_reason?: string; // Optional: reason for skipping
+  exit_code: number | null;  // null = running, 0 = success, -1 = interrupted, other = failed
+  started_at: string;
+  finished_at: string | null;  // null = running
 }
 
 /**

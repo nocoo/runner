@@ -8,12 +8,12 @@ load 'test_helper'
 
 # Use crontab-specific fixtures
 setup() {
-    # Call parent setup first
+    # Override config BEFORE calling parent setup
+    export RUNNER_CONFIG_FILE="$BATS_TEST_DIRNAME/../tests/fixtures/crontab_tasks.yaml"
+    
+    # Now call parent setup which uses RUNNER_CONFIG_FILE
     source "$BATS_TEST_DIRNAME/test_helper.bash"
     setup
-    
-    # Override config to use crontab fixtures
-    export RUNNER_CONFIG_FILE="$PROJECT_ROOT/tests/fixtures/crontab_tasks.yaml"
 }
 
 # =============================================================================

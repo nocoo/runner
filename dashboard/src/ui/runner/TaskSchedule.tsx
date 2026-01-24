@@ -48,8 +48,8 @@ export function TaskSchedule({
                   <span className="font-bold text-matrix-primary">{task.id}</span>
                   <span
                     className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${
-                      task.type === "simple"
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                      task.type === "manual"
+                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                         : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                     }`}
                   >
@@ -89,15 +89,6 @@ export function TaskSchedule({
                     </span>
                   </span>
                 ))}
-              </div>
-            )}
-
-            {/* Task info footer */}
-            {task.type === "simple" && task.command && (
-              <div className="mt-2 text-caption text-matrix-ghost">
-                <span className="truncate max-w-[200px]" title={task.command}>
-                  $ {task.command}
-                </span>
               </div>
             )}
           </div>

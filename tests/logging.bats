@@ -6,11 +6,14 @@
 load 'test_helper'
 
 # -----------------------------------------------------------------------------
-# Test: Successful execution writes JSON log
+# Test: Successful execution writes JSON log (async)
 # -----------------------------------------------------------------------------
 @test "successful execution writes JSON log" {
     run runner morning_briefing
     assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     [[ -n "$run_id" ]]
@@ -22,11 +25,14 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: Log contains required fields
+# Test: Log contains required fields (async)
 # -----------------------------------------------------------------------------
 @test "log contains required fields" {
     run runner morning_briefing
     assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     local log_file="$RUNNER_DATA_DIR/runs/${run_id}.json"
@@ -37,14 +43,17 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: Failed execution logs non-zero exit code
+# Test: Failed execution logs non-zero exit code (async)
 # -----------------------------------------------------------------------------
 @test "failed execution logs non-zero exit_code" {
     set_mock_exit_code 1
     
+    # Runner returns success (async fork), task fails in background
     run runner morning_briefing
-    # The runner itself should indicate failure
-    assert_failure
+    assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     local exit_code=$(jq -r '.exit_code' "$RUNNER_DATA_DIR/runs/${run_id}.json")
@@ -53,11 +62,14 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: Log includes duration
+# Test: Log includes duration (async)
 # -----------------------------------------------------------------------------
 @test "log includes duration_seconds" {
     run runner morning_briefing
     assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     local duration=$(jq -r '.duration_seconds' "$RUNNER_DATA_DIR/runs/${run_id}.json")
@@ -81,11 +93,14 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: Index contains run summary
+# Test: Index contains run summary (async)
 # -----------------------------------------------------------------------------
 @test "runs index contains run summary" {
     run runner morning_briefing
     assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
     
     local run_id=$(get_latest_run_id)
     

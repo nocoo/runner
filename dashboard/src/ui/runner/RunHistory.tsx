@@ -44,14 +44,21 @@ function getAriaSortValue(key: SortKey, sortKey: SortKey, sortDir: SortDir): "as
 }
 
 /**
- * Derive status from run data (supports backward compatibility)
+ * Derive status from exit_code (the single source of truth)
  */
 function getRunStatus(run: RunSummary): RunStatus {
-  // Use explicit status if available
-  if (run.status) return run.status;
-  // Backward compatibility: derive from exit_code
-  if (run.exit_code === null || run.exit_code === undefined) return "running";
-  return run.exit_code === 0 ? "success" : "failed";
+  if (run.exit_code === null) return "running";
+  if (run.exit_code === 0) return "success";
+  if (run.exit_code === -1) return "interrupted";
+  return "failed";
+}
+
+/**
+ * Calculate duration from timestamps (no stored duration_ms)
+ */
+function getDurationMs(run: RunSummary): number | null {
+  if (!run.started_at || !run.finished_at) return null;
+  return new Date(run.finished_at).getTime() - new Date(run.started_at).getTime();
 }
 
 /**
@@ -65,10 +72,8 @@ function getStatusConfig(status: RunStatus): { label: string; className: string;
       return { label: "OK", className: "text-success", dot: "" };
     case "failed":
       return { label: "FAILED", className: "text-error", dot: "" };
-    case "skipped":
-      return { label: "SKIP", className: "text-matrix-dim", dot: "" };
-    default:
-      return { label: "?", className: "text-matrix-dim", dot: "" };
+    case "interrupted":
+      return { label: "INTERRUPTED", className: "text-amber-400", dot: "" };
   }
 }
 
@@ -77,11 +82,10 @@ function getStatusConfig(status: RunStatus): { label: string; className: string;
  */
 function getStatusPriority(status: RunStatus): number {
   switch (status) {
-    case "running": return 0;  // Running first
-    case "failed": return 1;   // Failed second
-    case "skipped": return 2;  // Skipped third
-    case "success": return 3;  // Success last
-    default: return 4;
+    case "running": return 0;
+    case "interrupted": return 1;
+    case "failed": return 2;
+    case "success": return 3;
   }
 }
 
@@ -117,12 +121,11 @@ export function RunHistory({
           cmp = getStatusPriority(getRunStatus(a)) - getStatusPriority(getRunStatus(b));
           break;
         case "duration":
-          cmp = (a.duration_ms ?? 0) - (b.duration_ms ?? 0);
+          cmp = (getDurationMs(a) ?? 0) - (getDurationMs(b) ?? 0);
           break;
         case "finished_at": {
-          // For running tasks, use started_at; otherwise use finished_at
-          const timeA = a.finished_at || a.started_at || "";
-          const timeB = b.finished_at || b.started_at || "";
+          const timeA = a.finished_at || a.started_at;
+          const timeB = b.finished_at || b.started_at;
           cmp = new Date(timeA).getTime() - new Date(timeB).getTime();
           break;
         }
@@ -191,6 +194,7 @@ export function RunHistory({
               const status = getRunStatus(run);
               const statusConfig = getStatusConfig(status);
               const displayTime = run.finished_at || run.started_at;
+              const durationMs = getDurationMs(run);
               
               return (
                 <tr
@@ -215,8 +219,8 @@ export function RunHistory({
                   <td className="px-3 py-2 text-[12px] font-mono opacity-80">
                     {status === "running" ? (
                       <span className="text-cyan-400 animate-pulse">...</span>
-                    ) : run.duration_ms ? (
-                      formatDurationMs(run.duration_ms)
+                    ) : durationMs ? (
+                      formatDurationMs(durationMs)
                     ) : (
                       "—"
                     )}

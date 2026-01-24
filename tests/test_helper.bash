@@ -47,16 +47,17 @@ setup() {
       timeout: (.value.timeout // 300),
       command: (.value.command // null),
       prompt: (.value.prompt // null),
-      workdir: (.value.workdir // null)
+      workdir: (.value.workdir // null),
+      model: (.value.model // null)
     }]' > "$RUNNER_DATA_DIR/tasks.json"
 
     yq -o=json '.schedules' "$RUNNER_CONFIG_FILE" > "$RUNNER_DATA_DIR/schedules.json"
 }
 
 teardown() {
-    # Clean up temporary directories
+    # Clean up temporary directories (force remove, ignore errors)
     if [[ -d "$TEST_TMP_DIR" ]]; then
-        rm -rf "$TEST_TMP_DIR"
+        rm -rf "$TEST_TMP_DIR" 2>/dev/null || true
     fi
 }
 
@@ -107,4 +108,47 @@ set_mock_time() {
 # Set mock exit code for opencode
 set_mock_exit_code() {
     export MOCK_EXIT_CODE="$1"
+}
+
+# Wait for async task completion (poll index.json)
+# Usage: wait_for_completion <run_id> [timeout_seconds]
+wait_for_completion() {
+    local run_id="$1"
+    local timeout="${2:-10}"
+    local elapsed=0
+    
+    while [[ $elapsed -lt $timeout ]]; do
+        local exit_code=$(jq -r --arg id "$run_id" '.runs[] | select(.id == $id) | .exit_code // "null"' "$RUNNER_DATA_DIR/runs/index.json" 2>/dev/null)
+        if [[ "$exit_code" != "null" && -n "$exit_code" ]]; then
+            return 0  # Task completed
+        fi
+        sleep 0.5
+        elapsed=$((elapsed + 1))
+    done
+    
+    return 1  # Timeout
+}
+
+# Wait for any new run to complete (useful when run_id is unknown)
+# Waits for the latest run's exit_code to become non-null
+# Usage: wait_for_any_completion [timeout_seconds]
+wait_for_any_completion() {
+    local timeout="${1:-10}"
+    local elapsed=0
+    
+    # Wait for a run to exist and complete (exit_code != null)
+    while [[ $elapsed -lt $timeout ]]; do
+        local run_count=$(jq '.runs | length' "$RUNNER_DATA_DIR/runs/index.json" 2>/dev/null || echo 0)
+        if [[ $run_count -gt 0 ]]; then
+            local latest_exit=$(jq '.runs[-1].exit_code' "$RUNNER_DATA_DIR/runs/index.json" 2>/dev/null)
+            # jq returns "null" for null, numbers for actual values
+            if [[ "$latest_exit" != "null" && -n "$latest_exit" ]]; then
+                return 0
+            fi
+        fi
+        sleep 0.2
+        elapsed=$((elapsed + 1))
+    done
+    
+    return 1  # Timeout
 }

@@ -77,10 +77,13 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: api status includes last_run after execution
+# Test: api status includes last_run after execution (async)
 # -----------------------------------------------------------------------------
 @test "api status includes last_run after execution" {
     runner morning_briefing
+    
+    # Wait for async task to complete
+    wait_for_any_completion 10
     
     run runner api status
     assert_success

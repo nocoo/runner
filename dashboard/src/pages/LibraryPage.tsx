@@ -57,16 +57,16 @@ import type { RunSummary, RunDetail, HeatmapCell, TrendPoint, TaskWithSchedule }
 // ============================================
 
 const MOCK_RUNS: RunSummary[] = [
-  { id: "run-001", task: "morning_briefing", exit_code: 0, finished_at: "2026-01-24T09:05:00+08:00" },
-  { id: "run-002", task: "heartbeat", exit_code: 0, finished_at: "2026-01-24T09:10:00+08:00" },
-  { id: "run-003", task: "heartbeat", exit_code: 1, finished_at: "2026-01-24T09:20:00+08:00" },
-  { id: "run-004", task: "twitter_collect", exit_code: 0, finished_at: "2026-01-24T10:00:00+08:00" },
-  { id: "run-005", task: "heartbeat", exit_code: 0, finished_at: "2026-01-24T10:10:00+08:00" },
-  { id: "run-006", task: "heartbeat", exit_code: 0, finished_at: "2026-01-24T10:20:00+08:00" },
-  { id: "run-007", task: "clock", exit_code: 0, finished_at: "2026-01-24T11:00:00+08:00" },
-  { id: "run-008", task: "heartbeat", exit_code: 0, finished_at: "2026-01-24T11:10:00+08:00" },
-  { id: "run-009", task: "heartbeat", exit_code: 1, finished_at: "2026-01-24T11:20:00+08:00" },
-  { id: "run-010", task: "clock", exit_code: 0, finished_at: "2026-01-24T12:00:00+08:00" },
+  { id: "run-001", task: "morning_briefing", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T09:05:00+08:00" },
+  { id: "run-002", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T09:10:00+08:00" },
+  { id: "run-003", task: "heartbeat", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T09:20:00+08:00" },
+  { id: "run-004", task: "twitter_collect", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T10:00:00+08:00" },
+  { id: "run-005", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T10:10:00+08:00" },
+  { id: "run-006", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T10:20:00+08:00" },
+  { id: "run-007", task: "clock", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T11:00:00+08:00" },
+  { id: "run-008", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T11:10:00+08:00" },
+  { id: "run-009", task: "heartbeat", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T11:20:00+08:00" },
+  { id: "run-010", task: "clock", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-24T12:00:00+08:00" },
 ];
 
 const MOCK_RUN_DETAIL: RunDetail = {

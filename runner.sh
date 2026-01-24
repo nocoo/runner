@@ -440,14 +440,14 @@ validate_config() {
                 errors+=("Task '$task_id' (simple): missing 'command' field")
                 has_errors=true
             fi
-        elif [[ "$task_type" == "agent" ]]; then
-            # Agent type requires prompt
+        elif [[ "$task_type" == "agent" || "$task_type" == "manual" ]]; then
+            # Agent and manual types require prompt
             if [[ -z "$prompt" ]]; then
-                errors+=("Task '$task_id' (agent): missing 'prompt' field")
+                errors+=("Task '$task_id' ($task_type): missing 'prompt' field")
                 has_errors=true
             fi
         else
-            errors+=("Task '$task_id': invalid type '$task_type' (must be 'simple' or 'agent')")
+            errors+=("Task '$task_id': invalid type '$task_type' (must be 'simple', 'agent', or 'manual')")
             has_errors=true
         fi
 
@@ -593,6 +593,8 @@ get_task_model() {
 # =============================================================================
 
 # Execute a task
+# - simple tasks: run synchronously (fast commands like afplay)
+# - agent tasks: fork to background via run-task.sh
 execute_task() {
     local task_name="$1"
 
@@ -637,7 +639,7 @@ execute_task() {
         echo "# Task: $task_name"
         echo "# Type: $task_type"
         echo "# Workdir: ${workdir:-<default>}"
-        if [[ "$task_type" == "agent" ]]; then
+        if [[ "$task_type" != "simple" ]]; then
             local model=$(get_task_model "$task_name")
             echo "# Model: $model"
         fi
@@ -661,42 +663,39 @@ execute_task() {
     log_debug "Run ID: $run_id"
     log_debug "Started at: $started_at"
 
-    # Record running status immediately
-    update_runs_index "$run_id" "$task_name" "" "" "" "running"
+    if [[ "$task_type" == "simple" ]]; then
+        # Simple tasks: execute synchronously (they're fast)
+        _execute_simple_task "$task_name" "$workdir" "$command" "$run_id" "$started_at" "$start_seconds"
+    else
+        # Agent tasks: fork to background via run-task.sh
+        _execute_agent_task "$task_name" "$task_type" "$workdir" "$prompt" "$run_id" "$started_at" "$start_seconds"
+    fi
+}
 
-    # Execute based on task type
+# Execute simple task synchronously
+_execute_simple_task() {
+    local task_name="$1"
+    local workdir="$2"
+    local command="$3"
+    local run_id="$4"
+    local started_at="$5"
+    local start_seconds="$6"
+
+    log_debug "Executing simple command synchronously"
+
+    # Record running status
+    update_runs_index "$run_id" "$task_name" "" ""
+
     local output=""
     local exit_code=0
 
     set +e
-    if [[ "$task_type" == "simple" ]]; then
-        # Simple type: execute command directly
-        log_debug "Executing simple command"
-        if [[ -n "$workdir" && -d "$workdir" ]]; then
-            output=$(cd "$workdir" && eval "$command" 2>&1)
-        else
-            output=$(eval "$command" 2>&1)
-        fi
-        exit_code=$?
-        # Add descriptive output for simple tasks
-        if [[ $exit_code -eq 0 ]]; then
-            output="Command executed successfully: $command"
-        else
-            output="Command failed (exit $exit_code): $command\n$output"
-        fi
+    if [[ -n "$workdir" && -d "$workdir" ]]; then
+        output=$(cd "$workdir" && eval "$command" 2>&1)
     else
-        # Agent type: execute via opencode
-        log_debug "Executing agent task via opencode"
-        local model=$(get_task_model "$task_name")
-        log_debug "Using model: $model"
-
-        if [[ -n "$workdir" && -d "$workdir" ]]; then
-            output=$(cd "$workdir" && opencode run "$prompt" --agent build --model "$model" 2>&1)
-        else
-            output=$(opencode run "$prompt" --agent build --model "$model" 2>&1)
-        fi
-        exit_code=$?
+        output=$(eval "$command" 2>&1)
     fi
+    exit_code=$?
     set -e
 
     # Record end time
@@ -704,11 +703,14 @@ execute_task() {
     local end_seconds=$(date +%s)
     local duration=$((end_seconds - start_seconds))
 
-    log_debug "Finished at: $finished_at"
-    log_debug "Duration: ${duration}s"
-    log_debug "Exit code: $exit_code"
+    log_debug "Duration: ${duration}s, Exit code: $exit_code"
 
-    # Truncate output for preview
+    # Prepare output
+    if [[ $exit_code -eq 0 ]]; then
+        output="Command executed successfully: $command"
+    else
+        output="Command failed (exit $exit_code): $command\n$output"
+    fi
     local output_preview="${output:0:500}"
 
     # Write run log
@@ -726,38 +728,64 @@ execute_task() {
 }
 EOF
 
-    log_debug "Run log written: $run_file"
-
-    # Determine status based on exit code
-    local status="success"
-    if [[ "$exit_code" -ne 0 ]]; then
-        status="failed"
-    fi
-
-    # Update index (duration in ms for frontend)
-    local duration_ms=$((duration * 1000))
-    update_runs_index "$run_id" "$task_name" "$exit_code" "$finished_at" "$duration_ms" "$status"
-
-    # Update state
+    # Update index and state
+    update_runs_index "$run_id" "$task_name" "$exit_code" "$finished_at"
     update_state "$run_id" "$task_name" "$exit_code" "$finished_at"
 
     # Send notification
     send_notification "$task_name" "$exit_code" "$duration"
 
-    # Return with appropriate exit code
     if [[ "$exit_code" -ne 0 ]]; then
-        exit "$exit_code"
+        return "$exit_code"
     fi
 }
 
-# Update runs index
+# Execute agent task asynchronously via run-task.sh
+_execute_agent_task() {
+    local task_name="$1"
+    local task_type="$2"
+    local workdir="$3"
+    local prompt="$4"
+    local run_id="$5"
+    local started_at="$6"
+    local start_seconds="$7"
+
+    log_debug "Forking agent task to background"
+
+    local model=$(get_task_model "$task_name")
+    local script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+
+    # Fork to background with caffeinate to keep alive
+    /usr/bin/caffeinate -i /usr/bin/nohup "$script_dir/scripts/run-task.sh" \
+        "$task_name" "$task_type" "$workdir" "$prompt" "$run_id" \
+        "$started_at" "$start_seconds" "$RUNNER_DATA_DIR" "$TRIGGER_TYPE" "$model" \
+        > /dev/null 2>&1 &
+    local bg_pid=$!
+    disown $bg_pid 2>/dev/null || true
+
+    log_debug "Background PID: $bg_pid"
+
+    # Record running status with PID for monitor.sh to track
+    update_runs_index "$run_id" "$task_name" "" "" "$bg_pid" "$start_seconds"
+
+    return 0  # Return immediately, don't block
+}
+
+# Update runs index (simplified: status derived from exit_code)
+# Parameters:
+#   $1 run_id
+#   $2 task name
+#   $3 exit_code (null = running, 0 = success, other = failed, -1 = interrupted)
+#   $4 finished_at (null = running)
+#   $5 pid (optional, for running tasks)
+#   $6 started_at_epoch (optional, for PID reuse detection)
 update_runs_index() {
     local run_id="$1"
     local task="$2"
-    local exit_code="$3"
-    local finished_at="$4"
-    local duration_ms="$5"
-    local status="$6"  # running, success, failed, skipped
+    local exit_code="$3"      # null = running, 0 = success, other = failed, -1 = interrupted
+    local finished_at="$4"    # null = running
+    local pid="${5:-}"        # Process ID for running tasks
+    local started_at_epoch="${6:-}"  # Epoch timestamp for PID reuse detection
     
     local index_file="$RUNNER_DATA_DIR/runs/index.json"
     local temp_file=$(mktemp)
@@ -768,43 +796,44 @@ update_runs_index() {
     if [[ -n "$exists" ]]; then
         # Update existing run
         jq --arg id "$run_id" \
-           --arg status "$status" \
            --argjson exit_code "${exit_code:-null}" \
            --arg finished_at "${finished_at:-null}" \
-           --argjson duration_ms "${duration_ms:-null}" \
+           --argjson pid "${pid:-null}" \
+           --argjson started_at_epoch "${started_at_epoch:-null}" \
            --arg updated_at "$(get_timestamp)" \
            '(.runs[] | select(.id == $id)) |= . + {
-               status: $status,
                exit_code: (if $exit_code == null then null else $exit_code end),
                finished_at: (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
-               duration_ms: (if $duration_ms == null then null else $duration_ms end)
+               pid: (if $pid == null then .pid else $pid end),
+               started_at_epoch: (if $started_at_epoch == null then .started_at_epoch else $started_at_epoch end)
            } | .updated_at = $updated_at' \
            "$index_file" > "$temp_file"
     else
         # Add new run
         jq --arg id "$run_id" \
            --arg task "$task" \
-           --arg status "$status" \
            --argjson exit_code "${exit_code:-null}" \
            --arg started_at "$(get_timestamp)" \
            --arg finished_at "${finished_at:-null}" \
-           --argjson duration_ms "${duration_ms:-null}" \
+           --argjson pid "${pid:-null}" \
+           --argjson started_at_epoch "${started_at_epoch:-null}" \
            --arg updated_at "$(get_timestamp)" \
            '.runs += [{
-               "id": $id,
-               "task": $task,
-               "status": $status,
-               "exit_code": (if $exit_code == null then null else $exit_code end),
-               "started_at": $started_at,
-               "finished_at": (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
-               "duration_ms": (if $duration_ms == null then null else $duration_ms end)
+               id: $id,
+               task: $task,
+               exit_code: (if $exit_code == null then null else $exit_code end),
+               started_at: $started_at,
+               finished_at: (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
+               pid: $pid,
+               started_at_epoch: $started_at_epoch
            }] | .total = (.runs | length) | .updated_at = $updated_at' \
            "$index_file" > "$temp_file"
     fi
     
     mv "$temp_file" "$index_file"
-    log_debug "Index updated: $status"
 }
+
+# Note: cleanup_stale_runs() removed - now handled by scripts/monitor.sh
 
 # Update state
 update_state() {
@@ -818,7 +847,7 @@ update_state() {
     
     # Calculate today's stats
     local today=$(date +%Y-%m-%d)
-    local today_runs=$(jq "[.runs[] | select(.finished_at | startswith(\"$today\"))]" "$RUNNER_DATA_DIR/runs/index.json")
+    local today_runs=$(jq "[.runs[] | select(.finished_at != null and (.finished_at | startswith(\"$today\")))]" "$RUNNER_DATA_DIR/runs/index.json")
     local total_today=$(echo "$today_runs" | jq 'length')
     local success_today=$(echo "$today_runs" | jq '[.[] | select(.exit_code == 0)] | length')
     local success_rate=0
@@ -1053,6 +1082,12 @@ main() {
     case "$command" in
         auto)
             TRIGGER_TYPE="auto"
+            # Run monitor to check stale tasks before scheduling new ones
+            local monitor_script="$SCRIPT_DIR/scripts/monitor.sh"
+            if [[ -x "$monitor_script" ]]; then
+                log_debug "Running monitor.sh to check stale tasks"
+                "$monitor_script" || true
+            fi
             local tasks=$(find_scheduled_task)
             if [[ -z "$tasks" ]]; then
                 log_debug "No task scheduled for current time"
