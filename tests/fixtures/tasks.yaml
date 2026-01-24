@@ -60,54 +60,109 @@ schedules:
     minute: 45
     weekday: "*"
 
+  # Simple type task
+  - task: simple_task
+    hour: 12
+    minute: 0
+    weekday: "*"
+
 # Task metadata
 tasks:
+  # Agent type tasks (default)
   morning_briefing:
+    type: agent
     description: "Daily morning briefing"
     timeout: 300
+    prompt: |
+      Generate a morning briefing summary.
 
   twitter_collect:
+    type: agent
     description: "Collect Twitter content"
     timeout: 600
+    prompt: |
+      Collect relevant Twitter content.
 
   evening_review:
+    type: agent
     description: "Daily evening review"
     timeout: 300
+    prompt: |
+      Generate an evening review.
 
   weekly_synthesis:
+    type: agent
     description: "Weekly summary"
     timeout: 600
+    prompt: |
+      Generate a weekly synthesis report.
 
   memory_cleanup:
+    type: agent
     description: "Memory cleanup"
     timeout: 300
+    prompt: |
+      Perform memory cleanup tasks.
 
   orphan_task:
-    description: "Task without prompt file"
+    type: agent
+    description: "Task without prompt (should fail)"
     timeout: 60
+    # No prompt - this should fail validation
 
   task_with_workdir:
+    type: agent
     description: "Task with custom workdir"
     timeout: 60
     workdir: /tmp/runner-test-workdir
+    prompt: |
+      Execute in custom workdir.
 
   task_with_invalid_workdir:
+    type: agent
     description: "Task with non-existent workdir"
     timeout: 60
     workdir: /nonexistent/path/that/does/not/exist
+    prompt: |
+      This should handle invalid workdir.
 
   midnight_task:
+    type: agent
     description: "Midnight task for edge case testing"
     timeout: 60
+    prompt: |
+      Midnight task prompt.
 
   late_night_task:
+    type: agent
     description: "Late night task for edge case testing"
     timeout: 60
+    prompt: |
+      Late night task prompt.
 
   saturday_task:
+    type: agent
     description: "Saturday only task"
     timeout: 60
+    prompt: |
+      Saturday task prompt.
 
   specific_minute_task:
+    type: agent
     description: "Task at specific minute"
     timeout: 60
+    prompt: |
+      Specific minute task prompt.
+
+  # Simple type tasks (direct CLI execution)
+  simple_task:
+    type: simple
+    description: "Simple CLI command task"
+    timeout: 10
+    command: "echo 'Hello from simple task'"
+
+  simple_sound_task:
+    type: simple
+    description: "Play a sound"
+    timeout: 5
+    command: "afplay /System/Library/Sounds/Pop.aiff"

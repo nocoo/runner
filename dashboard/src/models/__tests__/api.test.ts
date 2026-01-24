@@ -48,7 +48,7 @@ describe("api", () => {
 
   describe("fetchTasks", () => {
     test("calls correct endpoint and returns array", async () => {
-      const mockTasks = [{ id: "heartbeat", description: "Test", prompt_file: "test.md", timeout: 60 }];
+      const mockTasks = [{ id: "heartbeat", type: "simple" as const, description: "Test", timeout: 60, command: "echo test" }];
       let calledUrl = "";
       globalThis.fetch = (async (url: string) => {
         calledUrl = url;

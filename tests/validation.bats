@@ -236,6 +236,7 @@ schedules:
     weekday: "*"
 tasks:
   no_prompt_task:
+    type: agent
     description: "No prompt file exists"
     timeout: 60'
     
@@ -243,6 +244,83 @@ tasks:
     assert_failure
     assert_output --partial "prompt"
     assert_output --partial "no_prompt_task"
+}
+
+# =============================================================================
+# Task Type Validation
+# =============================================================================
+
+@test "simple task without command is rejected" {
+    create_invalid_config '
+schedules: []
+tasks:
+  bad_simple:
+    type: simple
+    description: "Missing command"
+    timeout: 60'
+    
+    run runner validate
+    assert_failure
+    assert_output --partial "command"
+    assert_output --partial "bad_simple"
+}
+
+@test "agent task without prompt is rejected" {
+    create_invalid_config '
+schedules: []
+tasks:
+  bad_agent:
+    type: agent
+    description: "Missing prompt"
+    timeout: 60'
+    
+    run runner validate
+    assert_failure
+    assert_output --partial "prompt"
+    assert_output --partial "bad_agent"
+}
+
+@test "invalid task type is rejected" {
+    create_invalid_config '
+schedules: []
+tasks:
+  bad_type:
+    type: unknown
+    description: "Invalid type"
+    timeout: 60'
+    
+    run runner validate
+    assert_failure
+    assert_output --partial "type"
+    assert_output --partial "unknown"
+}
+
+@test "simple task with command is valid" {
+    create_invalid_config '
+schedules: []
+tasks:
+  good_simple:
+    type: simple
+    description: "Valid simple task"
+    timeout: 60
+    command: "echo hello"'
+    
+    run runner validate
+    assert_success
+}
+
+@test "agent task with prompt is valid" {
+    create_invalid_config '
+schedules: []
+tasks:
+  good_agent:
+    type: agent
+    description: "Valid agent task"
+    timeout: 60
+    prompt: "Do something"'
+    
+    run runner validate
+    assert_success
 }
 
 # =============================================================================

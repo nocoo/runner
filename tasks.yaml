@@ -1,8 +1,15 @@
 # =============================================================================
 # Runner Tasks Configuration
 # =============================================================================
+#
+# Task Types:
+#   - simple: Execute a CLI command directly (fast, no agent overhead)
+#   - agent: Run opencode agent with a prompt (for complex AI tasks)
+#
+# =============================================================================
 
 # Schedule rules
+# hour/minute: number, "*" (any), "*/N" (step), "N-M" (range), "N,M,O" (list)
 # weekday: 0=Sunday, 1=Monday, ..., 6=Saturday, "*"=every day
 schedules:
   # Clock - hourly and half-hourly chime
@@ -33,12 +40,32 @@ schedules:
     minute: 50
     weekday: "*"
 
-# Task metadata
+# Task definitions
 tasks:
-  clock:
-    description: "Clock chime - play a distinct sound on the hour and half-hour"
-    timeout: 30
-
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Heartbeat - Simple CLI task (no agent, instant execution)
+  # ─────────────────────────────────────────────────────────────────────────────
   heartbeat:
-    description: "Heartbeat - play a soft sound every 10 minutes"
-    timeout: 30
+    type: simple
+    description: "Heartbeat - play a soft pop sound every 10 minutes"
+    timeout: 10
+    command: "afplay /System/Library/Sounds/Pop.aiff"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Clock - Agent task (uses opencode for intelligent chime)
+  # ─────────────────────────────────────────────────────────────────────────────
+  clock:
+    type: agent
+    description: "Clock chime - announce time with text-to-speech"
+    timeout: 60
+    workdir: "."
+    prompt: |
+      # 整点报时
+
+      用 `say` 命令播报当前时间，格式：「现在是 X 点 Y 分」
+
+      示例：
+      - 整点：say "现在是九点整"
+      - 半点：say "现在是九点三十分"
+
+      **只执行 say 命令，不做其他任何操作。**

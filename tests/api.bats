@@ -95,9 +95,9 @@ load 'test_helper'
     run runner api schedules
     assert_success
     
-    # Should have 10 schedule entries (updated with edge case tests)
+    # Should have 11 schedule entries (updated with simple_task)
     local count=$(echo "$output" | jq 'length')
-    [[ "$count" -eq 10 ]]
+    [[ "$count" -eq 11 ]]
 }
 
 # -----------------------------------------------------------------------------

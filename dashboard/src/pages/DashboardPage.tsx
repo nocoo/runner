@@ -2,21 +2,25 @@
 // Dashboard Page - Main Entry
 // ============================================
 
+import { useState } from "react";
 import { MatrixShell } from "@/ui/foundation";
 import { useStatusVM, useRunsVM, useTasksVM } from "@/viewmodels";
 import {
   RunHistory,
   TaskSchedule,
+  TaskDetailModal,
   RunHeatmap,
   TrendChart,
   RunDetailModal,
   MatrixClock,
 } from "@/ui/runner";
+import type { TaskWithSchedule } from "@/models/types";
 
 export function DashboardPage() {
   const statusVM = useStatusVM();
   const runsVM = useRunsVM();
   const tasksVM = useTasksVM();
+  const [selectedTask, setSelectedTask] = useState<TaskWithSchedule | null>(null);
 
   const handleRefreshAll = () => {
     statusVM.refresh();
@@ -103,6 +107,7 @@ export function DashboardPage() {
             loading={tasksVM.state === "loading"}
             onTrigger={tasksVM.trigger}
             triggerLoading={tasksVM.triggerState === "loading"}
+            onSelectTask={setSelectedTask}
           />
 
           {/* Run History */}
@@ -122,6 +127,12 @@ export function DashboardPage() {
         run={runsVM.selectedRun}
         loading={runsVM.selectedRunLoading}
         onClose={() => runsVM.selectRun(null)}
+      />
+
+      {/* Task Detail Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        onClose={() => setSelectedTask(null)}
       />
 
       {/* Trigger Result Toast */}

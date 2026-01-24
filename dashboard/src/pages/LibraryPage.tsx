@@ -83,16 +83,18 @@ const MOCK_RUN_DETAIL: RunDetail = {
 const MOCK_TASKS: TaskWithSchedule[] = [
   {
     id: "morning_briefing",
+    type: "agent",
     description: "Daily morning briefing with weather, calendar, and tasks",
-    prompt_file: "tasks/morning_briefing.md",
     timeout: 300,
+    prompt: "Generate a morning briefing summary with weather, calendar events, and pending tasks.",
     schedules: [{ task: "morning_briefing", hour: 9, minute: 0, weekday: "*" }],
   },
   {
     id: "heartbeat",
+    type: "simple",
     description: "System heartbeat check every 10 minutes",
-    prompt_file: "tasks/heartbeat.md",
     timeout: 60,
+    command: "afplay /System/Library/Sounds/Pop.aiff",
     schedules: [
       { task: "heartbeat", hour: "*", minute: 10, weekday: "*" },
       { task: "heartbeat", hour: "*", minute: 20, weekday: "*" },
@@ -102,9 +104,10 @@ const MOCK_TASKS: TaskWithSchedule[] = [
   },
   {
     id: "clock",
-    description: "Hourly chime sound",
-    prompt_file: "tasks/clock.md",
-    timeout: 30,
+    type: "agent",
+    description: "Hourly chime with time announcement",
+    timeout: 60,
+    prompt: "Announce the current time using the say command.",
     schedules: [
       { task: "clock", hour: "*", minute: 0, weekday: "*" },
       { task: "clock", hour: "*", minute: 30, weekday: "*" },
@@ -112,9 +115,10 @@ const MOCK_TASKS: TaskWithSchedule[] = [
   },
   {
     id: "twitter_collect",
+    type: "agent",
     description: "Collect and summarize Twitter feed",
-    prompt_file: "tasks/twitter_collect.md",
     timeout: 180,
+    prompt: "Collect relevant tweets from the timeline and generate a summary.",
     schedules: [{ task: "twitter_collect", hour: 10, minute: 0, weekday: "*" }],
   },
 ];

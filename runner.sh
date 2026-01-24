@@ -350,9 +350,12 @@ validate_config() {
     
     for task_name in $task_names; do
         local task=$(yq -o=json ".tasks.${task_name}" "$RUNNER_CONFIG_FILE")
+        local task_type=$(echo "$task" | jq -r '.type // "agent"')
         local description=$(echo "$task" | jq -r '.description // empty')
         local timeout=$(echo "$task" | jq -r '.timeout // empty')
         local workdir=$(echo "$task" | jq -r '.workdir // empty')
+        local command=$(echo "$task" | jq -r '.command // empty')
+        local prompt=$(echo "$task" | jq -r '.prompt // empty')
         
         # Required fields
         if [[ -z "$description" ]]; then
@@ -368,10 +371,22 @@ validate_config() {
             has_errors=true
         fi
         
-        # Check prompt file exists (skip for special tasks)
-        local prompt_file=$(get_prompt_file "$task_name")
-        if [[ ! -f "$prompt_file" ]] && [[ "$task_name" != "heartbeat" ]]; then
-            errors+=("Task '$task_name': prompt file not found: $prompt_file")
+        # Type-specific validation
+        if [[ "$task_type" == "simple" ]]; then
+            # Simple type requires command
+            if [[ -z "$command" ]]; then
+                errors+=("Task '$task_name' (simple): missing 'command' field")
+                has_errors=true
+            fi
+        elif [[ "$task_type" == "agent" ]]; then
+            # Agent type requires prompt (inline or file)
+            local prompt_file=$(get_prompt_file "$task_name")
+            if [[ -z "$prompt" ]] && [[ ! -f "$prompt_file" ]]; then
+                errors+=("Task '$task_name' (agent): missing 'prompt' field and no prompt file found")
+                has_errors=true
+            fi
+        else
+            errors+=("Task '$task_name': invalid type '$task_type' (must be 'simple' or 'agent')")
             has_errors=true
         fi
         
@@ -408,7 +423,7 @@ list_tasks() {
     
     echo "Available tasks:"
     echo ""
-    yq -o=json '.tasks' "$RUNNER_CONFIG_FILE" | jq -r 'to_entries[] | "  \(.key) - \(.value.description // "No description")"'
+    yq -o=json '.tasks' "$RUNNER_CONFIG_FILE" | jq -r 'to_entries[] | "  \(.key) [\(.value.type // "agent")] - \(.value.description // "No description")"'
 }
 
 # Check if task exists
@@ -417,7 +432,25 @@ task_exists() {
     yq -e ".tasks.${task_name}" "$RUNNER_CONFIG_FILE" > /dev/null 2>&1
 }
 
-# Get prompt file path for task
+# Get task type (simple or agent)
+get_task_type() {
+    local task_name="$1"
+    yq -r ".tasks.${task_name}.type // \"agent\"" "$RUNNER_CONFIG_FILE"
+}
+
+# Get task command (for simple type)
+get_task_command() {
+    local task_name="$1"
+    yq -r ".tasks.${task_name}.command // \"\"" "$RUNNER_CONFIG_FILE"
+}
+
+# Get task prompt (for agent type - inline from YAML)
+get_task_prompt() {
+    local task_name="$1"
+    yq -r ".tasks.${task_name}.prompt // \"\"" "$RUNNER_CONFIG_FILE"
+}
+
+# Get prompt file path for task (legacy support)
 get_prompt_file() {
     local task_name="$1"
     echo "$RUNNER_TASKS_DIR/${task_name}.md"
@@ -473,10 +506,8 @@ find_scheduled_task() {
 # Execute a task
 execute_task() {
     local task_name="$1"
-    local prompt_file=$(get_prompt_file "$task_name")
     
     log_debug "Executing task: $task_name"
-    log_debug "Prompt file: $prompt_file"
     
     # Validate task exists
     if ! task_exists "$task_name"; then
@@ -484,25 +515,51 @@ execute_task() {
         exit 1
     fi
     
-    # Validate prompt file exists
-    if [[ ! -f "$prompt_file" ]]; then
-        log_error "Prompt file not found: $prompt_file"
-        exit 1
-    fi
-    
-    # Read prompt
-    local prompt=$(cat "$prompt_file")
-    
-    # Get workdir (if configured)
+    # Get task type and configuration
+    local task_type=$(get_task_type "$task_name")
     local workdir=$(yq -r ".tasks.${task_name}.workdir // \"\"" "$RUNNER_CONFIG_FILE")
+    
+    log_debug "Task type: $task_type"
     log_debug "Workdir: ${workdir:-<default>}"
     
-    # Dry run mode - just output prompt
+    # Get command/prompt based on type
+    local command=""
+    local prompt=""
+    
+    if [[ "$task_type" == "simple" ]]; then
+        command=$(get_task_command "$task_name")
+        if [[ -z "$command" ]]; then
+            log_error "Simple task '$task_name' has no command"
+            exit 1
+        fi
+        log_debug "Command: $command"
+    else
+        # Agent type - get prompt from YAML or file
+        prompt=$(get_task_prompt "$task_name")
+        if [[ -z "$prompt" ]]; then
+            # Fallback to prompt file
+            local prompt_file=$(get_prompt_file "$task_name")
+            if [[ -f "$prompt_file" ]]; then
+                prompt=$(cat "$prompt_file")
+            else
+                log_error "Agent task '$task_name' has no prompt"
+                exit 1
+            fi
+        fi
+        log_debug "Prompt length: ${#prompt} chars"
+    fi
+    
+    # Dry run mode - show what would be executed
     if [[ "$DRY_RUN" == true ]]; then
         echo "# Task: $task_name"
+        echo "# Type: $task_type"
         echo "# Workdir: ${workdir:-<default>}"
         echo ""
-        echo "$prompt"
+        if [[ "$task_type" == "simple" ]]; then
+            echo "Command: $command"
+        else
+            echo "$prompt"
+        fi
         return 0
     fi
     
@@ -517,24 +574,34 @@ execute_task() {
     log_debug "Run ID: $run_id"
     log_debug "Started at: $started_at"
     
-    # Execute via opencode (in workdir if configured)
-    # Special case: heartbeat task runs directly without opencode
+    # Execute based on task type
     local output=""
     local exit_code=0
     
     set +e
-    if [[ "$task_name" == "heartbeat" ]]; then
-        # Direct execution for heartbeat (fast, no opencode overhead)
-        log_debug "Executing heartbeat directly (no opencode)"
-        output=$(afplay /System/Library/Sounds/Pop.aiff 2>&1)
+    if [[ "$task_type" == "simple" ]]; then
+        # Simple type: execute command directly
+        log_debug "Executing simple command"
+        if [[ -n "$workdir" && -d "$workdir" ]]; then
+            output=$(cd "$workdir" && eval "$command" 2>&1)
+        else
+            output=$(eval "$command" 2>&1)
+        fi
         exit_code=$?
-        output="Heartbeat sound played"
-    elif [[ -n "$workdir" && -d "$workdir" ]]; then
-        log_debug "Changing to workdir: $workdir"
-        output=$(cd "$workdir" && opencode run "$prompt" --agent build 2>&1)
-        exit_code=$?
+        # Add descriptive output for simple tasks
+        if [[ $exit_code -eq 0 ]]; then
+            output="Command executed successfully: $command"
+        else
+            output="Command failed (exit $exit_code): $command\n$output"
+        fi
     else
-        output=$(opencode run "$prompt" --agent build 2>&1)
+        # Agent type: execute via opencode
+        log_debug "Executing agent task via opencode"
+        if [[ -n "$workdir" && -d "$workdir" ]]; then
+            output=$(cd "$workdir" && opencode run "$prompt" --agent build 2>&1)
+        else
+            output=$(opencode run "$prompt" --agent build 2>&1)
+        fi
         exit_code=$?
     fi
     set -e
@@ -687,9 +754,12 @@ send_notification() {
 api_tasks() {
     yq -o=json '.tasks' "$RUNNER_CONFIG_FILE" | jq '[to_entries[] | {
       id: .key,
+      type: (.value.type // "agent"),
       description: .value.description,
-      prompt_file: ("tasks/" + .key + ".md"),
-      timeout: (.value.timeout // 300)
+      timeout: (.value.timeout // 300),
+      command: (.value.command // null),
+      prompt: (.value.prompt // null),
+      workdir: (.value.workdir // null)
     }]'
 }
 

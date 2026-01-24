@@ -11,6 +11,7 @@ interface TaskScheduleProps {
   loading: boolean;
   onTrigger: (taskId: string) => void;
   triggerLoading: boolean;
+  onSelectTask?: (task: TaskWithSchedule) => void;
 }
 
 export function TaskSchedule({
@@ -18,6 +19,7 @@ export function TaskSchedule({
   loading,
   onTrigger,
   triggerLoading,
+  onSelectTask,
 }: TaskScheduleProps) {
   return (
     <AsciiBox title="Tasks" subtitle={`${tasks.length} tasks`}>
@@ -33,18 +35,37 @@ export function TaskSchedule({
         {tasks.map((task) => (
           <div
             key={task.id}
-            className="border border-matrix-ghost p-3 hover:border-matrix-dim transition-colors"
+            className={`border border-matrix-ghost p-3 transition-colors ${
+              onSelectTask
+                ? "hover:border-matrix-dim cursor-pointer"
+                : "hover:border-matrix-dim"
+            }`}
+            onClick={() => onSelectTask?.(task)}
           >
             <div className="flex justify-between items-start mb-2">
-              <div>
-                <span className="font-bold text-matrix-primary">{task.id}</span>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-matrix-primary">{task.id}</span>
+                  <span
+                    className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                      task.type === "simple"
+                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                        : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                    }`}
+                  >
+                    {task.type}
+                  </span>
+                </div>
                 <p className="text-caption text-matrix-dim mt-1">
                   {task.description}
                 </p>
               </div>
               <MatrixButton
                 size="small"
-                onClick={() => onTrigger(task.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTrigger(task.id);
+                }}
                 disabled={triggerLoading}
                 loading={triggerLoading}
               >
@@ -71,9 +92,14 @@ export function TaskSchedule({
               </div>
             )}
 
-            {/* Timeout info */}
-            <div className="mt-2 text-caption text-matrix-ghost">
-              Timeout: {task.timeout}s
+            {/* Task info footer */}
+            <div className="mt-2 flex items-center gap-3 text-caption text-matrix-ghost">
+              <span>Timeout: {task.timeout}s</span>
+              {task.type === "simple" && task.command && (
+                <span className="truncate max-w-[200px]" title={task.command}>
+                  $ {task.command}
+                </span>
+              )}
             </div>
           </div>
         ))}

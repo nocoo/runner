@@ -10,21 +10,43 @@
       "pattern": "^[a-z_]+$",
       "description": "Unique task identifier"
     },
+    "type": {
+      "type": "string",
+      "enum": ["simple", "agent"],
+      "description": "Task type: simple (CLI command) or agent (opencode prompt)"
+    },
     "description": {
       "type": "string",
       "description": "Task description"
-    },
-    "prompt_file": {
-      "type": "string",
-      "pattern": "^tasks/.+\\.md$",
-      "description": "Path to prompt file"
     },
     "timeout": {
       "type": "integer",
       "minimum": 1,
       "description": "Timeout in seconds"
+    },
+    "command": {
+      "type": "string",
+      "description": "CLI command to execute (for simple type)"
+    },
+    "prompt": {
+      "type": "string",
+      "description": "Agent prompt (for agent type, inline)"
+    },
+    "workdir": {
+      "type": "string",
+      "description": "Working directory for task execution"
     }
   },
-  "required": ["id", "description", "prompt_file"],
+  "required": ["id", "type", "description", "timeout"],
+  "allOf": [
+    {
+      "if": { "properties": { "type": { "const": "simple" } } },
+      "then": { "required": ["command"] }
+    },
+    {
+      "if": { "properties": { "type": { "const": "agent" } } },
+      "then": { "required": ["prompt"] }
+    }
+  ],
   "additionalProperties": false
 }

@@ -12,7 +12,7 @@ load 'test_helper'
     # Get tasks and save to temp file
     runner api tasks > "$TEST_TMP_DIR/tasks.json"
     
-    # Create array schema wrapper
+    # Create array schema wrapper for new task format
     cat > "$TEST_TMP_DIR/tasks-array.schema.json" << 'EOF'
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -21,11 +21,14 @@ load 'test_helper'
     "type": "object",
     "properties": {
       "id": { "type": "string" },
+      "type": { "type": "string", "enum": ["simple", "agent"] },
       "description": { "type": "string" },
-      "prompt_file": { "type": "string" },
-      "timeout": { "type": "integer" }
+      "timeout": { "type": "integer" },
+      "command": { "type": ["string", "null"] },
+      "prompt": { "type": ["string", "null"] },
+      "workdir": { "type": ["string", "null"] }
     },
-    "required": ["id", "description", "prompt_file"]
+    "required": ["id", "type", "description", "timeout"]
   }
 }
 EOF

@@ -35,12 +35,12 @@ load 'test_helper'
 }
 
 # -----------------------------------------------------------------------------
-# Test: Task exists but prompt file missing
+# Test: Task exists but has no prompt (agent type)
 # -----------------------------------------------------------------------------
 @test "task without prompt file returns error" {
     run runner orphan_task
     assert_failure
-    assert_output --partial "Prompt file not found"
+    assert_output --partial "has no prompt"
 }
 
 # -----------------------------------------------------------------------------
@@ -58,7 +58,8 @@ load 'test_helper'
 @test "verbose and dry-run flags work together" {
     run runner morning_briefing --dry-run --verbose
     assert_success
-    assert_output --partial "Morning Briefing"
+    # Check for prompt content (now inline)
+    assert_output --partial "morning briefing"
 }
 
 # -----------------------------------------------------------------------------

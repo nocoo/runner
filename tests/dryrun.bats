@@ -12,8 +12,8 @@ load 'test_helper'
     run runner morning_briefing --dry-run
     assert_success
     
-    # Should contain prompt content, not mock output
-    assert_output --partial "Morning Briefing"
+    # Should contain prompt content (now inline in YAML)
+    assert_output --partial "morning briefing"
     refute_output --partial "MOCK_OPENCODE_CALLED"
 }
 

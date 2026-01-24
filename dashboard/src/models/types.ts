@@ -30,9 +30,12 @@ export interface NextScheduled {
  */
 export interface Task {
   id: string;
+  type: "simple" | "agent";
   description: string;
-  prompt_file: string;
   timeout: number;
+  command?: string | null;
+  prompt?: string | null;
+  workdir?: string | null;
 }
 
 /**

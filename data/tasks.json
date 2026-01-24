@@ -1,14 +1,20 @@
 [
   {
-    "id": "clock",
-    "description": "Clock chime - play a distinct sound on the hour and half-hour",
-    "prompt_file": "tasks/clock.md",
-    "timeout": 30
+    "id": "heartbeat",
+    "type": "simple",
+    "description": "Heartbeat - play a soft pop sound every 10 minutes",
+    "timeout": 10,
+    "command": "afplay /System/Library/Sounds/Pop.aiff",
+    "prompt": null,
+    "workdir": null
   },
   {
-    "id": "heartbeat",
-    "description": "Heartbeat - play a soft sound every 10 minutes",
-    "prompt_file": "tasks/heartbeat.md",
-    "timeout": 30
+    "id": "clock",
+    "type": "agent",
+    "description": "Clock chime - announce time with text-to-speech",
+    "timeout": 60,
+    "command": null,
+    "prompt": "# 整点报时\n\n用 `say` 命令播报当前时间，格式：「现在是 X 点 Y 分」\n\n示例：\n- 整点：say \"现在是九点整\"\n- 半点：say \"现在是九点三十分\"\n\n**只执行 say 命令，不做其他任何操作。**\n",
+    "workdir": "."
   }
 ]

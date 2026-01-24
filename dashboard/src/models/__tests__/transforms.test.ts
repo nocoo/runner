@@ -113,8 +113,8 @@ describe("transforms", () => {
 
   describe("combineTasksWithSchedules", () => {
     const tasks: Task[] = [
-      { id: "heartbeat", description: "Heartbeat", prompt_file: "tasks/heartbeat.md", timeout: 60 },
-      { id: "morning_briefing", description: "Morning Briefing", prompt_file: "tasks/morning.md", timeout: 300 },
+      { id: "heartbeat", type: "simple", description: "Heartbeat", timeout: 60, command: "afplay /System/Library/Sounds/Pop.aiff" },
+      { id: "morning_briefing", type: "agent", description: "Morning Briefing", timeout: 300, prompt: "Generate morning briefing" },
     ];
 
     const schedules: Schedule[] = [
@@ -139,7 +139,7 @@ describe("transforms", () => {
 
     test("handles tasks with no schedules", () => {
       const tasksWithNoSchedule: Task[] = [
-        { id: "orphan", description: "Orphan Task", prompt_file: "tasks/orphan.md", timeout: 60 },
+        { id: "orphan", type: "agent", description: "Orphan Task", timeout: 60, prompt: "Orphan prompt" },
       ];
       
       const result = combineTasksWithSchedules(tasksWithNoSchedule, schedules);

@@ -377,8 +377,15 @@
       "exit_code": 0,
       "finished_at": "2026-01-24T02:40:07Z",
       "duration_ms": 3000
+    },
+    {
+      "id": "5adeeee7-b583-4250-94d5-cb2fc70f5198",
+      "task": "heartbeat",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T02:50:08Z",
+      "duration_ms": 3000
     }
   ],
-  "total": 378,
-  "updated_at": "2026-01-24T02:40:07Z"
+  "total": 55,
+  "updated_at": "2026-01-24T02:50:08Z"
 }
