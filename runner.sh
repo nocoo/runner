@@ -568,8 +568,9 @@ EOF
     
     log_debug "Run log written: $run_file"
     
-    # Update index
-    update_runs_index "$run_id" "$task_name" "$exit_code" "$finished_at"
+    # Update index (duration in ms for frontend)
+    local duration_ms=$((duration * 1000))
+    update_runs_index "$run_id" "$task_name" "$exit_code" "$finished_at" "$duration_ms"
     
     # Update state
     update_state "$run_id" "$task_name" "$exit_code" "$finished_at"
@@ -589,17 +590,19 @@ update_runs_index() {
     local task="$2"
     local exit_code="$3"
     local finished_at="$4"
+    local duration_ms="$5"
     
     local index_file="$RUNNER_DATA_DIR/runs/index.json"
     local temp_file=$(mktemp)
     
-    # Add new run to index
+    # Add new run to index (with duration_ms)
     jq --arg id "$run_id" \
        --arg task "$task" \
        --argjson exit_code "$exit_code" \
        --arg finished_at "$finished_at" \
+       --argjson duration_ms "$duration_ms" \
        --arg updated_at "$(get_timestamp)" \
-       '.runs += [{"id": $id, "task": $task, "exit_code": $exit_code, "finished_at": $finished_at}] | .total = (.runs | length) | .updated_at = $updated_at' \
+       '.runs += [{"id": $id, "task": $task, "exit_code": $exit_code, "finished_at": $finished_at, "duration_ms": $duration_ms}] | .total = (.runs | length) | .updated_at = $updated_at' \
        "$index_file" > "$temp_file"
     
     mv "$temp_file" "$index_file"
