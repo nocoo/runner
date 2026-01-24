@@ -20,7 +20,7 @@ import type { TaskWithSchedule } from "@/models/types";
 
 export function DashboardPage() {
   const statusVM = useStatusVM();
-  const runsVM = useRunsVM();
+  const runsVM = useRunsVM(24);
   const tasksVM = useTasksVM();
   const [selectedTask, setSelectedTask] = useState<TaskWithSchedule | null>(null);
 

@@ -15,6 +15,114 @@
 | ⏰ **launchd 集成** | macOS 原生定时任务支持（每分钟触发） |
 | 🖥️ **Matrix Dashboard** | React + TypeScript 实时监控面板 |
 
+## 🚀 冷启动指南 (Agent Bootstrap)
+
+> 本节面向 AI Agent，提供完整的项目安装和配置流程。
+
+### 1. 克隆项目
+
+```bash
+cd ~/workspace/personal
+git clone https://github.com/nocoo/runner.git
+cd runner
+```
+
+### 2. 安装依赖
+
+```bash
+# 运行时依赖
+brew install jq
+
+# opencode CLI (AI 任务执行器)
+# 确保 opencode 已安装并可用
+which opencode || echo "请先安装 opencode"
+
+# Dashboard 依赖
+cd dashboard && bun install && cd ..
+```
+
+### 3. 初始化数据文件
+
+```bash
+# 创建必要的数据目录和文件
+./runner.sh api init
+```
+
+这会创建：
+- `data/state.json` - 系统状态
+- `data/tasks.json` - 任务定义
+- `data/schedules.json` - 调度规则
+- `data/runs/index.json` - 执行历史索引
+
+### 4. 验证配置
+
+```bash
+# 验证任务和调度配置
+./runner.sh validate
+
+# 列出所有任务
+./runner.sh list
+```
+
+### 5. 安装 launchd 定时任务
+
+```bash
+# 复制 plist 文件
+cp com.runner.scheduler.plist ~/Library/LaunchAgents/
+
+# 加载定时任务 (每分钟触发一次)
+launchctl load ~/Library/LaunchAgents/com.runner.scheduler.plist
+
+# 验证安装
+launchctl list | grep runner
+```
+
+### 6. 启动 Dashboard (可选)
+
+```bash
+cd dashboard
+bun run dev
+# 访问 http://localhost:5173
+```
+
+### 7. 添加新任务
+
+编辑 `data/tasks.json` 添加任务定义：
+
+```json
+{
+  "id": "my_task",
+  "type": "agent",
+  "description": "任务描述",
+  "timeout": 300,
+  "prompt": "执行某个操作..."
+}
+```
+
+编辑 `data/schedules.json` 添加调度规则：
+
+```json
+{
+  "task": "my_task",
+  "hour": 9,
+  "minute": 0,
+  "weekday": "*"
+}
+```
+
+### 8. 手动测试任务
+
+```bash
+# 预览 prompt (不执行)
+./runner.sh my_task --dry-run
+
+# 执行任务
+./runner.sh my_task
+
+# 查看执行历史
+./runner.sh api runs
+```
+
 ## 📁 目录结构
 
 ```
@@ -37,21 +145,9 @@ runner/
 └── tests/              # bats 测试
 ```
 
-## 🚀 快速开始
+## 📖 CLI 使用
 
-### 依赖安装
-
-```bash
-# 运行时依赖
-brew install jq yq
-
-# 测试依赖
-brew tap bats-core/bats-core
-brew install bats-core bats-assert bats-support
-npm install -g ajv-cli
-```
-
-### 基本使用
+### 基本命令
 
 ```bash
 # 列出所有任务
@@ -106,59 +202,47 @@ npm install -g ajv-cli
 | `N-M` | 范围 | `hour: "9-17"` 9点到17点 |
 | `*/N` | 步进 | `minute: "*/10"` 每10分钟 |
 
-### tasks.yaml
+### schedules.json
 
-```yaml
-# 调度规则
-schedules:
-  # 每天 9:05
-  - task: morning_briefing
-    hour: 9
-    minute: 5
-    weekday: "*"
-
-  # 每10分钟 (心跳)
-  - task: heartbeat
-    hour: "*"
-    minute: 0
-    weekday: "*"
-  - task: heartbeat
-    hour: "*"
-    minute: 10
-    weekday: "*"
-  # ... (0, 10, 20, 30, 40, 50)
-
-  # 工作日 9-17 点整点
-  - task: work_reminder
-    hour: "9-17"
-    minute: 0
-    weekday: "1-5"
-
-  # 周日 20:00
-  - task: weekly_synthesis
-    hour: 20
-    minute: 0
-    weekday: 0
-
-# 任务元数据
-tasks:
-  morning_briefing:
-    description: "每日早报"
-    timeout: 300
-
-  heartbeat:
-    description: "心跳检测"
-    timeout: 30
-
-  xray_hourly:
-    description: "X-Ray 数据采集"
-    timeout: 600
-    workdir: /path/to/xray   # 可选：指定工作目录
+```json
+[
+  { "task": "morning_briefing", "hour": 9, "minute": 5, "weekday": "*" },
+  { "task": "heartbeat", "hour": "*", "minute": 10, "weekday": "*" },
+  { "task": "heartbeat", "hour": "*", "minute": 20, "weekday": "*" },
+  { "task": "heartbeat", "hour": "*", "minute": 40, "weekday": "*" },
+  { "task": "heartbeat", "hour": "*", "minute": 50, "weekday": "*" },
+  { "task": "work_reminder", "hour": "9-17", "minute": 0, "weekday": "1-5" },
+  { "task": "weekly_synthesis", "hour": 20, "minute": 0, "weekday": 0 }
+]
 ```
 
-### 任务 Prompt (tasks/*.md)
+### tasks.json
 
-每个任务对应一个 Markdown 文件，定义要传给 `opencode run` 的 prompt。
+```json
+[
+  {
+    "id": "morning_briefing",
+    "type": "agent",
+    "description": "每日早报",
+    "timeout": 300,
+    "prompt": "生成今日早报..."
+  },
+  {
+    "id": "heartbeat",
+    "type": "agent",
+    "description": "心跳检测",
+    "timeout": 30,
+    "prompt": "系统心跳检测"
+  },
+  {
+    "id": "clock",
+    "type": "simple",
+    "description": "整点报时",
+    "timeout": 10,
+    "command": "say '整点报时'"
+  }
+]
+```
 
 ## ✅ 配置校验
 
