@@ -2,6 +2,8 @@
 
 基于时间的自动化任务调度器，通过 `opencode` 执行 AI 任务。
 
+![Runner Dashboard](https://assets.lizheng.me/wp-content/uploads/2026/01/runner.png)
+
 ## ✨ 特性
 
 | 特性 | 描述 |

@@ -1,8 +1,5 @@
 # Runtime data
-data/runs/*.json
-data/state.json
-data/tasks.json
-data/schedules.json
+data/
 
 # Logs
 logs/
