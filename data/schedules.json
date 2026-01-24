@@ -8,5 +8,7 @@
   { "task": "obsidian_sync", "hour": "*", "minute": 0, "weekday": "*" },
   { "task": "obsidian_sync", "hour": "*", "minute": 15, "weekday": "*" },
   { "task": "obsidian_sync", "hour": "*", "minute": 30, "weekday": "*" },
-  { "task": "obsidian_sync", "hour": "*", "minute": 45, "weekday": "*" }
+  { "task": "obsidian_sync", "hour": "*", "minute": 45, "weekday": "*" },
+  { "task": "news_briefing", "hour": 9, "minute": 0, "weekday": "*" },
+  { "task": "news_briefing", "hour": 16, "minute": 45, "weekday": "*" }
 ]

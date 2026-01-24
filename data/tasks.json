@@ -25,5 +25,14 @@
     "command": null,
     "prompt": "进入工作目录，检查是否有改动。如果有：1) git add 所有改动 2) 生成简洁的 commit 消息总结变更 3) push 到 main 分支。如果没有改动，输出「无改动」。",
     "workdir": "/Users/nocoo/workspace/personal/obsidian"
+  },
+  {
+    "id": "news_briefing",
+    "type": "agent",
+    "description": "Daily news briefing - aggregate and analyze news from multiple sources",
+    "timeout": 600,
+    "command": null,
+    "prompt": "执行 /news-aggregator-skill，选项12全网抓取 (source=all)",
+    "workdir": "/Users/nocoo/workspace/personal/workflow/skills/news-aggregator-skill"
   }
 ]

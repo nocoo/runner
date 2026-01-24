@@ -78,17 +78,24 @@ describe("transforms", () => {
     test("converts runs to hourly trend points for last 24 hours", () => {
       // Create runs within the last 24 hours using relative timestamps
       const now = new Date();
-      const makeRecentTime = (hoursAgo: number, minuteOffset = 0) => {
-        const d = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000 + minuteOffset * 60 * 1000);
+      // Create a base time that is exactly 2 hours ago at the start of that hour
+      const twoHoursAgoBase = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+      twoHoursAgoBase.setMinutes(0, 0, 0); // Reset to start of hour
+      
+      const fiveHoursAgoBase = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+      fiveHoursAgoBase.setMinutes(0, 0, 0); // Reset to start of hour
+
+      const makeTimeInHour = (baseDate: Date, minuteOffset: number) => {
+        const d = new Date(baseDate.getTime() + minuteOffset * 60 * 1000);
         return d.toISOString();
       };
 
       const recentRuns: RunSummary[] = [
-        { id: "1", task: "heartbeat", exit_code: 0, finished_at: makeRecentTime(2, 5) },  // 2 hours ago
-        { id: "2", task: "heartbeat", exit_code: 0, finished_at: makeRecentTime(2, 15) }, // 2 hours ago (same slot)
-        { id: "3", task: "heartbeat", exit_code: 1, finished_at: makeRecentTime(2, 30) }, // 2 hours ago (same slot)
-        { id: "4", task: "morning_briefing", exit_code: 0, finished_at: makeRecentTime(5) }, // 5 hours ago
-        { id: "5", task: "heartbeat", exit_code: 0, finished_at: makeRecentTime(5, 30) },    // 5 hours ago (same slot)
+        { id: "1", task: "heartbeat", exit_code: 0, finished_at: makeTimeInHour(twoHoursAgoBase, 5) },  // 2 hours ago slot
+        { id: "2", task: "heartbeat", exit_code: 0, finished_at: makeTimeInHour(twoHoursAgoBase, 15) }, // 2 hours ago slot
+        { id: "3", task: "heartbeat", exit_code: 1, finished_at: makeTimeInHour(twoHoursAgoBase, 30) }, // 2 hours ago slot
+        { id: "4", task: "morning_briefing", exit_code: 0, finished_at: makeTimeInHour(fiveHoursAgoBase, 0) }, // 5 hours ago slot
+        { id: "5", task: "heartbeat", exit_code: 0, finished_at: makeTimeInHour(fiveHoursAgoBase, 30) },    // 5 hours ago slot
       ];
 
       const result = runsToTrend(recentRuns);
@@ -97,8 +104,7 @@ describe("transforms", () => {
       expect(result.length).toBe(24);
 
       // Find the slot that corresponds to 2 hours ago
-      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-      const slot2h = `${twoHoursAgo.getHours().toString().padStart(2, "0")}:00`;
+      const slot2h = `${twoHoursAgoBase.getHours().toString().padStart(2, "0")}:00`;
       const slot2hData = result.find(p => p.date === slot2h);
       expect(slot2hData).toBeDefined();
       expect(slot2hData!.total).toBe(3);
@@ -106,8 +112,7 @@ describe("transforms", () => {
       expect(slot2hData!.successRate).toBeCloseTo(0.667, 2);
 
       // Find the slot that corresponds to 5 hours ago
-      const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
-      const slot5h = `${fiveHoursAgo.getHours().toString().padStart(2, "0")}:00`;
+      const slot5h = `${fiveHoursAgoBase.getHours().toString().padStart(2, "0")}:00`;
       const slot5hData = result.find(p => p.date === slot5h);
       expect(slot5hData).toBeDefined();
       expect(slot5hData!.total).toBe(2);

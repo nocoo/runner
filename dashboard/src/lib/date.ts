@@ -50,17 +50,31 @@ export function isToday(isoDate: string): boolean {
 /**
  * Get weekday name
  */
-export function getWeekday(weekday: number | "*"): string {
+export function getWeekday(weekday: number | string): string {
   if (weekday === "*") return "Daily";
+  if (typeof weekday === "string") return weekday; // cron expressions like "1-5"
   return WEEKDAY_NAMES[weekday] || "?";
 }
 
 /**
  * Format schedule time
  */
-export function formatScheduleTime(hour: number | "*", minute: number): string {
-  const h = hour === "*" ? "*" : String(hour).padStart(2, "0");
-  const m = String(minute).padStart(2, "0");
+export function formatScheduleTime(
+  hour: number | string,
+  minute: number | string
+): string {
+  const h =
+    hour === "*"
+      ? "*"
+      : typeof hour === "string"
+        ? hour
+        : String(hour).padStart(2, "0");
+  const m =
+    minute === "*"
+      ? "*"
+      : typeof minute === "string"
+        ? minute
+        : String(minute).padStart(2, "0");
   return `${h}:${m}`;
 }
 

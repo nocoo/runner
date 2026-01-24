@@ -40,12 +40,13 @@ export interface Task {
 
 /**
  * Schedule rule from data/schedules.json
+ * Supports cron-style expressions: numbers, "*", ranges ("1-5"), lists ("0,15,30,45"), steps
  */
 export interface Schedule {
   task: string;
-  hour: number | "*";
-  minute: number;
-  weekday: number | "*";
+  hour: number | string;
+  minute: number | string;
+  weekday: number | string;
 }
 
 /**

@@ -573,11 +573,8 @@ find_scheduled_task() {
 
         log_debug "Match found: $task"
         echo "$task"
-        return 0
+        # Continue to find all matches, don't return early
     done
-
-    # No match found
-    return 1
 }
 
 # Get task model (for agent type, default: zai-coding-plan/glm-4.7)
@@ -1016,12 +1013,36 @@ main() {
     case "$command" in
         auto)
             TRIGGER_TYPE="auto"
-            local task=$(find_scheduled_task) || true
-            if [[ -z "$task" ]]; then
+            local tasks=$(find_scheduled_task)
+            if [[ -z "$tasks" ]]; then
                 log_debug "No task scheduled for current time"
                 exit 0  # Silent exit
             fi
-            execute_task "$task"
+            
+            # Deduplicate tasks (same task may match multiple schedules)
+            local unique_tasks=$(echo "$tasks" | sort -u)
+            local task_count=$(echo "$unique_tasks" | wc -l | tr -d ' ')
+            
+            log_debug "Found $task_count unique task(s) to execute"
+            
+            if [[ "$task_count" -eq 1 ]]; then
+                # Single task: execute directly
+                execute_task "$unique_tasks"
+            else
+                # Multiple tasks: execute in parallel
+                local pids=()
+                while IFS= read -r task; do
+                    [[ -z "$task" ]] && continue
+                    log_debug "Starting parallel task: $task"
+                    execute_task "$task" &
+                    pids+=($!)
+                done <<< "$unique_tasks"
+                
+                # Wait for all tasks to complete
+                for pid in "${pids[@]}"; do
+                    wait "$pid" 2>/dev/null || true
+                done
+            fi
             ;;
         list)
             list_tasks

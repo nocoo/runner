@@ -3,6 +3,7 @@
 // ============================================
 
 import { useState } from "react";
+import { LayoutGrid, RefreshCw } from "lucide-react";
 import { MatrixShell } from "@/ui/foundation";
 import { useStatusVM, useRunsVM, useTasksVM } from "@/viewmodels";
 import {
@@ -50,15 +51,15 @@ export function DashboardPage() {
         <div className="flex items-center gap-4">
           <a
             href="#library"
-            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em]"
+            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em] inline-flex items-center gap-1.5"
           >
-            Library
+            <LayoutGrid size={14} /> Library
           </a>
           <button
             onClick={handleRefreshAll}
-            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em]"
+            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em] inline-flex items-center gap-1.5"
           >
-            <span className="text-lg">↻</span> Refresh
+            <RefreshCw size={14} /> Refresh
           </button>
         </div>
       }
