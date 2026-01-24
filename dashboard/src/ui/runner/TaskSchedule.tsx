@@ -49,8 +49,8 @@ export function TaskSchedule({
                   <span
                     className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${
                       task.type === "simple"
-                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                        : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                     }`}
                   >
                     {task.type}
@@ -93,14 +93,13 @@ export function TaskSchedule({
             )}
 
             {/* Task info footer */}
-            <div className="mt-2 flex items-center gap-3 text-caption text-matrix-ghost">
-              <span>Timeout: {task.timeout}s</span>
-              {task.type === "simple" && task.command && (
+            {task.type === "simple" && task.command && (
+              <div className="mt-2 text-caption text-matrix-ghost">
                 <span className="truncate max-w-[200px]" title={task.command}>
                   $ {task.command}
                 </span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         ))}
       </div>

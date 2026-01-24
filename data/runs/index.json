@@ -426,8 +426,43 @@
       "exit_code": 0,
       "finished_at": "2026-01-24T08:20:03Z",
       "duration_ms": 2000
+    },
+    {
+      "id": "10a1ad03-04ac-4b5f-b1f6-671f20b60901",
+      "task": "clock",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T08:30:23Z",
+      "duration_ms": 15000
+    },
+    {
+      "id": "2f810653-f242-4f0f-8b5b-67fe8e446e65",
+      "task": "news_briefing",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T08:38:25Z",
+      "duration_ms": 118000
+    },
+    {
+      "id": "945682b0-dbf2-48b9-a75b-d0de5e5e3fb7",
+      "task": "heartbeat",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T08:40:29Z",
+      "duration_ms": 3000
+    },
+    {
+      "id": "cb8e8f9b-11d1-43b0-86cf-d106ebf9be5e",
+      "task": "obsidian_sync",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T08:46:31Z",
+      "duration_ms": 59000
+    },
+    {
+      "id": "edbffb5b-f658-401e-bce6-3895bcbf0cad",
+      "task": "news_briefing",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T08:52:18Z",
+      "duration_ms": 406000
     }
   ],
-  "total": 61,
-  "updated_at": "2026-01-24T08:20:03Z"
+  "total": 66,
+  "updated_at": "2026-01-24T08:52:18Z"
 }

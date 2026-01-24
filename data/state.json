@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
   "last_run": {
-    "id": "dd73aa60-a37e-4757-bf64-299dc12317ab",
-    "task": "heartbeat",
+    "id": "edbffb5b-f658-401e-bce6-3895bcbf0cad",
+    "task": "news_briefing",
     "exit_code": 0,
-    "finished_at": "2026-01-24T08:20:03Z"
+    "finished_at": "2026-01-24T08:52:18Z"
   },
   "next_scheduled": null,
-  "total_runs_today": 24,
+  "total_runs_today": 29,
   "success_rate_today": 1.00
 }

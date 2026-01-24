@@ -1,6 +1,6 @@
 // ============================================
 // Task Detail Modal
-// Shows full YAML configuration for a task
+// Shows full JSON configuration for a task
 // ============================================
 
 import { useEffect } from "react";
@@ -25,30 +25,28 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
 
   if (!task) return null;
 
-  // Generate YAML-like representation
-  const generateYamlConfig = () => {
-    const lines: string[] = [];
-    lines.push(`${task.id}:`);
-    lines.push(`  type: ${task.type}`);
-    lines.push(`  description: "${task.description}"`);
-    lines.push(`  timeout: ${task.timeout}`);
+  // Generate JSON representation
+  const generateJsonConfig = () => {
+    const config: Record<string, unknown> = {
+      id: task.id,
+      type: task.type,
+      description: task.description,
+      timeout: task.timeout,
+    };
     
     if (task.workdir) {
-      lines.push(`  workdir: ${task.workdir}`);
+      config.workdir = task.workdir;
     }
     
     if (task.type === "simple" && task.command) {
-      lines.push(`  command: "${task.command}"`);
+      config.command = task.command;
     }
     
     if (task.type === "agent" && task.prompt) {
-      lines.push(`  prompt: |`);
-      task.prompt.split("\n").forEach((line) => {
-        lines.push(`    ${line}`);
-      });
+      config.prompt = task.prompt;
     }
     
-    return lines.join("\n");
+    return JSON.stringify(config, null, 2);
   };
 
   return (
@@ -70,8 +68,8 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
               <span
                 className={`px-2 py-1 text-caption font-bold uppercase ${
                   task.type === "simple"
-                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                    : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                 }`}
               >
                 {task.type}
@@ -147,13 +145,13 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
               </div>
             )}
 
-            {/* YAML Config */}
+            {/* JSON Config */}
             <div>
               <h4 className="text-caption text-matrix-ghost uppercase mb-1">
-                YAML Configuration
+                JSON Configuration
               </h4>
               <pre className="bg-black/50 border border-matrix-ghost p-3 text-body font-mono text-matrix-dim overflow-x-auto">
-                {generateYamlConfig()}
+                {generateJsonConfig()}
               </pre>
             </div>
 

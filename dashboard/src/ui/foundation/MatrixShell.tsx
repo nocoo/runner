@@ -3,7 +3,7 @@
 // ============================================
 
 import type { ReactNode } from "react";
-import { MatrixRain } from "./MatrixExtras";
+import { MatrixRain, MatrixAvatar } from "./MatrixExtras";
 
 interface MatrixShellProps {
   title?: string;
@@ -17,6 +17,10 @@ interface MatrixShellProps {
   hideHeader?: boolean;
   /** Show Matrix rain background effect */
   showRain?: boolean;
+  /** Show avatar next to title */
+  showAvatar?: boolean;
+  /** Avatar name for procedural generation */
+  avatarName?: string;
 }
 
 export function MatrixShell({
@@ -30,6 +34,8 @@ export function MatrixShell({
   rootClassName = "",
   hideHeader = false,
   showRain = false,
+  showAvatar = false,
+  avatarName = "runner",
 }: MatrixShellProps) {
   return (
     <div
@@ -51,7 +57,10 @@ export function MatrixShell({
         {!hideHeader && (
           <header className="flex justify-between border-b border-[#00FF41]/20 pb-3 mb-6 items-center shrink-0">
             <div className="flex items-center space-x-6">
-              <div className="flex items-baseline gap-3 uppercase select-none">
+              <div className="flex items-center gap-3 uppercase select-none">
+                {showAvatar && (
+                  <MatrixAvatar name={avatarName} size={32} />
+                )}
                 <span
                   className="text-[#00ff00] font-black text-2xl md:text-3xl glow-text"
                   style={{ letterSpacing: "-1px" }}

@@ -34,6 +34,8 @@ export function DashboardPage() {
     <MatrixShell
       title="Runner"
       showRain
+      showAvatar
+      avatarName="runner"
       headerStatus={
         statusVM.isOnline ? (
           <span className="flex items-center">
