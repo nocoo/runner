@@ -58,14 +58,4 @@ tasks:
     type: agent
     description: "Clock chime - announce time with text-to-speech"
     timeout: 60
-    workdir: "."
-    prompt: |
-      # 整点报时
-
-      用 `say` 命令播报当前时间，格式：「现在是 X 点 Y 分」
-
-      示例：
-      - 整点：say "现在是九点整"
-      - 半点：say "现在是九点三十分"
-
-      **只执行 say 命令，不做其他任何操作。**
+    prompt: "用 say -v Tingting 命令播报当前时间，格式：「现在是 X 点 Y 分」，整点说「X点整」。只执行 say 命令。"

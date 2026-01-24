@@ -166,3 +166,12 @@ tasks:
     description: "Play a sound"
     timeout: 5
     command: "afplay /System/Library/Sounds/Pop.aiff"
+
+  # Agent task with custom model
+  agent_with_model:
+    type: agent
+    description: "Agent task with custom model"
+    timeout: 60
+    model: "custom/test-model"
+    prompt: |
+      Test prompt with custom model.

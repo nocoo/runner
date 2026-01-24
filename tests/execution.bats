@@ -162,3 +162,24 @@ EOF
     assert_success
     assert_output --partial "Type: agent"
 }
+
+# -----------------------------------------------------------------------------
+# Test: Model support for agent tasks
+# -----------------------------------------------------------------------------
+@test "dry-run shows default model for agent task without model" {
+    run runner morning_briefing --dry-run
+    assert_success
+    assert_output --partial "Model: zai-coding-plan/glm-4.7"
+}
+
+@test "dry-run shows custom model when specified" {
+    run runner agent_with_model --dry-run
+    assert_success
+    assert_output --partial "Model: custom/test-model"
+}
+
+@test "dry-run does not show model for simple task" {
+    run runner simple_task --dry-run
+    assert_success
+    refute_output --partial "Model:"
+}

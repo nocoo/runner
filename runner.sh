@@ -450,6 +450,17 @@ get_task_prompt() {
     yq -r ".tasks.${task_name}.prompt // \"\"" "$RUNNER_CONFIG_FILE"
 }
 
+# Get task model (for agent type, default: zai-coding-plan/glm-4.7)
+get_task_model() {
+    local task_name="$1"
+    local model=$(yq -r ".tasks.${task_name}.model // \"\"" "$RUNNER_CONFIG_FILE")
+    if [[ -z "$model" ]]; then
+        echo "zai-coding-plan/glm-4.7"
+    else
+        echo "$model"
+    fi
+}
+
 # Get prompt file path for task (legacy support)
 get_prompt_file() {
     local task_name="$1"
@@ -554,6 +565,10 @@ execute_task() {
         echo "# Task: $task_name"
         echo "# Type: $task_type"
         echo "# Workdir: ${workdir:-<default>}"
+        if [[ "$task_type" == "agent" ]]; then
+            local model=$(get_task_model "$task_name")
+            echo "# Model: $model"
+        fi
         echo ""
         if [[ "$task_type" == "simple" ]]; then
             echo "Command: $command"
@@ -597,10 +612,13 @@ execute_task() {
     else
         # Agent type: execute via opencode
         log_debug "Executing agent task via opencode"
+        local model=$(get_task_model "$task_name")
+        log_debug "Using model: $model"
+        
         if [[ -n "$workdir" && -d "$workdir" ]]; then
-            output=$(cd "$workdir" && opencode run "$prompt" --agent build 2>&1)
+            output=$(cd "$workdir" && opencode run "$prompt" --agent build --model "$model" 2>&1)
         else
-            output=$(opencode run "$prompt" --agent build 2>&1)
+            output=$(opencode run "$prompt" --agent build --model "$model" 2>&1)
         fi
         exit_code=$?
     fi

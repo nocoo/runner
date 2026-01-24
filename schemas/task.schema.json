@@ -35,6 +35,10 @@
     "workdir": {
       "type": "string",
       "description": "Working directory for task execution"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model to use for agent type (default: zai-coding-plan/glm-4.7)"
     }
   },
   "required": ["id", "type", "description", "timeout"],
