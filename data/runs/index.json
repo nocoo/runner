@@ -384,8 +384,50 @@
       "exit_code": 0,
       "finished_at": "2026-01-24T02:50:08Z",
       "duration_ms": 3000
+    },
+    {
+      "id": "6f644c93-0ed1-4b5d-9b01-425029ee3a3c",
+      "task": "heartbeat",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T03:26:25Z",
+      "duration_ms": 2000
+    },
+    {
+      "id": "f3669fc1-9b9b-4269-8903-29b200a20b7b",
+      "task": "clock",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T03:33:31Z",
+      "duration_ms": 8000
+    },
+    {
+      "id": "68a0a22a-e604-4eec-95b1-45f81c3c1aac",
+      "task": "clock",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T03:36:50Z",
+      "duration_ms": 11000
+    },
+    {
+      "id": "cfc7c9b8-d6e6-4638-bb43-84bfab928432",
+      "task": "x-ray-pipeline",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T06:19:24Z",
+      "duration_ms": 8000
+    },
+    {
+      "id": "b4ccf394-428f-490d-a7ef-4efcf1c74bd9",
+      "task": "obsidian_sync",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T08:15:59Z",
+      "duration_ms": 23000
+    },
+    {
+      "id": "dd73aa60-a37e-4757-bf64-299dc12317ab",
+      "task": "heartbeat",
+      "exit_code": 0,
+      "finished_at": "2026-01-24T08:20:03Z",
+      "duration_ms": 2000
     }
   ],
-  "total": 55,
-  "updated_at": "2026-01-24T02:50:08Z"
+  "total": 61,
+  "updated_at": "2026-01-24T08:20:03Z"
 }

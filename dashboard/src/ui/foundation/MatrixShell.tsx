@@ -3,6 +3,7 @@
 // ============================================
 
 import type { ReactNode } from "react";
+import { MatrixRain } from "./MatrixExtras";
 
 interface MatrixShellProps {
   title?: string;
@@ -14,6 +15,8 @@ interface MatrixShellProps {
   contentClassName?: string;
   rootClassName?: string;
   hideHeader?: boolean;
+  /** Show Matrix rain background effect */
+  showRain?: boolean;
 }
 
 export function MatrixShell({
@@ -26,11 +29,19 @@ export function MatrixShell({
   contentClassName = "",
   rootClassName = "",
   hideHeader = false,
+  showRain = false,
 }: MatrixShellProps) {
   return (
     <div
       className={`min-h-screen bg-matrix-dark text-matrix-primary font-matrix p-4 md:p-8 flex flex-col leading-tight text-body selection:bg-matrix-primary selection:text-black overflow-hidden ${rootClassName}`}
     >
+      {/* Matrix Rain background */}
+      {showRain && (
+        <div className="fixed inset-0 z-0 opacity-20 pointer-events-none">
+          <MatrixRain />
+        </div>
+      )}
+
       {/* Scanline overlay */}
       <div className="matrix-scanline-overlay pointer-events-none fixed inset-0 z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.1)_50%)] bg-[length:100%_4px]"></div>
 

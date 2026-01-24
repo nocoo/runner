@@ -23,11 +23,10 @@ Notifier (task-notifier skill)
 | File | Purpose |
 |------|---------|
 | `runner.sh` | Main scheduler (~400 lines bash) |
-| `tasks.yaml` | Schedule rules + task metadata |
-| `tasks/*.md` | Task prompts (markdown) |
+| `data/tasks.json` | Task definitions (JSON) |
+| `data/schedules.json` | Schedule rules (JSON) |
 | `data/*.json` | File-system API for Web UI |
-| `schemas/*.json` | JSON Schema validation |
-| `tests/*.bats` | 45 bats tests |
+| `tests/*.bats` | 135 bats tests |
 
 ## Commands
 
@@ -49,6 +48,9 @@ bats tests/routing.bats
 
 # API queries
 ./runner.sh api tasks|schedules|runs|status
+
+# Initialize/reinitialize data files
+./runner.sh api init
 ```
 
 ## Testing with Mock Time
@@ -73,34 +75,39 @@ tail -f logs/runner.log
 
 ## Adding a New Task
 
-1. Create prompt file: `tasks/<task_name>.md`
-2. Add schedule in `tasks.yaml`:
-   ```yaml
-   schedules:
-     - task: <task_name>
-       hour: 9
-       minute: 0
-       weekday: "*"  # 0=Sun, 1=Mon, ..., 6=Sat, "*"=daily
-   
-   tasks:
-     <task_name>:
-       description: "..."
-       timeout: 300
-   ```
-3. Regenerate API: `./runner.sh api tasks > /dev/null`
+Edit `data/tasks.json` and `data/schedules.json` directly:
+
+**1. Add to `data/schedules.json`:**
+```json
+{
+  "task": "my_task",
+  "hour": 9,
+  "minute": 0,
+  "weekday": "*"
+}
+```
+
+**2. Add to `data/tasks.json`:**
+```json
+{
+  "id": "my_task",
+  "type": "agent",
+  "description": "My task description",
+  "timeout": 300,
+  "prompt": "Your prompt here or path to prompt file"
+}
+```
 
 ## Dependencies
 
-- Runtime: `jq`, `yq`, `opencode`
-- Test: `bats-core`, `bats-assert`, `bats-support`, `ajv-cli`
+- Runtime: `jq`, `opencode`
+- Test: `bats-core`, `bats-assert`, `bats-support`, `yq` (for tests)
 - Notify: `~/.claude/skills/task-notifier/scripts/notify.py`
 
 ## Environment Variables
 
 | Variable | Purpose |
 |----------|---------|
-| `RUNNER_CONFIG_FILE` | Config path (default: `./tasks.yaml`) |
-| `RUNNER_TASKS_DIR` | Tasks dir (default: `./tasks`) |
 | `RUNNER_DATA_DIR` | Data dir (default: `./data`) |
 | `RUNNER_SKIP_NOTIFY` | Skip notifications if set |
 | `RUNNER_MOCK_HOUR/MINUTE/WEEKDAY` | Mock time for testing |
@@ -112,7 +119,7 @@ Web UI reads these JSON files directly:
 ```
 data/
 ├── state.json        # System status
-├── tasks.json        # Task list
+├── tasks.json        # Task definitions
 ├── schedules.json    # Schedule rules
 └── runs/
     ├── index.json    # Execution history
@@ -121,9 +128,5 @@ data/
 
 ## Current Schedules
 
-- **Heartbeat**: :20 and :50 of hours 9-12 (speaks "调度器正常运行")
-- **Morning briefing**: 09:00 daily
-- **Twitter collect**: 10:00 daily
-- **Evening review**: 21:00 daily
-- **Weekly synthesis**: 20:00 Sunday
-- **Memory cleanup**: 03:00 Monday
+- **Heartbeat**: :10, :20, :40, :50 every hour
+- **Clock**: :00 and :30 every hour (text-to-speech chime)

@@ -9,10 +9,12 @@ load 'test_helper'
 # Use crontab fixtures which are valid
 setup() {
     source "$BATS_TEST_DIRNAME/test_helper.bash"
-    setup
     
     # Use crontab fixtures for valid config tests
     export RUNNER_CONFIG_FILE="$PROJECT_ROOT/tests/fixtures/crontab_tasks.yaml"
+    
+    # Call setup AFTER setting RUNNER_CONFIG_FILE so JSON is generated from correct fixture
+    setup
 }
 
 # =============================================================================
@@ -388,4 +390,17 @@ create_invalid_config() {
     local config_content="$1"
     export RUNNER_CONFIG_FILE="$TEST_TMP_DIR/invalid_config.yaml"
     echo "$config_content" > "$RUNNER_CONFIG_FILE"
+
+    # Generate tasks JSON - preserve null values for validation testing
+    yq -o=json '.tasks' "$RUNNER_CONFIG_FILE" | jq 'to_entries | map({
+      id: .key,
+      type: (.value.type // "agent"),
+      description: (.value.description // ""),
+      timeout: .value.timeout,
+      command: (.value.command // ""),
+      prompt: (.value.prompt // ""),
+      workdir: (.value.workdir // "")
+    })' > "$RUNNER_DATA_DIR/tasks.json"
+
+    yq -o=json '.schedules' "$RUNNER_CONFIG_FILE" > "$RUNNER_DATA_DIR/schedules.json"
 }

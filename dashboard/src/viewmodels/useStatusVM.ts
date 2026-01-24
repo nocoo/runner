@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { SystemState, LoadingState } from "@/models/types";
 import { fetchStatus } from "@/models/api";
 import { formatPercent, formatExitCode } from "@/lib/format";
+import { useDataWatcher } from "./useDataWatcher";
 
 interface StatusVM {
   data: SystemState | null;
@@ -37,6 +38,9 @@ export function useStatusVM(): StatusVM {
       setState("error");
     }
   }, []);
+
+  // Auto-refresh when data files change
+  useDataWatcher(refresh);
 
   useEffect(() => {
     refresh();

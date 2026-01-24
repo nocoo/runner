@@ -7,27 +7,32 @@
 | 特性 | 描述 |
 |------|------|
 | 📅 **Crontab 风格调度** | 支持 `*`, `N,M`, `N-M`, `*/N` 表达式 |
-| 📝 **声明式配置** | YAML 定义调度规则，Markdown 定义任务 prompt |
+| 📝 **声明式配置** | JSON 定义任务和调度规则 |
 | ✅ **配置校验** | 前置验证，错误提前发现 |
 | 🔌 **文件系统 API** | JSON 数据文件，便于 Web UI 集成 |
-| 🧪 **测试驱动** | 121 个 bats 测试用例，覆盖核心功能 |
+| 🧪 **测试驱动** | 135 个 bats 测试 + 103 个 dashboard 测试 |
 | 🔔 **通知集成** | 通过 task-notifier skill 发送执行通知 |
-| ⏰ **launchd 集成** | macOS 原生定时任务支持 |
+| ⏰ **launchd 集成** | macOS 原生定时任务支持（每分钟触发） |
+| 🖥️ **Matrix Dashboard** | React + TypeScript 实时监控面板 |
 
 ## 📁 目录结构
 
 ```
 runner/
 ├── runner.sh           # 主调度器脚本
-├── tasks.yaml          # 任务配置 + 调度规则
 ├── VERSION             # 版本号
-├── schemas/            # JSON Schema 定义
-├── tasks/              # 任务 prompt 模板 (*.md)
 ├── data/               # API 数据 (JSON)
 │   ├── state.json      # 系统状态
-│   ├── tasks.json      # 任务列表
+│   ├── tasks.json      # 任务定义
 │   ├── schedules.json  # 调度规则
 │   └── runs/           # 执行记录
+├── dashboard/          # React + TypeScript Web UI
+│   ├── src/
+│   │   ├── models/     # 类型定义和数据转换
+│   │   ├── viewmodels/ # 状态管理 hooks
+│   │   ├── ui/         # UI 组件库
+│   │   └── pages/      # 页面组件
+│   └── package.json
 ├── logs/               # 运行日志
 └── tests/              # bats 测试
 ```
@@ -213,6 +218,8 @@ bats --verbose-run tests/*.bats
 
 ### 测试覆盖
 
+**Bash 测试 (bats)**
+
 | 测试文件 | 测试数 | 覆盖内容 |
 |---------|-------|---------|
 | crontab.bats | 36 | Crontab 表达式匹配 |
@@ -226,7 +233,52 @@ bats --verbose-run tests/*.bats
 | dryrun.bats | 4 | dry-run 模式 |
 | schema.bats | 6 | JSON Schema 验证 |
 | workdir.bats | 5 | 工作目录切换 |
-| **总计** | **121** | |
+| **总计** | **135** | |
+
+**Dashboard 测试 (bun:test)**
+
+| 测试文件 | 覆盖率 | 覆盖内容 |
+|---------|-------|---------|
+| transforms.test.ts | 97.57% | 数据转换、Cron 表达式 |
+| validators.test.ts | 100% | 数据校验 |
+| api.test.ts | 100% | API 调用 |
+| date.test.ts | 100% | 日期工具函数 |
+| format.test.ts | 100% | 格式化工具函数 |
+| useStatusVM.test.ts | 100% | 状态管理 |
+| **总计** | **103 测试, 94% 覆盖率** | |
+
+## 🌐 Dashboard
+
+Matrix 风格的实时监控面板，基于 React + TypeScript + Vite。
+
+### 功能
+
+- **实时时钟** - 北京时间显示，Matrix 风格动画
+- **任务列表** - 查看所有任务和调度规则
+- **执行历史** - 分页浏览执行记录，点击查看详情
+- **活动热力图** - 30 天执行活动可视化
+- **趋势图表** - 24 小时执行趋势
+- **即将执行** - 未来 8 个任务倒计时
+- **自动刷新** - 文件变化时自动更新（开发模式）
+- **Matrix Rain** - 背景数字雨动画效果
+
+### 启动
+
+```bash
+cd dashboard
+bun install
+bun run dev
+```
+
+访问 http://localhost:5173
+
+### 测试
+
+```bash
+cd dashboard
+bun test              # 运行测试
+bun test --coverage   # 运行测试并生成覆盖率报告
+```
 
 ## 🔔 通知
 

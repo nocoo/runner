@@ -22,6 +22,10 @@ function formatCompact(value: number): string {
 }
 
 function formatDate(dateStr: string): string {
+  // Check if it's an hour format (HH:00)
+  if (/^\d{2}:00$/.test(dateStr)) {
+    return dateStr;
+  }
   const date = new Date(dateStr);
   const month = (date.getMonth() + 1).toString().padStart(2, "0");
   const day = date.getDate().toString().padStart(2, "0");

@@ -6,6 +6,8 @@ import {
   getWeekday,
   formatScheduleTime,
   getDateRange,
+  getDateNDaysAgo,
+  getTodayKey,
 } from "../date";
 
 describe("date", () => {
@@ -76,6 +78,28 @@ describe("date", () => {
     test("returns single date for same start and end", () => {
       const result = getDateRange("2026-01-20", "2026-01-20");
       expect(result).toEqual(["2026-01-20"]);
+    });
+  });
+
+  describe("getDateNDaysAgo", () => {
+    test("returns date key for N days ago", () => {
+      const result = getDateNDaysAgo(0);
+      expect(result).toBe(getTodayKey());
+    });
+
+    test("returns date 7 days ago", () => {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const expected = getDateKey(sevenDaysAgo);
+      expect(getDateNDaysAgo(7)).toBe(expected);
+    });
+  });
+
+  describe("getTodayKey", () => {
+    test("returns today's date key", () => {
+      const today = new Date();
+      const expected = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      expect(getTodayKey()).toBe(expected);
     });
   });
 });

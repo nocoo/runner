@@ -89,7 +89,7 @@ export function RunHistory({
   return (
     <AsciiBox title="Run History" subtitle={`${runs.length} runs`}>
       <div
-        className="overflow-auto max-h-[520px] border border-[#00FF41]/10"
+        className="border border-[#00FF41]/10"
         role="region"
         aria-label="Run history table"
         tabIndex={0}

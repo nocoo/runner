@@ -6,9 +6,12 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Task, Schedule, TaskWithSchedule, LoadingState, TriggerResponse } from "@/models/types";
 import { fetchTasks, fetchSchedules, triggerTask } from "@/models/api";
 import { combineTasksWithSchedules } from "@/models/transforms";
+import { useDataWatcher } from "./useDataWatcher";
 
 interface TasksVM {
   tasks: TaskWithSchedule[];
+  rawTasks: Task[];
+  schedules: Schedule[];
   state: LoadingState;
   error: string | null;
   refresh: () => Promise<void>;
@@ -48,6 +51,9 @@ export function useTasksVM(): TasksVM {
     }
   }, []);
 
+  // Auto-refresh when data files change
+  useDataWatcher(refresh);
+
   useEffect(() => {
     refresh();
   }, [refresh]);
@@ -82,6 +88,8 @@ export function useTasksVM(): TasksVM {
 
   return {
     tasks: combinedTasks,
+    rawTasks: tasks,
+    schedules,
     state,
     error,
     refresh,

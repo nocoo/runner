@@ -9,6 +9,7 @@ import type {
   HeatmapCell,
   TrendPoint,
   TaskWithSchedule,
+  UpcomingTask,
 } from "./types";
 
 /**
@@ -83,37 +84,55 @@ export function runsToHeatmap(runs: RunSummary[]): HeatmapCell[] {
 }
 
 /**
- * Convert runs to trend points for charting
+ * Extract local hour slot as "HH:00" string
+ */
+function extractHourSlot(isoDate: string): string {
+  const date = new Date(isoDate);
+  const hour = date.getHours();
+  return `${hour.toString().padStart(2, "0")}:00`;
+}
+
+/**
+ * Convert runs to trend points for hourly charting (last 24 hours)
  */
 export function runsToTrend(runs: RunSummary[]): TrendPoint[] {
   if (runs.length === 0) return [];
 
-  const byDate = new Map<string, { total: number; success: number }>();
+  const now = new Date();
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+  const byHour = new Map<string, { total: number; success: number }>();
 
   for (const run of runs) {
-    const date = extractLocalDate(run.finished_at);
-    const existing = byDate.get(date) || { total: 0, success: 0 };
-    
+    const runTime = new Date(run.finished_at);
+
+    // Only include runs from the last 24 hours
+    if (runTime < oneDayAgo) continue;
+
+    const hourSlot = extractHourSlot(run.finished_at);
+    const existing = byHour.get(hourSlot) || { total: 0, success: 0 };
+
     existing.total += 1;
     if (run.exit_code === 0) {
       existing.success += 1;
     }
-    
-    byDate.set(date, existing);
+
+    byHour.set(hourSlot, existing);
   }
 
+  // Generate full 24-hour range (00:00 to 23:00)
   const result: TrendPoint[] = [];
-  for (const [date, stats] of byDate) {
+  for (let hour = 0; hour < 24; hour++) {
+    const hourSlot = `${hour.toString().padStart(2, "0")}:00`;
+    const stats = byHour.get(hourSlot) || { total: 0, success: 0 };
+
     result.push({
-      date,
+      date: hourSlot,
       total: stats.total,
       success: stats.success,
       successRate: stats.total > 0 ? stats.success / stats.total : 0,
     });
   }
-
-  // Sort by date ascending
-  result.sort((a, b) => a.date.localeCompare(b.date));
 
   return result;
 }
@@ -199,4 +218,155 @@ export function getRunsLastNDays(runs: RunSummary[], days: number): RunSummary[]
   const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
   return runs.filter((run) => new Date(run.finished_at) >= cutoff);
+}
+
+// ============================================
+// Crontab Expression Matching
+// ============================================
+
+/**
+ * Check if a value matches a crontab expression
+ * Supports: *, N, N-M (range), N,M,O (list), * /N (step)
+ */
+function cronMatch(expr: string | number, value: number): boolean {
+  const exprStr = String(expr);
+
+  // Wildcard: matches everything
+  if (exprStr === "*") {
+    return true;
+  }
+
+  // Step expression: */N
+  const stepMatch = exprStr.match(/^\*\/(\d+)$/);
+  if (stepMatch) {
+    const step = parseInt(stepMatch[1], 10);
+    if (step === 0) return false;
+    return value % step === 0;
+  }
+
+  // Range expression: N-M
+  const rangeMatch = exprStr.match(/^(\d+)-(\d+)$/);
+  if (rangeMatch) {
+    const start = parseInt(rangeMatch[1], 10);
+    const end = parseInt(rangeMatch[2], 10);
+    return value >= start && value <= end;
+  }
+
+  // List expression: N,M,O
+  if (exprStr.includes(",")) {
+    const values = exprStr.split(",").map((v) => parseInt(v.trim(), 10));
+    return values.includes(value);
+  }
+
+  // Exact value: N
+  const numMatch = exprStr.match(/^\d+$/);
+  if (numMatch) {
+    return parseInt(exprStr, 10) === value;
+  }
+
+  return false;
+}
+
+/**
+ * Get all matching values for a crontab expression within a range
+ */
+function getMatchingValues(expr: string | number, min: number, max: number): number[] {
+  const result: number[] = [];
+  for (let i = min; i <= max; i++) {
+    if (cronMatch(expr, i)) {
+      result.push(i);
+    }
+  }
+  return result;
+}
+
+/**
+ * Calculate next run time for a schedule starting from a given time
+ */
+function calculateNextRun(schedule: Schedule, from: Date): Date | null {
+  const { hour, minute, weekday } = schedule;
+
+  // Get all matching hours and minutes
+  const matchingHours = getMatchingValues(hour, 0, 23);
+  const matchingMinutes = getMatchingValues(minute, 0, 59);
+  const matchingWeekdays = getMatchingValues(weekday, 0, 6);
+
+  if (matchingHours.length === 0 || matchingMinutes.length === 0 || matchingWeekdays.length === 0) {
+    return null;
+  }
+
+  // Start searching from current time
+  const candidate = new Date(from);
+  candidate.setSeconds(0, 0);
+
+  // Search up to 7 days ahead
+  for (let dayOffset = 0; dayOffset < 8; dayOffset++) {
+    const checkDate = new Date(candidate);
+    checkDate.setDate(checkDate.getDate() + dayOffset);
+
+    // Check if weekday matches
+    if (!matchingWeekdays.includes(checkDate.getDay())) {
+      continue;
+    }
+
+    for (const h of matchingHours) {
+      for (const m of matchingMinutes) {
+        const checkTime = new Date(checkDate);
+        checkTime.setHours(h, m, 0, 0);
+
+        // Must be in the future
+        if (checkTime > from) {
+          return checkTime;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Calculate upcoming tasks sorted by next run time
+ */
+export function calculateUpcomingTasks(
+  tasks: Task[],
+  schedules: Schedule[],
+  count: number = 8
+): UpcomingTask[] {
+  const now = new Date();
+  const upcoming: UpcomingTask[] = [];
+
+  for (const schedule of schedules) {
+    const task = tasks.find((t) => t.id === schedule.task);
+    if (!task) continue;
+
+    const nextRun = calculateNextRun(schedule, now);
+    if (!nextRun) continue;
+
+    upcoming.push({
+      task,
+      schedule,
+      nextRun,
+      countdown: nextRun.getTime() - now.getTime(),
+    });
+  }
+
+  // Sort by next run time (soonest first)
+  upcoming.sort((a, b) => a.nextRun.getTime() - b.nextRun.getTime());
+
+  // Return top N unique tasks (avoid duplicates if same task has multiple schedules)
+  const seen = new Set<string>();
+  const result: UpcomingTask[] = [];
+
+  for (const item of upcoming) {
+    // Create unique key for task + time slot
+    const timeKey = `${item.task.id}-${item.nextRun.getTime()}`;
+    if (!seen.has(timeKey)) {
+      seen.add(timeKey);
+      result.push(item);
+      if (result.length >= count) break;
+    }
+  }
+
+  return result;
 }

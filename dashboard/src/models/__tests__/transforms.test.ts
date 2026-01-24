@@ -6,6 +6,9 @@ import {
   combineTasksWithSchedules,
   calculateSuccessRate,
   sortRunsByDate,
+  filterRunsByDateRange,
+  getRunsLastNDays,
+  calculateUpcomingTasks,
 } from "../transforms";
 import type { RunSummary, Task, Schedule } from "../types";
 
@@ -72,22 +75,55 @@ describe("transforms", () => {
   });
 
   describe("runsToTrend", () => {
-    test("converts runs to trend points", () => {
-      const result = runsToTrend(sampleRuns);
-      
-      expect(result.length).toBe(2);
-      
-      const jan20 = result.find(p => p.date === "2026-01-20");
-      expect(jan20).toBeDefined();
-      expect(jan20!.total).toBe(3);
-      expect(jan20!.success).toBe(2);
-      expect(jan20!.successRate).toBeCloseTo(0.667, 2);
-      
-      const jan21 = result.find(p => p.date === "2026-01-21");
-      expect(jan21).toBeDefined();
-      expect(jan21!.total).toBe(2);
-      expect(jan21!.success).toBe(2);
-      expect(jan21!.successRate).toBe(1);
+    test("converts runs to hourly trend points for last 24 hours", () => {
+      // Create runs within the last 24 hours using relative timestamps
+      const now = new Date();
+      const makeRecentTime = (hoursAgo: number, minuteOffset = 0) => {
+        const d = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000 + minuteOffset * 60 * 1000);
+        return d.toISOString();
+      };
+
+      const recentRuns: RunSummary[] = [
+        { id: "1", task: "heartbeat", exit_code: 0, finished_at: makeRecentTime(2, 5) },  // 2 hours ago
+        { id: "2", task: "heartbeat", exit_code: 0, finished_at: makeRecentTime(2, 15) }, // 2 hours ago (same slot)
+        { id: "3", task: "heartbeat", exit_code: 1, finished_at: makeRecentTime(2, 30) }, // 2 hours ago (same slot)
+        { id: "4", task: "morning_briefing", exit_code: 0, finished_at: makeRecentTime(5) }, // 5 hours ago
+        { id: "5", task: "heartbeat", exit_code: 0, finished_at: makeRecentTime(5, 30) },    // 5 hours ago (same slot)
+      ];
+
+      const result = runsToTrend(recentRuns);
+
+      // Should return 24 hourly slots
+      expect(result.length).toBe(24);
+
+      // Find the slot that corresponds to 2 hours ago
+      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+      const slot2h = `${twoHoursAgo.getHours().toString().padStart(2, "0")}:00`;
+      const slot2hData = result.find(p => p.date === slot2h);
+      expect(slot2hData).toBeDefined();
+      expect(slot2hData!.total).toBe(3);
+      expect(slot2hData!.success).toBe(2);
+      expect(slot2hData!.successRate).toBeCloseTo(0.667, 2);
+
+      // Find the slot that corresponds to 5 hours ago
+      const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+      const slot5h = `${fiveHoursAgo.getHours().toString().padStart(2, "0")}:00`;
+      const slot5hData = result.find(p => p.date === slot5h);
+      expect(slot5hData).toBeDefined();
+      expect(slot5hData!.total).toBe(2);
+      expect(slot5hData!.success).toBe(2);
+      expect(slot5hData!.successRate).toBe(1);
+    });
+
+    test("excludes runs older than 24 hours", () => {
+      const oldRuns: RunSummary[] = [
+        { id: "1", task: "heartbeat", exit_code: 0, finished_at: "2020-01-20T10:00:00Z" },
+      ];
+      const result = runsToTrend(oldRuns);
+
+      // Should still return 24 slots but all with 0 counts
+      expect(result.length).toBe(24);
+      expect(result.every(p => p.total === 0)).toBe(true);
     });
 
     test("returns empty array for empty runs", () => {
@@ -194,6 +230,177 @@ describe("transforms", () => {
       const original = [...sampleRuns];
       sortRunsByDate(sampleRuns, "desc");
       expect(sampleRuns).toEqual(original);
+    });
+  });
+
+  describe("filterRunsByDateRange", () => {
+    test("filters runs within date range", () => {
+      const result = filterRunsByDateRange(sampleRuns, "2026-01-20T00:00:00Z", "2026-01-20T23:59:59Z");
+      
+      expect(result.length).toBe(3);
+      expect(result.every(r => r.finished_at.startsWith("2026-01-20"))).toBe(true);
+    });
+
+    test("returns empty array when no runs match range", () => {
+      const result = filterRunsByDateRange(sampleRuns, "2025-01-01T00:00:00Z", "2025-01-01T23:59:59Z");
+      expect(result.length).toBe(0);
+    });
+
+    test("includes runs at range boundaries", () => {
+      const result = filterRunsByDateRange(sampleRuns, "2026-01-20T10:00:00Z", "2026-01-20T11:00:00Z");
+      expect(result.length).toBe(2);
+    });
+
+    test("returns empty array for empty runs", () => {
+      expect(filterRunsByDateRange([], "2026-01-20T00:00:00Z", "2026-01-20T23:59:59Z")).toEqual([]);
+    });
+  });
+
+  describe("getRunsLastNDays", () => {
+    test("returns runs from last N days", () => {
+      // Create runs with relative dates
+      const now = new Date();
+      const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+      const fiveDaysAgo = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000);
+
+      const recentRuns: RunSummary[] = [
+        { id: "1", task: "test", exit_code: 0, finished_at: now.toISOString() },
+        { id: "2", task: "test", exit_code: 0, finished_at: yesterday.toISOString() },
+        { id: "3", task: "test", exit_code: 0, finished_at: twoDaysAgo.toISOString() },
+        { id: "4", task: "test", exit_code: 0, finished_at: fiveDaysAgo.toISOString() },
+      ];
+
+      const result = getRunsLastNDays(recentRuns, 3);
+      expect(result.length).toBe(3);
+      expect(result.map(r => r.id)).toContain("1");
+      expect(result.map(r => r.id)).toContain("2");
+      expect(result.map(r => r.id)).toContain("3");
+    });
+
+    test("returns empty array for empty runs", () => {
+      expect(getRunsLastNDays([], 7)).toEqual([]);
+    });
+  });
+
+  describe("calculateUpcomingTasks", () => {
+    const tasks: Task[] = [
+      { id: "heartbeat", type: "simple", description: "System heartbeat", timeout: 60, command: "echo heartbeat" },
+      { id: "morning_briefing", type: "agent", description: "Morning briefing", timeout: 300, prompt: "Morning" },
+      { id: "cleanup", type: "simple", description: "Cleanup task", timeout: 60, command: "echo cleanup" },
+    ];
+
+    test("calculates upcoming tasks with wildcard hour/minute", () => {
+      const schedules: Schedule[] = [
+        { task: "heartbeat", hour: "*", minute: 10, weekday: "*" },
+        { task: "heartbeat", hour: "*", minute: 40, weekday: "*" },
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 4);
+      
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.length).toBeLessThanOrEqual(4);
+      expect(result[0].task.id).toBe("heartbeat");
+      expect(result[0].nextRun).toBeInstanceOf(Date);
+      expect(result[0].countdown).toBeGreaterThan(0);
+    });
+
+    test("calculates upcoming tasks with specific hour", () => {
+      const schedules: Schedule[] = [
+        { task: "morning_briefing", hour: 9, minute: 0, weekday: "*" },
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 2);
+      
+      expect(result.length).toBeGreaterThan(0);
+      expect(result[0].task.id).toBe("morning_briefing");
+      expect(result[0].nextRun.getHours()).toBe(9);
+      expect(result[0].nextRun.getMinutes()).toBe(0);
+    });
+
+    test("handles range expressions in weekday", () => {
+      const schedules: Schedule[] = [
+        { task: "cleanup", hour: 18, minute: 0, weekday: "1-5" }, // Mon-Fri
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 2);
+      
+      // Should find next weekday match
+      expect(result.length).toBeGreaterThan(0);
+      const nextRunDay = result[0].nextRun.getDay();
+      expect(nextRunDay).toBeGreaterThanOrEqual(1);
+      expect(nextRunDay).toBeLessThanOrEqual(5);
+    });
+
+    test("handles list expressions in minute", () => {
+      const schedules: Schedule[] = [
+        { task: "heartbeat", hour: "*", minute: "0,15,30,45", weekday: "*" },
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 4);
+      
+      expect(result.length).toBeGreaterThan(0);
+      const minutes = result.map(r => r.nextRun.getMinutes());
+      expect(minutes.every(m => [0, 15, 30, 45].includes(m))).toBe(true);
+    });
+
+    test("handles step expressions", () => {
+      const schedules: Schedule[] = [
+        { task: "heartbeat", hour: "*/2", minute: 0, weekday: "*" }, // Every 2 hours
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 4);
+      
+      expect(result.length).toBeGreaterThan(0);
+      const hours = result.map(r => r.nextRun.getHours());
+      expect(hours.every(h => h % 2 === 0)).toBe(true);
+    });
+
+    test("skips schedules for unknown tasks", () => {
+      const schedules: Schedule[] = [
+        { task: "nonexistent", hour: 10, minute: 0, weekday: "*" },
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 2);
+      expect(result.length).toBe(0);
+    });
+
+    test("returns empty array for empty schedules", () => {
+      expect(calculateUpcomingTasks(tasks, [], 4)).toEqual([]);
+    });
+
+    test("returns empty array for empty tasks", () => {
+      const schedules: Schedule[] = [
+        { task: "heartbeat", hour: "*", minute: 10, weekday: "*" },
+      ];
+      expect(calculateUpcomingTasks([], schedules, 4)).toEqual([]);
+    });
+
+    test("limits results to requested count", () => {
+      const schedules: Schedule[] = [
+        { task: "heartbeat", hour: "*", minute: 10, weekday: "*" },
+        { task: "heartbeat", hour: "*", minute: 20, weekday: "*" },
+        { task: "heartbeat", hour: "*", minute: 30, weekday: "*" },
+        { task: "heartbeat", hour: "*", minute: 40, weekday: "*" },
+        { task: "heartbeat", hour: "*", minute: 50, weekday: "*" },
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 3);
+      expect(result.length).toBeLessThanOrEqual(3);
+    });
+
+    test("sorts results by next run time (soonest first)", () => {
+      const schedules: Schedule[] = [
+        { task: "heartbeat", hour: "*", minute: 10, weekday: "*" },
+        { task: "heartbeat", hour: "*", minute: 50, weekday: "*" },
+        { task: "heartbeat", hour: "*", minute: 30, weekday: "*" },
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 10);
+      
+      for (let i = 1; i < result.length; i++) {
+        expect(result[i].nextRun.getTime()).toBeGreaterThanOrEqual(result[i - 1].nextRun.getTime());
+      }
     });
   });
 });

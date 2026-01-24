@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { formatDuration, formatRelativeTime, formatDate, formatExitCode } from "../format";
+import { formatDuration, formatDurationMs, formatRelativeTime, formatDate, formatExitCode, formatNumber, formatPercent } from "../format";
 
 describe("format", () => {
   describe("formatDuration", () => {
@@ -22,6 +22,27 @@ describe("format", () => {
     test("handles undefined/null", () => {
       expect(formatDuration(undefined as unknown as number)).toBe("-");
       expect(formatDuration(null as unknown as number)).toBe("-");
+    });
+  });
+
+  describe("formatDurationMs", () => {
+    test("formats milliseconds to seconds", () => {
+      expect(formatDurationMs(5000)).toBe("5s");
+      expect(formatDurationMs(45000)).toBe("45s");
+    });
+
+    test("formats milliseconds to minutes and seconds", () => {
+      expect(formatDurationMs(125000)).toBe("2m 5s");
+    });
+
+    test("handles zero", () => {
+      expect(formatDurationMs(0)).toBe("0s");
+    });
+
+    test("handles undefined/null/NaN", () => {
+      expect(formatDurationMs(undefined as unknown as number)).toBe("-");
+      expect(formatDurationMs(null as unknown as number)).toBe("-");
+      expect(formatDurationMs(NaN)).toBe("-");
     });
   });
 
@@ -74,6 +95,30 @@ describe("format", () => {
     test("formats failure exit code", () => {
       expect(formatExitCode(1)).toBe("failed (1)");
       expect(formatExitCode(127)).toBe("failed (127)");
+    });
+  });
+
+  describe("formatNumber", () => {
+    test("formats number with commas", () => {
+      expect(formatNumber(1000)).toBe("1,000");
+      expect(formatNumber(1000000)).toBe("1,000,000");
+    });
+
+    test("handles small numbers", () => {
+      expect(formatNumber(42)).toBe("42");
+      expect(formatNumber(0)).toBe("0");
+    });
+  });
+
+  describe("formatPercent", () => {
+    test("formats decimal to percentage", () => {
+      expect(formatPercent(0.8)).toBe("80%");
+      expect(formatPercent(1)).toBe("100%");
+      expect(formatPercent(0.333)).toBe("33%");
+    });
+
+    test("handles zero", () => {
+      expect(formatPercent(0)).toBe("0%");
     });
   });
 });

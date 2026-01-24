@@ -1,38 +1,12 @@
 [
-  {
-    "task": "clock",
-    "hour": "*",
-    "minute": 0,
-    "weekday": "*"
-  },
-  {
-    "task": "clock",
-    "hour": "*",
-    "minute": 30,
-    "weekday": "*"
-  },
-  {
-    "task": "heartbeat",
-    "hour": "*",
-    "minute": 10,
-    "weekday": "*"
-  },
-  {
-    "task": "heartbeat",
-    "hour": "*",
-    "minute": 20,
-    "weekday": "*"
-  },
-  {
-    "task": "heartbeat",
-    "hour": "*",
-    "minute": 40,
-    "weekday": "*"
-  },
-  {
-    "task": "heartbeat",
-    "hour": "*",
-    "minute": 50,
-    "weekday": "*"
-  }
+  { "task": "clock", "hour": "*", "minute": 0, "weekday": "*" },
+  { "task": "clock", "hour": "*", "minute": 30, "weekday": "*" },
+  { "task": "heartbeat", "hour": "*", "minute": 10, "weekday": "*" },
+  { "task": "heartbeat", "hour": "*", "minute": 20, "weekday": "*" },
+  { "task": "heartbeat", "hour": "*", "minute": 40, "weekday": "*" },
+  { "task": "heartbeat", "hour": "*", "minute": 50, "weekday": "*" },
+  { "task": "obsidian_sync", "hour": "*", "minute": 0, "weekday": "*" },
+  { "task": "obsidian_sync", "hour": "*", "minute": 15, "weekday": "*" },
+  { "task": "obsidian_sync", "hour": "*", "minute": 30, "weekday": "*" },
+  { "task": "obsidian_sync", "hour": "*", "minute": 45, "weekday": "*" }
 ]

@@ -9,3 +9,4 @@ export { RunHeatmap } from "./RunHeatmap";
 export { TrendChart } from "./TrendChart";
 export { RunDetailModal } from "./RunDetailModal";
 export { MatrixClock } from "./MatrixClock";
+export { UpcomingTasks } from "./UpcomingTasks";

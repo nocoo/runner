@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import type { RunsIndex, RunSummary, RunDetail, LoadingState } from "@/models/types";
 import { fetchRuns, fetchRunDetail } from "@/models/api";
 import { sortRunsByDate, runsToHeatmap, runsToTrend } from "@/models/transforms";
+import { useDataWatcher } from "./useDataWatcher";
 
 interface RunsVM {
   runs: RunSummary[];
@@ -28,7 +29,7 @@ interface RunsVM {
   trendData: ReturnType<typeof runsToTrend>;
 }
 
-export function useRunsVM(pageSize = 20): RunsVM {
+export function useRunsVM(pageSize = 30): RunsVM {
   const [runsIndex, setRunsIndex] = useState<RunsIndex | null>(null);
   const [state, setState] = useState<LoadingState>("loading");
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +50,9 @@ export function useRunsVM(pageSize = 20): RunsVM {
       setState("error");
     }
   }, []);
+
+  // Auto-refresh when data files change
+  useDataWatcher(refresh);
 
   useEffect(() => {
     refresh();

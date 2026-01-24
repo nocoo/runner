@@ -3,6 +3,7 @@ import { resolve } from "path";
 import { spawn } from "child_process";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
+import { watch } from "chokidar";
 
 const DATA_DIR = resolve(__dirname, "../../../data");
 const RUNNER_SCRIPT = resolve(__dirname, "../../../runner.sh");
@@ -23,6 +24,24 @@ export function apiPlugin(): Plugin {
   return {
     name: "runner-api",
     configureServer(server: ViteDevServer) {
+      // Watch data folder for changes and notify frontend via WebSocket
+      const watcher = watch(DATA_DIR, {
+        ignoreInitial: true,
+        ignored: /\.DS_Store/,
+      });
+
+      watcher.on("all", (event, filePath) => {
+        console.log(`[runner-api] ${event}: ${filePath}`);
+        server.ws.send({
+          type: "custom",
+          event: "runner:data-change",
+          data: { event, path: filePath },
+        });
+      });
+
+      // Cleanup watcher on server close
+      server.httpServer?.on("close", () => watcher.close());
+
       server.middlewares.use(async (req, res, next) => {
         const url = req.url || "";
 

@@ -14,7 +14,16 @@
     "description": "Clock chime - announce time with text-to-speech",
     "timeout": 60,
     "command": null,
-    "prompt": "# 整点报时\n\n用 `say` 命令播报当前时间，格式：「现在是 X 点 Y 分」\n\n示例：\n- 整点：say \"现在是九点整\"\n- 半点：say \"现在是九点三十分\"\n\n**只执行 say 命令，不做其他任何操作。**\n",
-    "workdir": "."
+    "prompt": "用 say -v Tingting 命令播报当前时间，格式：「现在是 X 点 Y 分」，整点说「X点整」。只执行 say 命令。",
+    "workdir": null
+  },
+  {
+    "id": "obsidian_sync",
+    "type": "agent",
+    "description": "Sync Obsidian vault - commit and push changes to remote",
+    "timeout": 120,
+    "command": null,
+    "prompt": "进入工作目录，检查是否有改动。如果有：1) git add 所有改动 2) 生成简洁的 commit 消息总结变更 3) push 到 main 分支。如果没有改动，输出「无改动」。",
+    "workdir": "/Users/nocoo/workspace/personal/obsidian"
   }
 ]

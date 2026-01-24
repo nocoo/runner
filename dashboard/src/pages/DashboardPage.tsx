@@ -13,6 +13,7 @@ import {
   TrendChart,
   RunDetailModal,
   MatrixClock,
+  UpcomingTasks,
 } from "@/ui/runner";
 import type { TaskWithSchedule } from "@/models/types";
 
@@ -31,6 +32,7 @@ export function DashboardPage() {
   return (
     <MatrixShell
       title="Runner"
+      showRain
       headerStatus={
         statusVM.isOnline ? (
           <span className="flex items-center">
@@ -89,7 +91,7 @@ export function DashboardPage() {
                 )`,
               }}
             />
-            <MatrixClock />
+            <MatrixClock label="北京时间" />
           </div>
 
           {/* Activity Heatmap */}
@@ -97,6 +99,13 @@ export function DashboardPage() {
 
           {/* Trend Chart */}
           <TrendChart data={runsVM.trendData} />
+
+          {/* Upcoming Tasks */}
+          <UpcomingTasks
+            tasks={tasksVM.rawTasks}
+            schedules={tasksVM.schedules}
+            count={8}
+          />
         </div>
 
         {/* Right Column - 8/12 */}

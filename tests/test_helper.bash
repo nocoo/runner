@@ -20,24 +20,37 @@ setup() {
     export TEST_TMP_DIR="$(mktemp -d)"
     export RUNNER_DATA_DIR="$TEST_TMP_DIR/data"
     export RUNNER_LOGS_DIR="$TEST_TMP_DIR/logs"
-    
+
     mkdir -p "$RUNNER_DATA_DIR/runs"
     mkdir -p "$RUNNER_LOGS_DIR"
-    
-    # Use test fixtures
-    export RUNNER_CONFIG_FILE="$PROJECT_ROOT/tests/fixtures/tasks.yaml"
+
+    # Use test fixtures (allow override from calling test file)
+    export RUNNER_CONFIG_FILE="${RUNNER_CONFIG_FILE:-$PROJECT_ROOT/tests/fixtures/tasks.yaml}"
     export RUNNER_TASKS_DIR="$PROJECT_ROOT/tests/fixtures/tasks"
     export RUNNER_SCHEMAS_DIR="$PROJECT_ROOT/schemas"
-    
+
     # Skip notifications by default in tests
     export RUNNER_SKIP_NOTIFY=1
-    
+
     # Add mocks to PATH (prepend so they take priority)
     export PATH="$PROJECT_ROOT/tests/mocks:$PATH"
-    
-    # Initialize empty data files
+
+    # Initialize data files from fixtures (convert YAML to JSON)
     echo '{"runs":[],"total":0,"updated_at":""}' > "$RUNNER_DATA_DIR/runs/index.json"
     echo '{"version":"1.0.0"}' > "$RUNNER_DATA_DIR/state.json"
+
+    # Generate tasks.json and schedules.json from fixtures/tasks.yaml
+    yq -o=json '.tasks' "$RUNNER_CONFIG_FILE" | jq '[to_entries[] | {
+      id: .key,
+      type: (.value.type // "agent"),
+      description: .value.description,
+      timeout: (.value.timeout // 300),
+      command: (.value.command // null),
+      prompt: (.value.prompt // null),
+      workdir: (.value.workdir // null)
+    }]' > "$RUNNER_DATA_DIR/tasks.json"
+
+    yq -o=json '.schedules' "$RUNNER_CONFIG_FILE" > "$RUNNER_DATA_DIR/schedules.json"
 }
 
 teardown() {

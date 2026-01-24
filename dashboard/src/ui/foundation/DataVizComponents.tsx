@@ -55,7 +55,7 @@ export function TrendMonitor({
   className = "",
 }: TrendMonitorProps) {
   const series = Array.isArray(rows) && rows.length ? rows : null;
-  const fallbackValues = data.length > 0 ? data : Array.from({ length: 48 }, () => 0);
+  const fallbackValues = data.length > 0 ? data : Array.from({ length: 24 }, () => 0);
   const seriesValues = series
     ? series.map((row) => {
         if (row?.missing || row?.future) return null;
@@ -90,7 +90,7 @@ export function TrendMonitor({
   const [axisWidthView, setAxisWidthView] = useState(axisWidthFallback);
   const plotWidth = width - axisWidthView;
   const pointCount = Math.max(seriesValues.length, 1);
-  const DAY_AXIS_POINT_COUNT = 48;
+  const DAY_AXIS_POINT_COUNT = 24;
   const dayStep = DAY_AXIS_POINT_COUNT > 1 ? plotWidth / (DAY_AXIS_POINT_COUNT - 1) : 0;
   const dayPadding = Math.min(dayStep / 2, plotWidth * 0.12);
   const xPadding = pointCount > 1 ? dayPadding : plotWidth / 2;
@@ -176,7 +176,7 @@ export function TrendMonitor({
 
   const buildXAxisLabels = (): string[] => {
     if (period === "day") {
-      return ["00:00", "06:00", "12:00", "18:00", "23:00"];
+      return ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:00"];
     }
     return ["T-24", "T-18", "T-12", "T-6", "NOW"];
   };

@@ -137,6 +137,16 @@ export interface TaskWithSchedule extends Task {
   schedules: Schedule[];
 }
 
+/**
+ * Upcoming task with calculated next run time
+ */
+export interface UpcomingTask {
+  task: Task;
+  schedule: Schedule;
+  nextRun: Date;
+  countdown: number; // milliseconds until next run
+}
+
 // ============================================
 // UI Component Props
 // ============================================

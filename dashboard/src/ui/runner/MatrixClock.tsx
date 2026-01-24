@@ -67,7 +67,12 @@ function ClockSeparator() {
   );
 }
 
-export function MatrixClock() {
+interface MatrixClockProps {
+  /** Optional label to display above the clock (e.g. "北京时间") */
+  label?: string;
+}
+
+export function MatrixClock({ label }: MatrixClockProps) {
   const [time, setTime] = useState(() => new Date());
   const [prevTime, setPrevTime] = useState(() => new Date());
 
@@ -92,17 +97,24 @@ export function MatrixClock() {
   const prev = format(prevTime);
 
   return (
-    <div className="font-mono text-3xl md:text-4xl font-black text-white tracking-[-0.06em] tabular-nums leading-none glow-text-white select-none">
-      <span className="inline-flex items-center">
-        <ClockDigit value={curr.h1} prevValue={prev.h1} />
-        <ClockDigit value={curr.h2} prevValue={prev.h2} />
-        <ClockSeparator />
-        <ClockDigit value={curr.m1} prevValue={prev.m1} />
-        <ClockDigit value={curr.m2} prevValue={prev.m2} />
-        <ClockSeparator />
-        <ClockDigit value={curr.s1} prevValue={prev.s1} />
-        <ClockDigit value={curr.s2} prevValue={prev.s2} />
-      </span>
+    <div className="flex flex-col items-center gap-1">
+      {label && (
+        <span className="text-caption uppercase tracking-[0.3em] text-matrix-muted font-bold">
+          {label}
+        </span>
+      )}
+      <div className="font-mono text-3xl md:text-4xl font-black text-white tracking-[-0.06em] tabular-nums leading-none glow-text-white select-none">
+        <span className="inline-flex items-center">
+          <ClockDigit value={curr.h1} prevValue={prev.h1} />
+          <ClockDigit value={curr.h2} prevValue={prev.h2} />
+          <ClockSeparator />
+          <ClockDigit value={curr.m1} prevValue={prev.m1} />
+          <ClockDigit value={curr.m2} prevValue={prev.m2} />
+          <ClockSeparator />
+          <ClockDigit value={curr.s1} prevValue={prev.s1} />
+          <ClockDigit value={curr.s2} prevValue={prev.s2} />
+        </span>
+      </div>
     </div>
   );
 }
