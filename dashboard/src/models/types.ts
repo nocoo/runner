@@ -53,6 +53,7 @@ export interface RunSummary {
   task: string;
   exit_code: number;
   finished_at: string;
+  duration_ms?: number;
 }
 
 /**

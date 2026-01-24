@@ -1,22 +1,30 @@
 // ============================================
 // Runner Dashboard - Date Utilities
+// All functions use LOCAL time, not UTC
 // ============================================
 
 const WEEKDAY_NAMES = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 /**
- * Extract date key (YYYY-MM-DD) from ISO string or Date
+ * Format date as YYYY-MM-DD using local time
  */
-export function getDateKey(date: string | Date): string {
-  const d = typeof date === "string" ? new Date(date) : date;
-  const year = d.getUTCFullYear();
-  const month = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(d.getUTCDate()).padStart(2, "0");
+function formatLocalDate(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
 /**
- * Get number of days ago from now
+ * Extract date key (YYYY-MM-DD) from ISO string or Date using local time
+ */
+export function getDateKey(date: string | Date): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return formatLocalDate(d);
+}
+
+/**
+ * Get number of days ago from now (using local dates)
  */
 export function getDaysAgo(isoDate: string): number {
   const date = new Date(isoDate);
@@ -33,7 +41,7 @@ export function getDaysAgo(isoDate: string): number {
 }
 
 /**
- * Check if date is today
+ * Check if date is today (local time)
  */
 export function isToday(isoDate: string): boolean {
   return getDaysAgo(isoDate) === 0;
@@ -57,7 +65,7 @@ export function formatScheduleTime(hour: number | "*", minute: number): string {
 }
 
 /**
- * Get array of date keys between start and end (inclusive)
+ * Get array of date keys between start and end (inclusive, local time)
  */
 export function getDateRange(startDate: string, endDate: string): string[] {
   const start = new Date(startDate);
@@ -67,23 +75,23 @@ export function getDateRange(startDate: string, endDate: string): string[] {
   const cursor = new Date(start);
   while (cursor <= end) {
     result.push(getDateKey(cursor));
-    cursor.setUTCDate(cursor.getUTCDate() + 1);
+    cursor.setDate(cursor.getDate() + 1);
   }
 
   return result;
 }
 
 /**
- * Get date N days ago
+ * Get date N days ago (local time)
  */
 export function getDateNDaysAgo(days: number): string {
   const date = new Date();
-  date.setUTCDate(date.getUTCDate() - days);
+  date.setDate(date.getDate() - days);
   return getDateKey(date);
 }
 
 /**
- * Get today's date key
+ * Get today's date key (local time)
  */
 export function getTodayKey(): string {
   return getDateKey(new Date());

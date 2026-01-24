@@ -1,1 +1,14 @@
-
+[
+  {
+    "id": "clock",
+    "description": "Clock chime - play a distinct sound on the hour and half-hour",
+    "prompt_file": "tasks/clock.md",
+    "timeout": 30
+  },
+  {
+    "id": "heartbeat",
+    "description": "Heartbeat - play a soft sound every 10 minutes",
+    "prompt_file": "tasks/heartbeat.md",
+    "timeout": 30
+  }
+]

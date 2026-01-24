@@ -12,23 +12,54 @@ import type {
 } from "./types";
 
 /**
- * Extract date string (YYYY-MM-DD) from ISO datetime
+ * Extract local date string (YYYY-MM-DD) from ISO datetime
  */
-function extractDate(isoDate: string): string {
-  return isoDate.split("T")[0];
+function extractLocalDate(isoDate: string): string {
+  const date = new Date(isoDate);
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 /**
- * Convert runs to heatmap cells grouped by date
+ * Extract local hour as number from ISO datetime
+ */
+function extractLocalHour(isoDate: string): number {
+  const date = new Date(isoDate);
+  return date.getHours();
+}
+
+/**
+ * Get 2-hour slot start (4, 6, 8, 10, 12, 14, 16, 18)
+ * Only for hours 4-19 (4am-8pm range)
+ */
+function get2HourSlot(hour: number): number | null {
+  if (hour < 4 || hour >= 20) return null;
+  return Math.floor(hour / 2) * 2;
+}
+
+/**
+ * Convert runs to heatmap cells grouped by date and 2-hour slot
+ * Only includes runs from 4am-8pm, aggregated into 2-hour buckets
+ * Returns cells with date format: "YYYY-MM-DDTHH:00:00" where HH is slot start (04, 06, 08, ...)
  */
 export function runsToHeatmap(runs: RunSummary[]): HeatmapCell[] {
   if (runs.length === 0) return [];
 
-  const byDate = new Map<string, { count: number; success: number; failed: number }>();
+  const byDateSlot = new Map<string, { count: number; success: number; failed: number }>();
 
   for (const run of runs) {
-    const date = extractDate(run.finished_at);
-    const existing = byDate.get(date) || { count: 0, success: 0, failed: 0 };
+    const date = extractLocalDate(run.finished_at);
+    const hour = extractLocalHour(run.finished_at);
+    const slot = get2HourSlot(hour);
+    
+    // Skip runs outside 4am-8pm
+    if (slot === null) continue;
+    
+    const slotStr = slot.toString().padStart(2, "0");
+    const key = `${date}T${slotStr}:00:00`;
+    const existing = byDateSlot.get(key) || { count: 0, success: 0, failed: 0 };
     
     existing.count += 1;
     if (run.exit_code === 0) {
@@ -37,11 +68,11 @@ export function runsToHeatmap(runs: RunSummary[]): HeatmapCell[] {
       existing.failed += 1;
     }
     
-    byDate.set(date, existing);
+    byDateSlot.set(key, existing);
   }
 
   const result: HeatmapCell[] = [];
-  for (const [date, stats] of byDate) {
+  for (const [date, stats] of byDateSlot) {
     result.push({ date, ...stats });
   }
 
@@ -60,7 +91,7 @@ export function runsToTrend(runs: RunSummary[]): TrendPoint[] {
   const byDate = new Map<string, { total: number; success: number }>();
 
   for (const run of runs) {
-    const date = extractDate(run.finished_at);
+    const date = extractLocalDate(run.finished_at);
     const existing = byDate.get(date) || { total: 0, success: 0 };
     
     existing.total += 1;

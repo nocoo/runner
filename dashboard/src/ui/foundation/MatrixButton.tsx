@@ -2,15 +2,30 @@
 // Matrix Button Component
 // ============================================
 
-import type { ReactNode, ButtonHTMLAttributes, ElementType } from "react";
+import type { ReactNode, ButtonHTMLAttributes, AnchorHTMLAttributes, ElementType } from "react";
 
-interface MatrixButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  as?: ElementType;
+type ButtonBaseProps = {
   children: ReactNode;
   primary?: boolean;
   size?: "default" | "header" | "small";
   loading?: boolean;
-}
+  className?: string;
+};
+
+type AsButtonProps = ButtonBaseProps & {
+  as?: "button";
+} & ButtonHTMLAttributes<HTMLButtonElement>;
+
+type AsAnchorProps = ButtonBaseProps & {
+  as: "a";
+} & AnchorHTMLAttributes<HTMLAnchorElement>;
+
+type AsElementProps = ButtonBaseProps & {
+  as: ElementType;
+  [key: string]: unknown;
+};
+
+export type MatrixButtonProps = AsButtonProps | AsAnchorProps | AsElementProps;
 
 export function MatrixButton({
   as: Comp = "button",
@@ -19,7 +34,6 @@ export function MatrixButton({
   size = "default",
   loading = false,
   className = "",
-  disabled,
   ...props
 }: MatrixButtonProps) {
   const base =
@@ -39,10 +53,12 @@ export function MatrixButton({
   const disabledStyle =
     "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-matrix-panel";
 
+  const isDisabled = 'disabled' in props ? props.disabled : false;
+
   return (
     <Comp
       className={`${base} ${variant} ${disabledStyle} ${className}`}
-      disabled={disabled || loading}
+      disabled={isDisabled || loading}
       {...props}
     >
       {loading ? (

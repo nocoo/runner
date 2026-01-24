@@ -14,7 +14,7 @@ export const ASCII_CHARS = {
 };
 
 interface AsciiBoxProps {
-  title: string;
+  title: ReactNode;
   subtitle?: string;
   children: ReactNode;
   className?: string;

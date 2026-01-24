@@ -1,1 +1,12 @@
-{"version":"1.0.0"}
+{
+  "version": "1.0.0",
+  "last_run": {
+    "id": "8051df19-b17c-4714-b173-8b6641bd7eba",
+    "task": "heartbeat",
+    "exit_code": 0,
+    "finished_at": "2026-01-24T02:40:07Z"
+  },
+  "next_scheduled": null,
+  "total_runs_today": 17,
+  "success_rate_today": 1.00
+}

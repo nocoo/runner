@@ -19,22 +19,51 @@ describe("transforms", () => {
   ];
 
   describe("runsToHeatmap", () => {
-    test("converts runs to heatmap cells grouped by date", () => {
+    test("converts runs to heatmap cells grouped by date and 2-hour slot", () => {
       const result = runsToHeatmap(sampleRuns);
       
-      expect(result.length).toBe(2);
+      // Runs at 10:00, 11:00 -> slot 10; 12:00 -> slot 12; 09:00 -> slot 08; 10:00 -> slot 10
+      // So: 2026-01-20T10 (2 runs), 2026-01-20T12 (1 run), 2026-01-21T08 (1 run), 2026-01-21T10 (1 run)
+      expect(result.length).toBe(4);
       
-      const jan20 = result.find(c => c.date === "2026-01-20");
-      expect(jan20).toBeDefined();
-      expect(jan20!.count).toBe(3);
-      expect(jan20!.success).toBe(2);
-      expect(jan20!.failed).toBe(1);
+      const jan20_10 = result.find(c => c.date === "2026-01-20T10:00:00");
+      expect(jan20_10).toBeDefined();
+      expect(jan20_10!.count).toBe(2); // 10:00 and 11:00 both map to slot 10
+      expect(jan20_10!.success).toBe(2);
+      expect(jan20_10!.failed).toBe(0);
       
-      const jan21 = result.find(c => c.date === "2026-01-21");
-      expect(jan21).toBeDefined();
-      expect(jan21!.count).toBe(2);
-      expect(jan21!.success).toBe(2);
-      expect(jan21!.failed).toBe(0);
+      const jan20_12 = result.find(c => c.date === "2026-01-20T12:00:00");
+      expect(jan20_12).toBeDefined();
+      expect(jan20_12!.count).toBe(1);
+      expect(jan20_12!.success).toBe(0);
+      expect(jan20_12!.failed).toBe(1);
+    });
+
+    test("aggregates multiple runs in same 2-hour slot", () => {
+      const runsInSameSlot: RunSummary[] = [
+        { id: "1", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T10:05:00Z" },
+        { id: "2", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T10:15:00Z" },
+        { id: "3", task: "heartbeat", exit_code: 1, finished_at: "2026-01-20T11:25:00Z" },
+      ];
+      const result = runsToHeatmap(runsInSameSlot);
+      
+      expect(result.length).toBe(1);
+      expect(result[0].date).toBe("2026-01-20T10:00:00");
+      expect(result[0].count).toBe(3);
+      expect(result[0].success).toBe(2);
+      expect(result[0].failed).toBe(1);
+    });
+
+    test("excludes runs outside 4am-8pm range", () => {
+      const nightRuns: RunSummary[] = [
+        { id: "1", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T03:00:00Z" }, // before 4am
+        { id: "2", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T10:00:00Z" }, // within range
+        { id: "3", task: "heartbeat", exit_code: 0, finished_at: "2026-01-20T21:00:00Z" }, // after 8pm
+      ];
+      const result = runsToHeatmap(nightRuns);
+      
+      expect(result.length).toBe(1);
+      expect(result[0].date).toBe("2026-01-20T10:00:00");
     });
 
     test("returns empty array for empty runs", () => {

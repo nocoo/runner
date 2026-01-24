@@ -28,7 +28,7 @@ interface RunsVM {
   trendData: ReturnType<typeof runsToTrend>;
 }
 
-export function useRunsVM(pageSize = 10): RunsVM {
+export function useRunsVM(pageSize = 20): RunsVM {
   const [runsIndex, setRunsIndex] = useState<RunsIndex | null>(null);
   const [state, setState] = useState<LoadingState>("loading");
   const [error, setError] = useState<string | null>(null);

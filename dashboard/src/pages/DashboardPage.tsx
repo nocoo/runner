@@ -5,12 +5,12 @@
 import { MatrixShell } from "@/ui/foundation";
 import { useStatusVM, useRunsVM, useTasksVM } from "@/viewmodels";
 import {
-  SystemStatus,
   RunHistory,
   TaskSchedule,
   RunHeatmap,
   TrendChart,
   RunDetailModal,
+  MatrixClock,
 } from "@/ui/runner";
 
 export function DashboardPage() {
@@ -41,28 +41,55 @@ export function DashboardPage() {
         )
       }
       headerRight={
-        <button
-          onClick={handleRefreshAll}
-          className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em]"
-        >
-          ↻ Refresh
-        </button>
+        <div className="flex items-center gap-4">
+          <a
+            href="#library"
+            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em]"
+          >
+            Library
+          </a>
+          <button
+            onClick={handleRefreshAll}
+            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em]"
+          >
+            <span className="text-lg">↻</span> Refresh
+          </button>
+        </div>
       }
     >
       <div className="grid grid-cols-12 gap-6">
         {/* Left Column - 4/12 */}
         <div className="col-span-12 lg:col-span-4 space-y-6">
-          {/* System Status */}
-          <SystemStatus
-            data={statusVM.data}
-            loading={statusVM.state === "loading"}
-            successRatePercent={statusVM.successRatePercent}
-            lastRunStatus={statusVM.lastRunStatus}
-            onRefresh={statusVM.refresh}
-          />
+          {/* Matrix Clock */}
+          <div 
+            className="matrix-panel p-6 flex justify-center relative overflow-hidden"
+            style={{
+              backgroundImage: `
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 65, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 255, 65, 0.02) 0%, transparent 50%),
+                linear-gradient(180deg, rgba(0, 255, 65, 0.02) 0%, transparent 2px, transparent 4px, rgba(0, 255, 65, 0.02) 4px),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 65, 0.015) 2px, rgba(0, 255, 65, 0.015) 4px)
+              `,
+            }}
+          >
+            {/* Scanline overlay */}
+            <div 
+              className="absolute inset-0 pointer-events-none opacity-30"
+              style={{
+                backgroundImage: `repeating-linear-gradient(
+                  0deg,
+                  transparent,
+                  transparent 2px,
+                  rgba(0, 0, 0, 0.3) 2px,
+                  rgba(0, 0, 0, 0.3) 4px
+                )`,
+              }}
+            />
+            <MatrixClock />
+          </div>
 
           {/* Activity Heatmap */}
-          <RunHeatmap data={runsVM.heatmapData} weeks={8} />
+          <RunHeatmap data={runsVM.heatmapData} />
 
           {/* Trend Chart */}
           <TrendChart data={runsVM.trendData} />
