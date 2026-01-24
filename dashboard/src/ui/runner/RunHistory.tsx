@@ -6,7 +6,7 @@
 import { useState, useMemo } from "react";
 import type { RunSummary } from "@/models/types";
 import { AsciiBox, MatrixButton } from "@/ui/foundation";
-import { formatRelativeTime, formatDuration } from "@/lib/format";
+import { formatRelativeTime, formatDurationMs } from "@/lib/format";
 
 interface RunHistoryProps {
   runs: RunSummary[];
@@ -161,7 +161,7 @@ export function RunHistory({
                   </span>
                 </td>
                 <td className="px-3 py-2 text-[12px] font-mono opacity-80">
-                  {run.duration_ms ? formatDuration(run.duration_ms) : "—"}
+                  {run.duration_ms ? formatDurationMs(run.duration_ms) : "—"}
                 </td>
                 <td className="px-3 py-2 text-[12px] font-mono opacity-80">
                   {formatRelativeTime(run.finished_at)}

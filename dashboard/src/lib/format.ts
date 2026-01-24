@@ -25,6 +25,16 @@ export function formatDuration(seconds: number): string {
 }
 
 /**
+ * Format duration in milliseconds to human readable string
+ */
+export function formatDurationMs(ms: number): string {
+  if (ms === null || ms === undefined || isNaN(ms)) {
+    return "-";
+  }
+  return formatDuration(Math.floor(ms / 1000));
+}
+
+/**
  * Format ISO date to relative time (e.g., "5m ago")
  */
 export function formatRelativeTime(isoDate: string): string {
