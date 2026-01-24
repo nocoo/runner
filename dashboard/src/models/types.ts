@@ -50,14 +50,22 @@ export interface Schedule {
 }
 
 /**
+ * Run status
+ */
+export type RunStatus = "running" | "success" | "failed" | "skipped";
+
+/**
  * Run summary (from runs/index.json)
  */
 export interface RunSummary {
   id: string;
   task: string;
-  exit_code: number;
-  finished_at: string;
-  duration_ms?: number;
+  status?: RunStatus; // New field, optional for backward compatibility
+  exit_code: number | null;
+  started_at?: string; // New field
+  finished_at: string | null;
+  duration_ms?: number | null;
+  skip_reason?: string; // Optional: reason for skipping
 }
 
 /**

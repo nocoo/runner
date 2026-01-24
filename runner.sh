@@ -661,6 +661,9 @@ execute_task() {
     log_debug "Run ID: $run_id"
     log_debug "Started at: $started_at"
 
+    # Record running status immediately
+    update_runs_index "$run_id" "$task_name" "" "" "" "running"
+
     # Execute based on task type
     local output=""
     local exit_code=0
@@ -725,9 +728,15 @@ EOF
 
     log_debug "Run log written: $run_file"
 
+    # Determine status based on exit code
+    local status="success"
+    if [[ "$exit_code" -ne 0 ]]; then
+        status="failed"
+    fi
+
     # Update index (duration in ms for frontend)
     local duration_ms=$((duration * 1000))
-    update_runs_index "$run_id" "$task_name" "$exit_code" "$finished_at" "$duration_ms"
+    update_runs_index "$run_id" "$task_name" "$exit_code" "$finished_at" "$duration_ms" "$status"
 
     # Update state
     update_state "$run_id" "$task_name" "$exit_code" "$finished_at"
@@ -748,22 +757,53 @@ update_runs_index() {
     local exit_code="$3"
     local finished_at="$4"
     local duration_ms="$5"
+    local status="$6"  # running, success, failed, skipped
     
     local index_file="$RUNNER_DATA_DIR/runs/index.json"
     local temp_file=$(mktemp)
     
-    # Add new run to index (with duration_ms)
-    jq --arg id "$run_id" \
-       --arg task "$task" \
-       --argjson exit_code "$exit_code" \
-       --arg finished_at "$finished_at" \
-       --argjson duration_ms "$duration_ms" \
-       --arg updated_at "$(get_timestamp)" \
-       '.runs += [{"id": $id, "task": $task, "exit_code": $exit_code, "finished_at": $finished_at, "duration_ms": $duration_ms}] | .total = (.runs | length) | .updated_at = $updated_at' \
-       "$index_file" > "$temp_file"
+    # Check if run already exists (update) or is new (add)
+    local exists=$(jq --arg id "$run_id" '.runs[] | select(.id == $id) | .id' "$index_file" 2>/dev/null)
+    
+    if [[ -n "$exists" ]]; then
+        # Update existing run
+        jq --arg id "$run_id" \
+           --arg status "$status" \
+           --argjson exit_code "${exit_code:-null}" \
+           --arg finished_at "${finished_at:-null}" \
+           --argjson duration_ms "${duration_ms:-null}" \
+           --arg updated_at "$(get_timestamp)" \
+           '(.runs[] | select(.id == $id)) |= . + {
+               status: $status,
+               exit_code: (if $exit_code == null then null else $exit_code end),
+               finished_at: (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
+               duration_ms: (if $duration_ms == null then null else $duration_ms end)
+           } | .updated_at = $updated_at' \
+           "$index_file" > "$temp_file"
+    else
+        # Add new run
+        jq --arg id "$run_id" \
+           --arg task "$task" \
+           --arg status "$status" \
+           --argjson exit_code "${exit_code:-null}" \
+           --arg started_at "$(get_timestamp)" \
+           --arg finished_at "${finished_at:-null}" \
+           --argjson duration_ms "${duration_ms:-null}" \
+           --arg updated_at "$(get_timestamp)" \
+           '.runs += [{
+               "id": $id,
+               "task": $task,
+               "status": $status,
+               "exit_code": (if $exit_code == null then null else $exit_code end),
+               "started_at": $started_at,
+               "finished_at": (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
+               "duration_ms": (if $duration_ms == null then null else $duration_ms end)
+           }] | .total = (.runs | length) | .updated_at = $updated_at' \
+           "$index_file" > "$temp_file"
+    fi
     
     mv "$temp_file" "$index_file"
-    log_debug "Index updated"
+    log_debug "Index updated: $status"
 }
 
 # Update state

@@ -243,7 +243,7 @@ describe("transforms", () => {
       const result = filterRunsByDateRange(sampleRuns, "2026-01-20T00:00:00Z", "2026-01-20T23:59:59Z");
       
       expect(result.length).toBe(3);
-      expect(result.every(r => r.finished_at.startsWith("2026-01-20"))).toBe(true);
+      expect(result.every(r => r.finished_at?.startsWith("2026-01-20"))).toBe(true);
     });
 
     test("returns empty array when no runs match range", () => {

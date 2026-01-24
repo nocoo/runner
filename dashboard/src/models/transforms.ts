@@ -44,6 +44,7 @@ function get2HourSlot(hour: number): number | null {
  * Convert runs to heatmap cells grouped by date and 2-hour slot
  * Only includes runs from 4am-8pm, aggregated into 2-hour buckets
  * Returns cells with date format: "YYYY-MM-DDTHH:00:00" where HH is slot start (04, 06, 08, ...)
+ * Note: Only completed runs (with finished_at) are included
  */
 export function runsToHeatmap(runs: RunSummary[]): HeatmapCell[] {
   if (runs.length === 0) return [];
@@ -51,6 +52,9 @@ export function runsToHeatmap(runs: RunSummary[]): HeatmapCell[] {
   const byDateSlot = new Map<string, { count: number; success: number; failed: number }>();
 
   for (const run of runs) {
+    // Skip running tasks (no finished_at)
+    if (!run.finished_at) continue;
+    
     const date = extractLocalDate(run.finished_at);
     const hour = extractLocalHour(run.finished_at);
     const slot = get2HourSlot(hour);
@@ -94,6 +98,7 @@ function extractHourSlot(isoDate: string): string {
 
 /**
  * Convert runs to trend points for hourly charting (last 24 hours)
+ * Note: Only completed runs (with finished_at) are included
  */
 export function runsToTrend(runs: RunSummary[]): TrendPoint[] {
   if (runs.length === 0) return [];
@@ -104,6 +109,9 @@ export function runsToTrend(runs: RunSummary[]): TrendPoint[] {
   const byHour = new Map<string, { total: number; success: number }>();
 
   for (const run of runs) {
+    // Skip running tasks (no finished_at)
+    if (!run.finished_at) continue;
+    
     const runTime = new Date(run.finished_at);
 
     // Only include runs from the last 24 hours
@@ -177,7 +185,7 @@ export function calculateSuccessRate(runs: RunSummary[]): number {
 }
 
 /**
- * Sort runs by finished_at date
+ * Sort runs by finished_at date (running tasks without finished_at go to top)
  */
 export function sortRunsByDate(
   runs: RunSummary[],
@@ -186,6 +194,11 @@ export function sortRunsByDate(
   const sorted = [...runs];
   
   sorted.sort((a, b) => {
+    // Running tasks (no finished_at) go to top when desc, bottom when asc
+    if (!a.finished_at && !b.finished_at) return 0;
+    if (!a.finished_at) return order === "desc" ? -1 : 1;
+    if (!b.finished_at) return order === "desc" ? 1 : -1;
+    
     const diff = new Date(a.finished_at).getTime() - new Date(b.finished_at).getTime();
     return order === "asc" ? diff : -diff;
   });
@@ -195,6 +208,7 @@ export function sortRunsByDate(
 
 /**
  * Filter runs to a specific date range
+ * Note: Running tasks (no finished_at) are excluded
  */
 export function filterRunsByDateRange(
   runs: RunSummary[],
@@ -205,6 +219,7 @@ export function filterRunsByDateRange(
   const end = new Date(endDate).getTime();
 
   return runs.filter((run) => {
+    if (!run.finished_at) return false;
     const time = new Date(run.finished_at).getTime();
     return time >= start && time <= end;
   });
@@ -212,12 +227,16 @@ export function filterRunsByDateRange(
 
 /**
  * Get runs from the last N days
+ * Note: Running tasks (no finished_at) are excluded
  */
 export function getRunsLastNDays(runs: RunSummary[], days: number): RunSummary[] {
   const now = new Date();
   const cutoff = new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 
-  return runs.filter((run) => new Date(run.finished_at) >= cutoff);
+  return runs.filter((run) => {
+    if (!run.finished_at) return false;
+    return new Date(run.finished_at) >= cutoff;
+  });
 }
 
 // ============================================
