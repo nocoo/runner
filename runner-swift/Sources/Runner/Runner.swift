@@ -8,7 +8,7 @@ struct Runner: AsyncParsableCommand {
         commandName: "runner",
         abstract: "Declarative task scheduler for macOS",
         version: "0.1.0",
-        subcommands: [Auto.self, Run.self, List.self, Validate.self, MonitorCommand.self, Init.self, Logs.self, Api.self]
+        subcommands: [Auto.self, Run.self, List.self, Validate.self, MonitorCommand.self, Init.self, Logs.self, Api.self, Cleanup.self]
     )
 }
 
@@ -315,5 +315,125 @@ struct Api: AsyncParsableCommand {
         default:
             throw RunnerError.unknownQuery(query)
         }
+    }
+}
+
+// MARK: - Cleanup Command
+
+struct Cleanup: AsyncParsableCommand {
+    static let configuration = CommandConfiguration(abstract: "Clean up stale runs and orphaned processes")
+    
+    @OptionGroup var options: CommonOptions
+    
+    @Flag(name: .shortAndLong, help: "Actually kill processes (default: dry run)")
+    var force: Bool = false
+    
+    func run() async throws {
+        let storage = Storage(dataDir: options.dataDir)
+        let index = try await storage.loadRunsIndex()
+        
+        // Find runs without exit_code (still "running")
+        let staleRuns = index.runs.filter { $0.exitCode == nil }
+        
+        if staleRuns.isEmpty {
+            print("No stale runs found")
+            return
+        }
+        
+        print("Found \(staleRuns.count) stale run(s):\n")
+        
+        var processesToKill: [(pid: Int, id: String, task: String)] = []
+        var runsToMark: [(id: String, task: String, reason: String)] = []
+        
+        for run in staleRuns {
+            let startedAt = run.startedAt
+            let task = run.task
+            let id = run.id
+            
+            // Check if detail.json exists with exit_code
+            if let detail = try? await storage.loadRunDetail(id: id) {
+                runsToMark.append((id: id, task: task, reason: "has detail.json (exit: \(detail.exitCode))"))
+                continue
+            }
+            
+            // Check if PID is still running
+            guard let pid = run.pid else {
+                runsToMark.append((id: id, task: task, reason: "no PID"))
+                continue
+            }
+            
+            let isRunning = kill(Int32(pid), 0) == 0
+            if isRunning {
+                // Check if it's been running too long (orphaned)
+                let ppid = getppid(pid: pid)
+                if ppid == 1 {
+                    processesToKill.append((pid: pid, id: id, task: task))
+                    print("  ⚠️  \(id) [\(task)] PID \(pid) - orphaned (PPID=1), started \(startedAt)")
+                } else {
+                    print("  ⋯  \(id) [\(task)] PID \(pid) - still running, started \(startedAt)")
+                }
+            } else {
+                runsToMark.append((id: id, task: task, reason: "process dead"))
+            }
+        }
+        
+        // Report runs to mark
+        for run in runsToMark {
+            print("  ✗  \(run.id) [\(run.task)] - \(run.reason)")
+        }
+        
+        print("")
+        
+        if !force {
+            print("Dry run mode. Use --force to:")
+            if !processesToKill.isEmpty {
+                print("  - Kill \(processesToKill.count) orphaned process(es)")
+            }
+            if !runsToMark.isEmpty {
+                print("  - Mark \(runsToMark.count) run(s) as interrupted")
+            }
+            return
+        }
+        
+        // Kill orphaned processes
+        for proc in processesToKill {
+            print("Killing PID \(proc.pid)...")
+            kill(Int32(proc.pid), SIGTERM)
+            usleep(500_000) // Wait 0.5s
+            kill(Int32(proc.pid), SIGKILL)
+            runsToMark.append((id: proc.id, task: proc.task, reason: "killed"))
+        }
+        
+        // Mark all as interrupted
+        for run in runsToMark {
+            try await storage.markInterrupted(id: run.id)
+            print("Marked \(run.id) as interrupted")
+        }
+        
+        print("\n✅ Cleanup complete")
+    }
+    
+    /// Get parent PID of a process
+    private func getppid(pid: Int) -> Int {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/ps")
+        process.arguments = ["-o", "ppid=", "-p", "\(pid)"]
+        
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+        
+        do {
+            try process.run()
+            process.waitUntilExit()
+            
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            if let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+               let ppid = Int(output) {
+                return ppid
+            }
+        } catch {}
+        
+        return -1
     }
 }

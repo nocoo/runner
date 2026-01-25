@@ -113,6 +113,7 @@ public struct Executor {
     private func createScript(task: Task, command: String, runId: String, startedAt: String, trigger: String, dataDir: URL) -> String {
         let escapedCommand = command.replacingOccurrences(of: "'", with: "'\"'\"'")
         let workdir = task.workdir ?? "."
+        let timeout = task.effectiveTimeout
         let outputPath = dataDir.appendingPathComponent("runs/\(runId).output").path
         let detailPath = dataDir.appendingPathComponent("runs/\(runId).json").path
         let indexPath = dataDir.appendingPathComponent("runs/index.json").path
@@ -125,10 +126,34 @@ public struct Executor {
         
         cd '\(workdir)'
         START_TIME=$(date +%s)
+        TIMEOUT=\(timeout)
         
-        # Execute command
-        eval '\(escapedCommand)' >> '\(outputPath)' 2>&1
-        EXIT_CODE=$?
+        # Execute command with timeout using background process monitoring
+        eval '\(escapedCommand)' >> '\(outputPath)' 2>&1 &
+        CMD_PID=$!
+        
+        # Monitor for timeout
+        ELAPSED=0
+        while kill -0 $CMD_PID 2>/dev/null; do
+            sleep 1
+            ELAPSED=$((ELAPSED + 1))
+            if [ $ELAPSED -ge $TIMEOUT ]; then
+                echo "" >> '\(outputPath)'
+                echo "=== TIMEOUT: Task exceeded ${TIMEOUT}s limit, killing process ===" >> '\(outputPath)'
+                kill -TERM $CMD_PID 2>/dev/null
+                sleep 2
+                kill -9 $CMD_PID 2>/dev/null
+                wait $CMD_PID 2>/dev/null
+                EXIT_CODE=124  # Standard timeout exit code
+                break
+            fi
+        done
+        
+        # Get exit code if not timed out
+        if [ -z "$EXIT_CODE" ]; then
+            wait $CMD_PID
+            EXIT_CODE=$?
+        fi
         
         END_TIME=$(date +%s)
         DURATION=$((END_TIME - START_TIME))
