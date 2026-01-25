@@ -1,4 +1,5 @@
 import Testing
+import Foundation
 @testable import RunnerLib
 
 @Suite("Models Tests")
@@ -6,11 +7,12 @@ struct ModelsTests {
     
     // MARK: - Task Tests
     
-    @Test("Task decoding")
-    func taskDecoding() throws {
+    @Test("Task decoding - simple type")
+    func taskDecodingSimple() throws {
         let json = """
         {
             "id": "heartbeat",
+            "type": "simple",
             "description": "Test task",
             "timeout": 60,
             "command": "echo hello"
@@ -19,10 +21,31 @@ struct ModelsTests {
         
         let task = try JSONDecoder().decode(Task.self, from: json)
         #expect(task.id == "heartbeat")
+        #expect(task.type == .simple)
         #expect(task.description == "Test task")
         #expect(task.timeout == 60)
         #expect(task.command == "echo hello")
+        #expect(task.prompt == nil)
         #expect(task.workdir == nil)
+    }
+    
+    @Test("Task decoding - agent type with prompt")
+    func taskDecodingAgent() throws {
+        let json = """
+        {
+            "id": "clock",
+            "type": "agent",
+            "description": "Clock chime",
+            "timeout": 60,
+            "prompt": "Announce the time"
+        }
+        """.data(using: .utf8)!
+        
+        let task = try JSONDecoder().decode(Task.self, from: json)
+        #expect(task.id == "clock")
+        #expect(task.type == .agent)
+        #expect(task.prompt == "Announce the time")
+        #expect(task.command == nil)
     }
     
     @Test("Task with workdir")
@@ -30,6 +53,7 @@ struct ModelsTests {
         let json = """
         {
             "id": "task",
+            "type": "simple",
             "description": "Task with workdir",
             "timeout": 300,
             "command": "pwd",

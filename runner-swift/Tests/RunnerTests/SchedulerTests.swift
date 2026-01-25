@@ -16,9 +16,11 @@ struct SchedulerTests {
     func makeTask(_ id: String) -> Task {
         Task(
             id: id,
+            type: .simple,
             description: "Test task",
             timeout: 60,
             command: "echo test",
+            prompt: nil,
             workdir: nil
         )
     }

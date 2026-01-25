@@ -45,9 +45,10 @@ function getAriaSortValue(key: SortKey, sortKey: SortKey, sortDir: SortDir): "as
 
 /**
  * Derive status from exit_code (the single source of truth)
+ * Note: JSON may have exit_code missing (undefined) or null for running tasks
  */
 function getRunStatus(run: RunSummary): RunStatus {
-  if (run.exit_code === null) return "running";
+  if (run.exit_code == null) return "running";  // == catches both null and undefined
   if (run.exit_code === 0) return "success";
   if (run.exit_code === -1) return "interrupted";
   return "failed";

@@ -8,9 +8,11 @@ struct ExecutorTests {
     func makeTask(id: String = "test", command: String = "echo hello", workdir: String? = nil) -> Task {
         Task(
             id: id,
+            type: .simple,
             description: "Test",
             timeout: 60,
             command: command,
+            prompt: nil,
             workdir: workdir
         )
     }
@@ -81,7 +83,7 @@ struct ExecutorTests {
         let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")
         
         // Wait a bit for the file to be created
-        try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+        try await _Concurrency.Task.sleep(nanoseconds: 100_000_000) // 100ms
         
         let content = try String(contentsOf: outputPath, encoding: .utf8)
         
@@ -103,7 +105,7 @@ struct ExecutorTests {
         #expect(result.exitCode == 0)
         
         // Wait for background task to complete
-        try await Task.sleep(nanoseconds: 500_000_000) // 500ms
+        try await _Concurrency.Task.sleep(nanoseconds: 500_000_000) // 500ms
         
         let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")
         let content = try String(contentsOf: outputPath, encoding: .utf8)

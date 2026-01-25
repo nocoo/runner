@@ -287,8 +287,8 @@ struct StorageTests {
         
         // Create tasks.json
         let tasks = [
-            Task(id: "task1", description: "Task 1", timeout: 60, command: "echo 1", workdir: nil),
-            Task(id: "task2", description: "Task 2", timeout: 300, command: "echo 2", workdir: nil)
+            Task(id: "task1", type: .simple, description: "Task 1", timeout: 60, command: "echo 1", prompt: nil, workdir: nil),
+            Task(id: "task2", type: .simple, description: "Task 2", timeout: 300, command: "echo 2", prompt: nil, workdir: nil)
         ]
         let encoder = JSONEncoder()
         let data = try encoder.encode(tasks)
