@@ -88,25 +88,27 @@ export function runsToHeatmap(runs: RunSummary[]): HeatmapCell[] {
 }
 
 /**
- * Extract local hour slot as "HH:00" string
+ * Get 10-minute slot key from date: "YYYY-MM-DDTHH:M0" where M0 is 00, 10, 20, 30, 40, 50
  */
-function extractHourSlot(isoDate: string): string {
-  const date = new Date(isoDate);
-  const hour = date.getHours();
-  return `${hour.toString().padStart(2, "0")}:00`;
+function get10MinSlotKey(date: Date): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  const hour = date.getHours().toString().padStart(2, "0");
+  const minute10 = Math.floor(date.getMinutes() / 10) * 10;
+  const minuteStr = minute10.toString().padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minuteStr}`;
 }
 
 /**
- * Convert runs to trend points for hourly charting (last 24 hours)
+ * Convert runs to trend points for 10-minute intervals (last 24 hours)
  * Note: Only completed runs (with finished_at) are included
  */
 export function runsToTrend(runs: RunSummary[]): TrendPoint[] {
-  if (runs.length === 0) return [];
-
   const now = new Date();
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-  const byHour = new Map<string, { total: number; success: number }>();
+  const bySlot = new Map<string, { total: number; success: number }>();
 
   for (const run of runs) {
     // Skip running tasks (no finished_at)
@@ -117,25 +119,30 @@ export function runsToTrend(runs: RunSummary[]): TrendPoint[] {
     // Only include runs from the last 24 hours
     if (runTime < oneDayAgo) continue;
 
-    const hourSlot = extractHourSlot(run.finished_at);
-    const existing = byHour.get(hourSlot) || { total: 0, success: 0 };
+    const slotKey = get10MinSlotKey(runTime);
+    const existing = bySlot.get(slotKey) || { total: 0, success: 0 };
 
     existing.total += 1;
     if (run.exit_code === 0) {
       existing.success += 1;
     }
 
-    byHour.set(hourSlot, existing);
+    bySlot.set(slotKey, existing);
   }
 
-  // Generate full 24-hour range (00:00 to 23:00)
+  // Generate all 10-minute slots for the last 24 hours (144 slots)
   const result: TrendPoint[] = [];
-  for (let hour = 0; hour < 24; hour++) {
-    const hourSlot = `${hour.toString().padStart(2, "0")}:00`;
-    const stats = byHour.get(hourSlot) || { total: 0, success: 0 };
+  const slotMs = 10 * 60 * 1000; // 10 minutes
+  // Round down to nearest 10-minute slot
+  const startSlot = new Date(Math.floor(oneDayAgo.getTime() / slotMs) * slotMs);
+  
+  for (let i = 0; i < 144; i++) {
+    const slotTime = new Date(startSlot.getTime() + i * slotMs);
+    const slotKey = get10MinSlotKey(slotTime);
+    const stats = bySlot.get(slotKey) || { total: 0, success: 0 };
 
     result.push({
-      date: hourSlot,
+      date: slotKey,
       total: stats.total,
       success: stats.success,
       successRate: stats.total > 0 ? stats.success / stats.total : 0,

@@ -85,13 +85,36 @@ export function apiPlugin(): Plugin {
           const runMatch = url.match(/^\/api\/runs\/([a-f0-9-]{36})$/);
           if (runMatch && req.method === "GET") {
             const id = runMatch[1];
+            // Try to read individual .json file first
             const data = await readJsonFile(resolve(DATA_DIR, `runs/${id}.json`));
             if (data) {
               res.end(JSON.stringify(data));
-            } else {
-              res.statusCode = 404;
-              res.end(JSON.stringify({ error: "Run not found" }));
+              return;
             }
+            // Fall back to index.json for basic info (e.g., interrupted tasks without .json)
+            const indexData = await readJsonFile(resolve(DATA_DIR, "runs/index.json")) as { runs?: Array<{ id: string; task: string; exit_code: number | null; started_at?: string; finished_at?: string | null }> } | null;
+            if (indexData?.runs) {
+              const runFromIndex = indexData.runs.find(r => r.id === id);
+              if (runFromIndex) {
+                // Calculate duration if both timestamps exist
+                let duration_seconds: number | undefined;
+                if (runFromIndex.started_at && runFromIndex.finished_at) {
+                  duration_seconds = Math.round((new Date(runFromIndex.finished_at).getTime() - new Date(runFromIndex.started_at).getTime()) / 1000);
+                }
+                res.end(JSON.stringify({
+                  id: runFromIndex.id,
+                  task: runFromIndex.task,
+                  trigger: "auto",
+                  started_at: runFromIndex.started_at || "",
+                  finished_at: runFromIndex.finished_at || undefined,
+                  duration_seconds,
+                  exit_code: runFromIndex.exit_code ?? -1,
+                }));
+                return;
+              }
+            }
+            res.statusCode = 404;
+            res.end(JSON.stringify({ error: "Run not found" }));
             return;
           }
 

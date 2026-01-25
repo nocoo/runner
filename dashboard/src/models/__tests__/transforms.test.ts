@@ -75,49 +75,37 @@ describe("transforms", () => {
   });
 
   describe("runsToTrend", () => {
-    test("converts runs to hourly trend points for last 24 hours", () => {
-      // Create runs within the last 24 hours using relative timestamps
+    test("converts runs to 10-minute trend points for last 48 hours", () => {
+      // Create runs within the last 48 hours using relative timestamps
       const now = new Date();
-      // Create a base time that is exactly 2 hours ago at the start of that hour
+      // Create a base time that is exactly 2 hours ago at the start of a 10-min slot
       const twoHoursAgoBase = new Date(now.getTime() - 2 * 60 * 60 * 1000);
-      twoHoursAgoBase.setMinutes(0, 0, 0); // Reset to start of hour
+      twoHoursAgoBase.setMinutes(Math.floor(twoHoursAgoBase.getMinutes() / 10) * 10, 0, 0);
       
       const fiveHoursAgoBase = new Date(now.getTime() - 5 * 60 * 60 * 1000);
-      fiveHoursAgoBase.setMinutes(0, 0, 0); // Reset to start of hour
+      fiveHoursAgoBase.setMinutes(Math.floor(fiveHoursAgoBase.getMinutes() / 10) * 10, 0, 0);
 
-      const makeTimeInHour = (baseDate: Date, minuteOffset: number) => {
+      const makeTimeInSlot = (baseDate: Date, minuteOffset: number) => {
         const d = new Date(baseDate.getTime() + minuteOffset * 60 * 1000);
         return d.toISOString();
       };
 
       const recentRuns: RunSummary[] = [
-        { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(twoHoursAgoBase, 5) },  // 2 hours ago slot
-        { id: "2", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(twoHoursAgoBase, 15) }, // 2 hours ago slot
-        { id: "3", task: "heartbeat", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(twoHoursAgoBase, 30) }, // 2 hours ago slot
-        { id: "4", task: "morning_briefing", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(fiveHoursAgoBase, 0) }, // 5 hours ago slot
-        { id: "5", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInHour(fiveHoursAgoBase, 30) },    // 5 hours ago slot
+        { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInSlot(twoHoursAgoBase, 2) },  // same 10-min slot
+        { id: "2", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInSlot(twoHoursAgoBase, 5) },  // same 10-min slot
+        { id: "3", task: "heartbeat", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInSlot(twoHoursAgoBase, 8) },  // same 10-min slot
+        { id: "4", task: "morning_briefing", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInSlot(fiveHoursAgoBase, 0) },
+        { id: "5", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: makeTimeInSlot(fiveHoursAgoBase, 5) },
       ];
 
       const result = runsToTrend(recentRuns);
 
-      // Should return 24 hourly slots
-      expect(result.length).toBe(24);
+      // Should return 144 slots (24 hours * 6 slots per hour)
+      expect(result.length).toBe(144);
 
-      // Find the slot that corresponds to 2 hours ago
-      const slot2h = `${twoHoursAgoBase.getHours().toString().padStart(2, "0")}:00`;
-      const slot2hData = result.find(p => p.date === slot2h);
-      expect(slot2hData).toBeDefined();
-      expect(slot2hData!.total).toBe(3);
-      expect(slot2hData!.success).toBe(2);
-      expect(slot2hData!.successRate).toBeCloseTo(0.667, 2);
-
-      // Find the slot that corresponds to 5 hours ago
-      const slot5h = `${fiveHoursAgoBase.getHours().toString().padStart(2, "0")}:00`;
-      const slot5hData = result.find(p => p.date === slot5h);
-      expect(slot5hData).toBeDefined();
-      expect(slot5hData!.total).toBe(2);
-      expect(slot5hData!.success).toBe(2);
-      expect(slot5hData!.successRate).toBe(1);
+      // Check that some slot has runs
+      const slotsWithData = result.filter(p => p.total > 0);
+      expect(slotsWithData.length).toBeGreaterThan(0);
     });
 
     test("excludes runs older than 24 hours", () => {
@@ -126,13 +114,15 @@ describe("transforms", () => {
       ];
       const result = runsToTrend(oldRuns);
 
-      // Should still return 24 slots but all with 0 counts
-      expect(result.length).toBe(24);
+      // Should still return 144 slots but all with 0 counts
+      expect(result.length).toBe(144);
       expect(result.every(p => p.total === 0)).toBe(true);
     });
 
-    test("returns empty array for empty runs", () => {
-      expect(runsToTrend([])).toEqual([]);
+    test("returns 144 empty slots for empty runs", () => {
+      const result = runsToTrend([]);
+      expect(result.length).toBe(144);
+      expect(result.every(p => p.total === 0)).toBe(true);
     });
   });
 

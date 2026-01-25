@@ -1,5 +1,5 @@
 // ============================================
-// Trend Monitor - Industrial TUI style chart
+// Trend Chart - Smooth curve visualization
 // Based on vibeusage TrendMonitor pattern
 // ============================================
 
@@ -13,28 +13,41 @@ interface TrendChartProps {
 
 const COLOR = "#00FF41";
 
-function formatCompact(value: number): string {
-  const abs = Math.abs(value);
-  if (abs >= 1000) {
-    return `${(value / 1000).toFixed(1)}K`;
-  }
-  return String(Math.round(value));
+// 中文时辰对照表
+const SHICHEN: Record<number, string> = {
+  23: "子", 0: "子",
+  1: "丑", 2: "丑",
+  3: "寅", 4: "寅",
+  5: "卯", 6: "卯",
+  7: "辰", 8: "辰",
+  9: "巳", 10: "巳",
+  11: "午", 12: "午",
+  13: "未", 14: "未",
+  15: "申", 16: "申",
+  17: "酉", 18: "酉",
+  19: "戌", 20: "戌",
+  21: "亥", 22: "亥",
+};
+
+function getShichen(hour: number): string {
+  return SHICHEN[hour] || "";
 }
 
-function formatDate(dateStr: string): string {
-  // Check if it's an hour format (HH:00)
-  if (/^\d{2}:00$/.test(dateStr)) {
-    return dateStr;
+function formatTime(dateStr: string): string {
+  const match = dateStr.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (match) {
+    return `${match[4]}:${match[5]}`;
   }
-  const date = new Date(dateStr);
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const day = date.getDate().toString().padStart(2, "0");
-  return `${month}-${day}`;
+  return dateStr;
+}
+
+function getHourFromDate(dateStr: string): number {
+  const match = dateStr.match(/T(\d{2}):/);
+  return match ? parseInt(match[1], 10) : 0;
 }
 
 export function TrendChart({ data }: TrendChartProps) {
   const plotRef = useRef<HTMLDivElement>(null);
-  const axisRef = useRef<HTMLDivElement>(null);
 
   const [hover, setHover] = useState<{
     index: number;
@@ -43,60 +56,45 @@ export function TrendChart({ data }: TrendChartProps) {
     label: string;
     x: number;
     y: number;
-    rectWidth: number;
-    axisWidthPx: number;
   } | null>(null);
-
-  const [axisWidthView, setAxisWidthView] = useState(8);
 
   const width = 100;
   const height = 100;
-  const plotWidth = width - axisWidthView;
-  const pointCount = Math.max(data.length, 1);
-  const xPadding = pointCount > 1 ? plotWidth * 0.05 : plotWidth / 2;
-  const plotSpan = Math.max(plotWidth - xPadding * 2, 0);
-  const stepWithPadding = pointCount > 1 ? plotSpan / (pointCount - 1) : 0;
   const plotTop = 8;
   const plotBottom = 8;
   const plotHeight = height - plotTop - plotBottom;
+  const pointCount = Math.max(data.length, 1);
+  const xPadding = pointCount > 1 ? width * 0.02 : width / 2;
+  const plotSpan = Math.max(width - xPadding * 2, 0);
+  const step = pointCount > 1 ? plotSpan / (pointCount - 1) : 0;
 
   const values = data.map((d) => d.total);
   const max = Math.max(...values, 1);
   const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+  const total = values.reduce((a, b) => a + b, 0);
 
-  // Build line segments
-  const lineSegments = useMemo(() => {
-    const segments: Array<Array<{ x: number; y: number; index: number; value: number }>> = [];
-    let current: Array<{ x: number; y: number; index: number; value: number }> = [];
-
-    data.forEach((point, i) => {
-      const val = point.total;
-      const x = pointCount > 1 ? xPadding + i * stepWithPadding : plotWidth / 2;
-      const normalizedVal = max > 0 ? val / max : 0;
+  // Build points for curve
+  const points = useMemo(() => {
+    return data.map((point, i) => {
+      const x = pointCount > 1 ? xPadding + i * step : width / 2;
+      const normalizedVal = max > 0 ? point.total / max : 0;
       const y = plotTop + (1 - normalizedVal) * plotHeight;
-      current.push({ x, y, index: i, value: val });
+      return { x, y, index: i, value: point.total };
     });
-
-    if (current.length) segments.push(current);
-    return segments;
-  }, [data, max, plotHeight, plotTop, plotWidth, pointCount, stepWithPadding, xPadding]);
+  }, [data, max, plotHeight, plotTop, pointCount, step, xPadding]);
 
   // Smooth Bezier path
-  function solveSmoothPath(points: Array<{ x: number; y: number }>): string {
-    if (!points.length) return "";
-    if (points.length === 1) {
-      return `M ${points[0].x},${points[0].y}`;
-    }
-    if (points.length === 2) {
-      return `M ${points[0].x},${points[0].y} L ${points[1].x},${points[1].y}`;
-    }
+  function solveSmoothPath(pts: Array<{ x: number; y: number }>): string {
+    if (!pts.length) return "";
+    if (pts.length === 1) return `M ${pts[0].x},${pts[0].y}`;
+    if (pts.length === 2) return `M ${pts[0].x},${pts[0].y} L ${pts[1].x},${pts[1].y}`;
 
-    let d = `M ${points[0].x},${points[0].y}`;
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[Math.max(i - 1, 0)];
-      const p1 = points[i];
-      const p2 = points[i + 1];
-      const p3 = points[Math.min(i + 2, points.length - 1)];
+    let d = `M ${pts[0].x},${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(i - 1, 0)];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[Math.min(i + 2, pts.length - 1)];
 
       const cp1x = p1.x + (p2.x - p0.x) * 0.16;
       const cp1y = p1.y + (p2.y - p0.y) * 0.16;
@@ -108,50 +106,39 @@ export function TrendChart({ data }: TrendChartProps) {
     return d;
   }
 
-  // X-axis labels
+  const linePath = useMemo(() => solveSmoothPath(points), [points]);
+  const fillPath = useMemo(() => {
+    if (points.length < 2) return "";
+    const first = points[0];
+    const last = points[points.length - 1];
+    return `${linePath} L ${last.x},${height - plotBottom} L ${first.x},${height - plotBottom} Z`;
+  }, [linePath, points, height, plotBottom]);
+
+  // X-axis labels - Chinese 时辰
   const xLabels = useMemo(() => {
     if (data.length === 0) return [];
-    if (data.length <= 5) return data.map((d) => formatDate(d.date));
+    const labels: string[] = [];
+    const seenShichen = new Set<string>();
     
-    const indices = [0, Math.floor(data.length / 4), Math.floor(data.length / 2), Math.floor(data.length * 3 / 4), data.length - 1];
-    return indices.map((i) => formatDate(data[i].date));
-  }, [data]);
-
-  // Measure axis width
-  useEffect(() => {
-    const measure = () => {
-      const plotEl = plotRef.current;
-      const axisEl = axisRef.current;
-      if (!plotEl || !axisEl) return;
-      const plotRect = plotEl.getBoundingClientRect();
-      const axisRect = axisEl.getBoundingClientRect();
-      if (!plotRect.width) return;
-      const next = (axisRect.width / plotRect.width) * width;
-      const clamped = Math.max(4, Math.min(width - 1, next));
-      setAxisWidthView((prev) => (Math.abs(prev - clamped) > 0.2 ? clamped : prev));
-    };
-    measure();
-
-    if (typeof ResizeObserver !== "undefined") {
-      const observer = new ResizeObserver(measure);
-      if (plotRef.current) observer.observe(plotRef.current);
-      if (axisRef.current) observer.observe(axisRef.current);
-      return () => observer.disconnect();
+    for (let i = 0; i < data.length; i += 12) {
+      const hour = getHourFromDate(data[i].date);
+      const shichen = getShichen(hour);
+      if (shichen && !seenShichen.has(shichen)) {
+        labels.push(shichen);
+        seenShichen.add(shichen);
+      }
     }
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
+    return labels;
+  }, [data]);
 
   // Mouse move handler
   function handleMove(e: React.MouseEvent) {
     const el = plotRef.current;
     if (!el || data.length === 0) return;
     const rect = el.getBoundingClientRect();
-    const axisWidthPx = axisRef.current?.getBoundingClientRect().width ?? (axisWidthView / width) * rect.width;
-    const plotWidthPx = rect.width - axisWidthPx;
-    const rawX = Math.min(Math.max(e.clientX - rect.left, 0), plotWidthPx);
-    const xPaddingPx = plotWidth > 0 ? (xPadding / plotWidth) * plotWidthPx : 0;
-    const plotSpanPx = Math.max(plotWidthPx - xPaddingPx * 2, 0);
+    const rawX = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
+    const xPaddingPx = (xPadding / width) * rect.width;
+    const plotSpanPx = rect.width - xPaddingPx * 2;
     const denom = Math.max(data.length - 1, 1);
     const clamped = Math.min(Math.max(rawX - xPaddingPx, 0), plotSpanPx);
     const ratio = plotSpanPx > 0 ? clamped / plotSpanPx : 0;
@@ -160,25 +147,18 @@ export function TrendChart({ data }: TrendChartProps) {
     const point = data[index];
     if (!point) return;
     
-    const value = point.total;
-    const snappedX = denom > 0 ? xPaddingPx + (index / denom) * plotSpanPx : plotWidthPx / 2;
-    const yRatio = max > 0 ? 1 - value / max : 1;
+    const snappedX = denom > 0 ? xPaddingPx + (index / denom) * plotSpanPx : rect.width / 2;
+    const yRatio = max > 0 ? 1 - point.total / max : 1;
     const yPx = (plotTop / height) * rect.height + yRatio * (plotHeight / height) * rect.height;
 
     setHover({
       index,
-      value,
+      value: point.total,
       successRate: point.successRate,
-      label: point.date,
+      label: formatTime(point.date),
       x: snappedX,
       y: yPx,
-      rectWidth: rect.width,
-      axisWidthPx,
     });
-  }
-
-  function handleLeave() {
-    setHover(null);
   }
 
   if (data.length === 0) {
@@ -192,15 +172,13 @@ export function TrendChart({ data }: TrendChartProps) {
   }
 
   return (
-    <AsciiBox
-      title="Trend"
-      subtitle={`${data.length} days`}
-    >
+    <AsciiBox title="Trend" subtitle="24h">
       {/* Stats header */}
       <div className="flex items-center justify-between text-caption text-matrix-muted px-1 mb-3">
         <div className="flex gap-3">
+          <span>TOTAL: {total}</span>
           <span>MAX: {Math.round(max)}</span>
-          <span>AVG: {Math.round(avg)}</span>
+          <span>AVG: {avg.toFixed(1)}</span>
         </div>
       </div>
 
@@ -240,72 +218,35 @@ export function TrendChart({ data }: TrendChartProps) {
             </linearGradient>
           </defs>
 
-          {lineSegments.map((segment, idx) => {
-            if (segment.length < 2) return null;
-            const first = segment[0];
-            const last = segment[segment.length - 1];
-            const linePath = solveSmoothPath(segment);
-            const fillPath = `${linePath} L ${last.x},${height - plotBottom} L ${first.x},${height - plotBottom} Z`;
-            
-            return (
-              <g key={`seg-${idx}`}>
-                {/* Fill area */}
-                <path d={fillPath} fill="url(#trend-grad)" />
-                {/* Line */}
-                <path
-                  d={linePath}
-                  fill="none"
-                  stroke={COLOR}
-                  strokeWidth="1.5"
-                  vectorEffect="non-scaling-stroke"
-                  className="drop-shadow-[0_0_5px_rgba(0,255,65,0.8)]"
-                />
-              </g>
-            );
-          })}
-
-          {/* Data points - rendered as small squares to avoid distortion */}
-          {lineSegments.flat().map((pt, i) => (
-            <rect
-              key={`pt-${i}`}
-              x={pt.x - 1}
-              y={pt.y - 1}
-              width="2"
-              height="2"
-              fill={COLOR}
-              className="drop-shadow-[0_0_4px_rgba(0,255,65,0.6)]"
+          {/* Fill area */}
+          {fillPath && <path d={fillPath} fill="url(#trend-grad)" />}
+          
+          {/* Line */}
+          {linePath && (
+            <path
+              d={linePath}
+              fill="none"
+              stroke={COLOR}
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+              className="drop-shadow-[0_0_5px_rgba(0,255,65,0.8)]"
             />
-          ))}
+          )}
         </svg>
-
-        {/* Y-axis */}
-        <div
-          ref={axisRef}
-          className="absolute right-0 top-0 bottom-0 flex flex-col justify-between py-1 px-1 text-caption text-matrix-muted pointer-events-none bg-matrix-panelStrong border-l border-matrix-ghost w-10 text-right"
-        >
-          <span>{formatCompact(max)}</span>
-          <span>{formatCompact(max * 0.75)}</span>
-          <span>{formatCompact(max * 0.5)}</span>
-          <span>{formatCompact(max * 0.25)}</span>
-          <span>0</span>
-        </div>
 
         {/* Hover interaction layer */}
         <div
           ref={plotRef}
           className="absolute inset-0 z-20"
           onMouseMove={handleMove}
-          onMouseLeave={handleLeave}
+          onMouseLeave={() => setHover(null)}
         />
 
         {/* Hover tooltip */}
         {hover && (
           <>
             {/* Vertical line */}
-            <div
-              className="absolute inset-y-0 left-0 pointer-events-none z-25"
-              style={{ right: hover.axisWidthPx }}
-            >
+            <div className="absolute inset-y-0 left-0 pointer-events-none z-25">
               <div
                 className="absolute top-0 bottom-0 w-px bg-[#00FF41]/40 shadow-[0_0_6px_rgba(0,255,65,0.35)]"
                 style={{ left: hover.x }}
@@ -320,11 +261,11 @@ export function TrendChart({ data }: TrendChartProps) {
             <div
               className="absolute z-30 px-3 py-2 text-caption bg-matrix-panelStrong border border-matrix-ghost text-matrix-bright pointer-events-none"
               style={{
-                left: Math.min(hover.x + 10, hover.rectWidth - hover.axisWidthPx - 120),
+                left: Math.min(hover.x + 10, plotRef.current?.clientWidth ? plotRef.current.clientWidth - 100 : hover.x),
                 top: Math.max(hover.y - 24, 6),
               }}
             >
-              <div className="text-matrix-muted">{formatDate(hover.label)}</div>
+              <div className="text-matrix-muted">{hover.label}</div>
               <div className="font-bold">{hover.value} runs</div>
               <div className="text-matrix-dim">{Math.round(hover.successRate * 100)}% success</div>
             </div>

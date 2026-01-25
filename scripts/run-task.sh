@@ -10,6 +10,9 @@
 #                    <trigger_type> [model]
 # =============================================================================
 
+# Load environment variables (needed for launchd which doesn't load shell config)
+[[ -f "$HOME/.zshrc" ]] && source "$HOME/.zshrc" 2>/dev/null || true
+
 task_name="$1"
 task_type="$2"
 workdir="$3"
