@@ -19,21 +19,38 @@ public struct Executor {
         }
     }
     
+    /// Get executable command for a task
+    private func getCommand(for task: Task) -> String? {
+        if let command = task.command, !command.isEmpty {
+            return command
+        }
+        if let prompt = task.prompt, !prompt.isEmpty {
+            // Build opencode command from prompt
+            let escapedPrompt = prompt.replacingOccurrences(of: "'", with: "'\"'\"'")
+            return "opencode run '\(escapedPrompt)' --agent build --model zai-coding-plan/glm-4.7"
+        }
+        return nil
+    }
+    
     /// Execute a task
     public func execute(task: Task, trigger: String) async throws -> ExecutionResult {
+        guard let command = getCommand(for: task) else {
+            throw ExecutorError.missingCommand
+        }
+        
         let runId = UUID().uuidString
         let startedAt = ISO8601DateFormatter().string(from: Date())
         let startEpoch = Int64(Date().timeIntervalSince1970)
         
         log("Run ID: \(runId)")
         log("Started at: \(startedAt)")
-        log("Command: \(task.command)")
+        log("Command: \(command)")
         
         if dryRun {
             return ExecutionResult(
                 id: runId,
                 exitCode: 0,
-                output: "[DRY RUN] Would execute: \(task.command)"
+                output: "[DRY RUN] Would execute: \(command)"
             )
         }
         
@@ -42,7 +59,7 @@ public struct Executor {
         Task: \(task.id)
         Trigger: \(trigger)
         Started: \(startedAt)
-        Command: \(task.command)
+        Command: \(command)
         \(String(repeating: "=", count: 50))
         
         """
@@ -51,6 +68,7 @@ public struct Executor {
         // Create wrapper script for background execution
         let scriptContent = createScript(
             task: task,
+            command: command,
             runId: runId,
             startedAt: startedAt,
             trigger: trigger,
@@ -92,8 +110,8 @@ public struct Executor {
     }
     
     /// Create shell script that executes command and updates storage
-    private func createScript(task: Task, runId: String, startedAt: String, trigger: String, dataDir: URL) -> String {
-        let escapedCommand = task.command.replacingOccurrences(of: "'", with: "'\"'\"'")
+    private func createScript(task: Task, command: String, runId: String, startedAt: String, trigger: String, dataDir: URL) -> String {
+        let escapedCommand = command.replacingOccurrences(of: "'", with: "'\"'\"'")
         let workdir = task.workdir ?? "."
         let outputPath = dataDir.appendingPathComponent("runs/\(runId).output").path
         let detailPath = dataDir.appendingPathComponent("runs/\(runId).json").path

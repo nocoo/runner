@@ -1,44 +1,51 @@
 [
   {
     "id": "heartbeat",
+    "type": "simple",
     "description": "Heartbeat - play a soft pop sound",
     "timeout": 10,
     "command": "afplay /System/Library/Sounds/Pop.aiff"
   },
   {
     "id": "clock",
+    "type": "agent",
     "description": "Clock chime - announce time with text-to-speech",
     "timeout": 60,
-    "command": "opencode run '获取当前时间，然后直接执行 say -v Tingting 命令播报时间。格式：「现在是 X 点 Y 分」，整点说「X点整」。必须执行命令让声音播放出来。' --agent build --model zai-coding-plan/glm-4.7"
+    "prompt": "Get the current time and run `say -v Tingting` to announce it. Format: 'X dian Y fen' (X点Y分), or 'X dian zheng' (X点整) for exact hours."
   },
   {
     "id": "obsidian_sync",
+    "type": "agent",
     "description": "Sync Obsidian vault - commit and push changes to remote",
     "timeout": 120,
-    "command": "opencode run '检查是否有改动。如果有：1) git add 所有改动 2) 生成简洁的 commit 消息总结变更 3) push 到 main 分支。如果没有改动，输出「无改动」。' --agent build --model zai-coding-plan/glm-4.7",
+    "prompt": "Check for changes. If any: 1) git add all changes 2) generate concise commit message 3) push to main. If no changes, output 'No changes'.",
     "workdir": "/Users/nocoo/workspace/personal/obsidian"
   },
   {
     "id": "news_briefing",
+    "type": "agent",
     "description": "Daily news briefing - aggregate and analyze news from multiple sources",
     "timeout": 600,
-    "command": "opencode run '执行 /news-aggregator-skill，选项12全网抓取 (source=all)' --agent build --model zai-coding-plan/glm-4.7",
+    "prompt": "Run /news-aggregator-skill with option 12 (source=all) for comprehensive news aggregation.",
     "workdir": "/Users/nocoo/workspace/personal/workflow/skills/news-aggregator-skill"
   },
   {
     "id": "test_fast",
+    "type": "simple",
     "description": "Test task - fast (5-10s)",
     "timeout": 30,
     "command": "echo 'fast task done' && date"
   },
   {
     "id": "test_medium",
+    "type": "simple",
     "description": "Test task - medium (30-60s)",
     "timeout": 120,
     "command": "ls -la && sleep 30 && date"
   },
   {
     "id": "test_slow",
+    "type": "simple",
     "description": "Test task - slow (90-120s)",
     "timeout": 180,
     "command": "date && sleep 45 && echo 'middle' && date && sleep 45 && echo 'done' && date"

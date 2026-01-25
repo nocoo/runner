@@ -1,23 +1,34 @@
 import Foundation
 
-/// Task definition - simplified: just execute command
+/// Task type
+public enum TaskType: String, Codable, Sendable {
+    case simple
+    case agent
+    case manual
+}
+
+/// Task definition
 public struct Task: Codable, Sendable {
     public let id: String
+    public let type: TaskType
     public let description: String
     public let timeout: Int
-    public let command: String
+    public let command: String?
+    public let prompt: String?
     public let workdir: String?
     
-    public init(id: String, description: String, timeout: Int, command: String, workdir: String?) {
+    public init(id: String, type: TaskType, description: String, timeout: Int, command: String?, prompt: String?, workdir: String?) {
         self.id = id
+        self.type = type
         self.description = description
         self.timeout = timeout
         self.command = command
+        self.prompt = prompt
         self.workdir = workdir
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, description, timeout, command, workdir
+        case id, type, description, timeout, command, prompt, workdir
     }
 }
 

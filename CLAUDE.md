@@ -60,6 +60,23 @@ cd runner-swift && swift build && cp .build/debug/Runner ../runner
 ./runner logs [run_id]
 ```
 
+## Build & Install
+
+After modifying Swift code, rebuild and install:
+
+```bash
+# 1. Build
+cd runner-swift && swift build
+
+# 2. Copy binary to project root
+cp .build/debug/Runner ../runner
+
+# 3. Validate
+cd .. && ./runner validate
+```
+
+No launchd reload needed - launchd calls `./runner auto` which uses the updated binary.
+
 ## Run Swift Tests
 
 ```bash

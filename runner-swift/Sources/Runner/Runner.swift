@@ -154,8 +154,10 @@ struct Validate: AsyncParsableCommand {
         // Validate tasks
         var errors: [String] = []
         for task in tasks {
-            if task.command.isEmpty {
-                errors.append("Task '\(task.id)' has no command")
+            let hasCommand = task.command != nil && !task.command!.isEmpty
+            let hasPrompt = task.prompt != nil && !task.prompt!.isEmpty
+            if !hasCommand && !hasPrompt {
+                errors.append("Task '\(task.id)' has no command or prompt")
             }
         }
         
