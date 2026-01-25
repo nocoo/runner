@@ -61,6 +61,14 @@ export async function fetchRunDetail(id: string): Promise<RunDetail> {
 }
 
 /**
+ * Fetch full run output
+ */
+export async function fetchRunOutput(id: string): Promise<string> {
+  const response = await apiFetch<{ output: string }>(`/api/runs/${id}/output`);
+  return response.output;
+}
+
+/**
  * Trigger a task execution
  */
 export async function triggerTask(taskId: string): Promise<TriggerResponse> {

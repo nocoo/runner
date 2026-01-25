@@ -95,6 +95,26 @@ export function apiPlugin(): Plugin {
             return;
           }
 
+          // GET /api/runs/:id/output - get full task output
+          const outputMatch = url.match(/^\/api\/runs\/([a-f0-9-]{36})\/output$/);
+          if (outputMatch && req.method === "GET") {
+            const id = outputMatch[1];
+            const outputPath = resolve(DATA_DIR, `runs/${id}.output`);
+            try {
+              if (!existsSync(outputPath)) {
+                res.statusCode = 404;
+                res.end(JSON.stringify({ error: "Output file not found" }));
+                return;
+              }
+              const content = await readFile(outputPath, "utf-8");
+              res.end(JSON.stringify({ output: content }));
+            } catch {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: "Failed to read output file" }));
+            }
+            return;
+          }
+
           // POST /api/trigger/:task - trigger task execution
           const triggerMatch = url.match(/^\/api\/trigger\/([a-z_]+)$/);
           if (triggerMatch && req.method === "POST") {
