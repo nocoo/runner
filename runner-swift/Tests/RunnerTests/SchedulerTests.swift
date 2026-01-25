@@ -12,14 +12,14 @@ final class SchedulerTests: XCTestCase {
         )
     }
     
-    func makeTask(_ id: String) -> Task {
+    func makeTask(_ id: String, type: TaskType = .simple) -> Task {
         Task(
             id: id,
-            type: .simple,
-            description: "Test",
+            type: type,
+            description: "Test task",
             timeout: 60,
-            command: "echo test",
-            prompt: nil,
+            command: type == .simple ? "echo test" : nil,
+            prompt: type == .agent ? "Do something" : nil,
             workdir: nil,
             model: nil
         )
@@ -137,10 +137,67 @@ final class SchedulerTests: XCTestCase {
         let tasks = [makeTask("task1")]
         let schedules = [
             makeSchedule("task1", hour: 9, minute: 0, weekday: "*"),
-            makeSchedule("unknown", hour: 9, minute: 0, weekday: "*"),
+            makeSchedule("unknown", hour: 9, minute: 0, weekday: "*"), // Unknown task
         ]
         
         let matched = Scheduler.findScheduledTasks(schedules: schedules, tasks: tasks, hour: 9, minute: 0, weekday: 1)
         XCTAssertEqual(matched, ["task1"])
+    }
+    
+    func testFindScheduledTasksEmptySchedules() {
+        let tasks = [makeTask("task1")]
+        let schedules: [Schedule] = []
+        
+        let matched = Scheduler.findScheduledTasks(schedules: schedules, tasks: tasks, hour: 9, minute: 0, weekday: 1)
+        XCTAssertTrue(matched.isEmpty)
+    }
+    
+    func testFindScheduledTasksEmptyTasks() {
+        let tasks: [Task] = []
+        let schedules = [makeSchedule("task1", hour: 9, minute: 0, weekday: "*")]
+        
+        let matched = Scheduler.findScheduledTasks(schedules: schedules, tasks: tasks, hour: 9, minute: 0, weekday: 1)
+        XCTAssertTrue(matched.isEmpty)
+    }
+    
+    func testFindScheduledTasksMultipleMatchingSchedules() {
+        let tasks = [makeTask("task1")]
+        let schedules = [
+            makeSchedule("task1", hour: "*", minute: 0, weekday: "*"),  // Matches every hour at :00
+            makeSchedule("task1", hour: "*", minute: 30, weekday: "*"), // Matches every hour at :30
+        ]
+        
+        let matchedAt0 = Scheduler.findScheduledTasks(schedules: schedules, tasks: tasks, hour: 9, minute: 0, weekday: 1)
+        XCTAssertEqual(matchedAt0, ["task1"])
+        
+        let matchedAt30 = Scheduler.findScheduledTasks(schedules: schedules, tasks: tasks, hour: 9, minute: 30, weekday: 1)
+        XCTAssertEqual(matchedAt30, ["task1"])
+        
+        let matchedAt15 = Scheduler.findScheduledTasks(schedules: schedules, tasks: tasks, hour: 9, minute: 15, weekday: 1)
+        XCTAssertTrue(matchedAt15.isEmpty)
+    }
+    
+    func testFindScheduledTasksAllWeekdays() {
+        let tasks = [makeTask("task1")]
+        let schedule = makeSchedule("task1", hour: 9, minute: 0, weekday: "*")
+        let schedules = [schedule]
+        
+        // Should match all weekdays
+        for weekday in 0..<7 {
+            let matched = Scheduler.findScheduledTasks(schedules: schedules, tasks: tasks, hour: 9, minute: 0, weekday: weekday)
+            XCTAssertEqual(matched, ["task1"], "Should match weekday \(weekday)")
+        }
+    }
+    
+    func testFindScheduledTasksSorted() {
+        let tasks = [makeTask("zebra"), makeTask("alpha"), makeTask("beta")]
+        let schedules = [
+            makeSchedule("zebra", hour: 9, minute: 0, weekday: "*"),
+            makeSchedule("alpha", hour: 9, minute: 0, weekday: "*"),
+            makeSchedule("beta", hour: 9, minute: 0, weekday: "*"),
+        ]
+        
+        let matched = Scheduler.findScheduledTasks(schedules: schedules, tasks: tasks, hour: 9, minute: 0, weekday: 1)
+        XCTAssertEqual(matched, ["alpha", "beta", "zebra"]) // Sorted alphabetically
     }
 }
