@@ -1,13 +1,13 @@
 import Foundation
 
 /// Thread-safe JSON storage with file locking
-actor Storage {
-    let dataDir: URL
+public actor Storage {
+    public let dataDir: URL
     private let fileManager = FileManager.default
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
     
-    init(dataDir: URL) {
+    public init(dataDir: URL) {
         self.dataDir = dataDir
         self.encoder = JSONEncoder()
         self.encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -16,7 +16,7 @@ actor Storage {
     
     // MARK: - Initialization
     
-    func initialize() throws {
+    public func initialize() throws {
         let runsDir = dataDir.appendingPathComponent("runs")
         try fileManager.createDirectory(at: runsDir, withIntermediateDirectories: true)
         
@@ -35,17 +35,17 @@ actor Storage {
     
     // MARK: - Loading
     
-    func loadTasks() throws -> [Task] {
+    public func loadTasks() throws -> [Task] {
         let path = dataDir.appendingPathComponent("tasks.json")
         return try readJSON(from: path)
     }
     
-    func loadSchedules() throws -> [Schedule] {
+    public func loadSchedules() throws -> [Schedule] {
         let path = dataDir.appendingPathComponent("schedules.json")
         return try readJSON(from: path)
     }
     
-    func loadRunsIndex() throws -> RunsIndex {
+    public func loadRunsIndex() throws -> RunsIndex {
         let path = dataDir.appendingPathComponent("runs/index.json")
         if fileManager.fileExists(atPath: path.path) {
             return try readJSON(from: path)
@@ -55,7 +55,7 @@ actor Storage {
     
     // MARK: - Run Management (with file locking)
     
-    func addRun(_ run: RunSummary) throws {
+    public func addRun(_ run: RunSummary) throws {
         try withFileLock(name: "index") {
             var index = try loadRunsIndex()
             index.runs.append(run)
@@ -67,7 +67,7 @@ actor Storage {
         }
     }
     
-    func updateRun(id: String, exitCode: Int?, finishedAt: String?) throws {
+    public func updateRun(id: String, exitCode: Int?, finishedAt: String?) throws {
         try withFileLock(name: "index") {
             var index = try loadRunsIndex()
             
@@ -87,23 +87,23 @@ actor Storage {
         }
     }
     
-    func markInterrupted(id: String) throws {
+    public func markInterrupted(id: String) throws {
         try updateRun(id: id, exitCode: -1, finishedAt: timestamp())
     }
     
-    func getRunningTasks() throws -> [RunSummary] {
+    public func getRunningTasks() throws -> [RunSummary] {
         let index = try loadRunsIndex()
         return index.runs.filter { $0.exitCode == nil && $0.pid != nil }
     }
     
     // MARK: - Output Files
     
-    func writeOutput(id: String, content: String) throws {
+    public func writeOutput(id: String, content: String) throws {
         let path = dataDir.appendingPathComponent("runs/\(id).output")
         try content.write(to: path, atomically: true, encoding: .utf8)
     }
     
-    func appendOutput(id: String, content: String) throws {
+    public func appendOutput(id: String, content: String) throws {
         let path = dataDir.appendingPathComponent("runs/\(id).output")
         if fileManager.fileExists(atPath: path.path) {
             let handle = try FileHandle(forWritingTo: path)
@@ -117,7 +117,7 @@ actor Storage {
         }
     }
     
-    func writeRunDetail(_ detail: RunDetail) throws {
+    public func writeRunDetail(_ detail: RunDetail) throws {
         let path = dataDir.appendingPathComponent("runs/\(detail.id).json")
         try writeJSON(detail, to: path)
     }
@@ -164,7 +164,7 @@ actor Storage {
     }
 }
 
-enum StorageError: Error {
+public enum StorageError: Error {
     case lockFailed
     case fileNotFound
 }

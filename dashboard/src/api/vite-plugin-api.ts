@@ -6,7 +6,9 @@ import { existsSync } from "fs";
 import { watch } from "chokidar";
 
 const DATA_DIR = resolve(__dirname, "../../../data");
-const RUNNER_SCRIPT = resolve(__dirname, "../../../runner.sh");
+// Use Swift binary (runner) instead of Bash script (runner.sh)
+// Swift version has native file locking, no dependency on Linux flock command
+const RUNNER_BINARY = resolve(__dirname, "../../../runner");
 
 async function readJsonFile(path: string): Promise<unknown> {
   try {
@@ -143,10 +145,20 @@ export function apiPlugin(): Plugin {
           if (triggerMatch && req.method === "POST") {
             const task = triggerMatch[1];
             
-            // Execute runner.sh with the task
-            const child = spawn(RUNNER_SCRIPT, [task], {
+            // Execute Swift runner binary: `runner run <task>`
+            // Include common paths where opencode/homebrew binaries are installed
+            const extendedPath = [
+              "/opt/homebrew/bin",
+              "/opt/homebrew/sbin",
+              "/usr/local/bin",
+              process.env.HOME + "/.local/bin",
+              process.env.PATH,
+            ].filter(Boolean).join(":");
+            
+            const child = spawn(RUNNER_BINARY, ["run", task], {
               cwd: resolve(__dirname, "../../.."),
               stdio: ["ignore", "pipe", "pipe"],
+              env: { ...process.env, PATH: extendedPath },
             });
 
             let stdout = "";

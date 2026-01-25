@@ -8,7 +8,7 @@
     
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/nocoo/workspace/personal/runner/runner.sh</string>
+        <string>/Users/nocoo/workspace/personal/runner/runner</string>
         <string>auto</string>
     </array>
     

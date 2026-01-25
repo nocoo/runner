@@ -5,9 +5,9 @@ Declarative task scheduler for macOS using launchd + opencode.
 ## Architecture
 
 ```
-launchd (every 10 min)
+launchd (scheduled times)
     ↓
-runner.sh auto
+runner auto (Swift binary)
     ↓
 Router (match hour/minute/weekday → task)
     ↓
@@ -22,41 +22,48 @@ Notifier (task-notifier skill)
 
 | File | Purpose |
 |------|---------|
-| `runner.sh` | Main scheduler (~400 lines bash) |
+| `runner` | Swift binary (main scheduler) |
+| `runner-swift/` | Swift source code |
 | `data/tasks.json` | Task definitions (JSON) |
 | `data/schedules.json` | Schedule rules (JSON) |
 | `data/*.json` | File-system API for Web UI |
-| `tests/*.bats` | 135 bats tests |
+| `dashboard/` | React + TypeScript Web UI |
 
 ## Commands
 
 ```bash
-# Run tests
-bats tests/*.bats
-
-# Run specific test file
-bats tests/routing.bats
+# Build Swift binary
+cd runner-swift && swift build && cp .build/debug/Runner ../runner
 
 # Execute task
-./runner.sh <task_name>
+./runner run <task_name>
 
 # Dry-run (preview prompt)
-./runner.sh <task_name> --dry-run
+./runner run <task_name> --dry-run
 
 # Auto mode (time-based routing)
-./runner.sh auto
+./runner auto
+
+# List tasks
+./runner list
+
+# Validate configuration
+./runner validate
 
 # API queries
-./runner.sh api tasks|schedules|runs|status
+./runner api tasks|schedules|runs|status
 
-# Initialize/reinitialize data files
-./runner.sh api init
+# Initialize data files
+./runner init
+
+# View logs
+./runner logs [run_id]
 ```
 
-## Testing with Mock Time
+## Run Swift Tests
 
 ```bash
-RUNNER_MOCK_HOUR=9 RUNNER_MOCK_MINUTE=20 RUNNER_MOCK_WEEKDAY=1 ./runner.sh auto
+cd runner-swift && swift test
 ```
 
 ## launchd Management
@@ -70,7 +77,7 @@ launchctl unload ~/Library/LaunchAgents/com.runner.scheduler.plist
 launchctl load ~/Library/LaunchAgents/com.runner.scheduler.plist
 
 # View logs
-tail -f logs/runner.log
+tail -f logs/launchd.log
 ```
 
 ## Adding a New Task
@@ -94,23 +101,15 @@ Edit `data/tasks.json` and `data/schedules.json` directly:
   "type": "agent",
   "description": "My task description",
   "timeout": 300,
-  "prompt": "Your prompt here or path to prompt file"
+  "prompt": "Your prompt here"
 }
 ```
 
 ## Dependencies
 
-- Runtime: `jq`, `opencode`
-- Test: `bats-core`, `bats-assert`, `bats-support`, `yq` (for tests)
+- Runtime: `opencode`
+- Dashboard: `bun`
 - Notify: `~/.claude/skills/task-notifier/scripts/notify.py`
-
-## Environment Variables
-
-| Variable | Purpose |
-|----------|---------|
-| `RUNNER_DATA_DIR` | Data dir (default: `./data`) |
-| `RUNNER_SKIP_NOTIFY` | Skip notifications if set |
-| `RUNNER_MOCK_HOUR/MINUTE/WEEKDAY` | Mock time for testing |
 
 ## File-System API
 
@@ -130,3 +129,4 @@ data/
 
 - **Heartbeat**: :10, :20, :40, :50 every hour
 - **Clock**: :00 and :30 every hour (text-to-speech chime)
+- **Obsidian Sync**: :00, :15, :30, :45 every hour

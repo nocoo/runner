@@ -1,18 +1,23 @@
 import Foundation
 
 /// Process monitor to detect stale/interrupted tasks
-struct Monitor {
-    let storage: Storage
-    let verbose: Bool
+public struct Monitor {
+    public let storage: Storage
+    public let verbose: Bool
     
-    func log(_ message: String) {
+    public init(storage: Storage, verbose: Bool) {
+        self.storage = storage
+        self.verbose = verbose
+    }
+    
+    public func log(_ message: String) {
         if verbose {
             FileHandle.standardError.write("[MONITOR DEBUG] \(message)\n".data(using: .utf8)!)
         }
     }
     
     /// Check all running tasks and mark interrupted ones
-    func checkRunningTasks() async throws -> [String] {
+    public func checkRunningTasks() async throws -> [String] {
         log("Checking running tasks...")
         
         let running = try await storage.getRunningTasks()

@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.0
 import PackageDescription
 
 let package = Package(
@@ -8,16 +8,23 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
     ],
     targets: [
-        .executableTarget(
-            name: "runner",
+        // Library containing all core logic (testable)
+        .target(
+            name: "RunnerLib",
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
+            path: "Sources/RunnerLib"
+        ),
+        // Executable that uses the library
+        .executableTarget(
+            name: "Runner",
+            dependencies: ["RunnerLib"],
             path: "Sources/Runner"
         ),
         .testTarget(
             name: "RunnerTests",
-            dependencies: ["runner"],
+            dependencies: ["RunnerLib"],
             path: "Tests/RunnerTests"
         ),
     ]

@@ -1,15 +1,16 @@
-import XCTest
-@testable import runner
+import Testing
+@testable import RunnerLib
 
-final class ModelsTests: XCTestCase {
+@Suite("Models Tests")
+struct ModelsTests {
     
     // MARK: - Task Tests
     
-    func testTaskDecoding() throws {
+    @Test("Task decoding")
+    func taskDecoding() throws {
         let json = """
         {
             "id": "heartbeat",
-            "type": "simple",
             "description": "Test task",
             "timeout": 60,
             "command": "echo hello"
@@ -17,51 +18,34 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let task = try JSONDecoder().decode(Task.self, from: json)
-        XCTAssertEqual(task.id, "heartbeat")
-        XCTAssertEqual(task.type, .simple)
-        XCTAssertEqual(task.description, "Test task")
-        XCTAssertEqual(task.timeout, 60)
-        XCTAssertEqual(task.command, "echo hello")
-        XCTAssertNil(task.prompt)
+        #expect(task.id == "heartbeat")
+        #expect(task.description == "Test task")
+        #expect(task.timeout == 60)
+        #expect(task.command == "echo hello")
+        #expect(task.workdir == nil)
     }
     
-    func testAgentTaskDecoding() throws {
+    @Test("Task with workdir")
+    func taskWithWorkdir() throws {
         let json = """
         {
-            "id": "clock",
-            "type": "agent",
-            "description": "Agent task",
+            "id": "task",
+            "description": "Task with workdir",
             "timeout": 300,
-            "prompt": "Say hello",
-            "model": "sonnet"
+            "command": "pwd",
+            "workdir": "/tmp"
         }
         """.data(using: .utf8)!
         
         let task = try JSONDecoder().decode(Task.self, from: json)
-        XCTAssertEqual(task.id, "clock")
-        XCTAssertEqual(task.type, .agent)
-        XCTAssertEqual(task.prompt, "Say hello")
-        XCTAssertEqual(task.model, "sonnet")
-        XCTAssertNil(task.command)
-    }
-    
-    func testManualTaskDecoding() throws {
-        let json = """
-        {
-            "id": "manual",
-            "type": "manual",
-            "description": "Manual task",
-            "timeout": 60
-        }
-        """.data(using: .utf8)!
-        
-        let task = try JSONDecoder().decode(Task.self, from: json)
-        XCTAssertEqual(task.type, .manual)
+        #expect(task.id == "task")
+        #expect(task.workdir == "/tmp")
     }
     
     // MARK: - Schedule Tests
     
-    func testScheduleWithNumbers() throws {
+    @Test("Schedule with numbers")
+    func scheduleWithNumbers() throws {
         let json = """
         {
             "task": "morning",
@@ -72,13 +56,14 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let schedule = try JSONDecoder().decode(Schedule.self, from: json)
-        XCTAssertEqual(schedule.task, "morning")
-        XCTAssertEqual(schedule.hour.value as? Int, 9)
-        XCTAssertEqual(schedule.minute.value as? Int, 0)
-        XCTAssertEqual(schedule.weekday.value as? Int, 1)
+        #expect(schedule.task == "morning")
+        #expect(schedule.hour.value as? Int == 9)
+        #expect(schedule.minute.value as? Int == 0)
+        #expect(schedule.weekday.value as? Int == 1)
     }
     
-    func testScheduleWithWildcards() throws {
+    @Test("Schedule with wildcards")
+    func scheduleWithWildcards() throws {
         let json = """
         {
             "task": "heartbeat",
@@ -89,14 +74,15 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let schedule = try JSONDecoder().decode(Schedule.self, from: json)
-        XCTAssertEqual(schedule.hour.value as? String, "*")
-        XCTAssertEqual(schedule.minute.value as? String, "*/10")
-        XCTAssertEqual(schedule.weekday.value as? String, "*")
+        #expect(schedule.hour.value as? String == "*")
+        #expect(schedule.minute.value as? String == "*/10")
+        #expect(schedule.weekday.value as? String == "*")
     }
     
     // MARK: - RunSummary Tests
     
-    func testRunSummaryRunning() throws {
+    @Test("RunSummary running")
+    func runSummaryRunning() throws {
         let json = """
         {
             "id": "abc-123",
@@ -110,15 +96,16 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let run = try JSONDecoder().decode(RunSummary.self, from: json)
-        XCTAssertEqual(run.id, "abc-123")
-        XCTAssertEqual(run.task, "test")
-        XCTAssertNil(run.exitCode)
-        XCTAssertNil(run.finishedAt)
-        XCTAssertEqual(run.pid, 12345)
-        XCTAssertEqual(run.startedAtEpoch, 1769306400)
+        #expect(run.id == "abc-123")
+        #expect(run.task == "test")
+        #expect(run.exitCode == nil)
+        #expect(run.finishedAt == nil)
+        #expect(run.pid == 12345)
+        #expect(run.startedAtEpoch == 1769306400)
     }
     
-    func testRunSummaryCompleted() throws {
+    @Test("RunSummary completed")
+    func runSummaryCompleted() throws {
         let json = """
         {
             "id": "abc-123",
@@ -130,12 +117,13 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let run = try JSONDecoder().decode(RunSummary.self, from: json)
-        XCTAssertEqual(run.exitCode, 0)
-        XCTAssertEqual(run.finishedAt, "2026-01-25T08:00:10Z")
-        XCTAssertNil(run.pid)
+        #expect(run.exitCode == 0)
+        #expect(run.finishedAt == "2026-01-25T08:00:10Z")
+        #expect(run.pid == nil)
     }
     
-    func testRunSummaryFailed() throws {
+    @Test("RunSummary failed")
+    func runSummaryFailed() throws {
         let json = """
         {
             "id": "abc-123",
@@ -147,10 +135,11 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let run = try JSONDecoder().decode(RunSummary.self, from: json)
-        XCTAssertEqual(run.exitCode, 1)
+        #expect(run.exitCode == 1)
     }
     
-    func testRunSummaryInterrupted() throws {
+    @Test("RunSummary interrupted")
+    func runSummaryInterrupted() throws {
         let json = """
         {
             "id": "abc-123",
@@ -162,12 +151,13 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let run = try JSONDecoder().decode(RunSummary.self, from: json)
-        XCTAssertEqual(run.exitCode, -1)
+        #expect(run.exitCode == -1)
     }
     
     // MARK: - RunsIndex Tests
     
-    func testRunsIndexDecoding() throws {
+    @Test("RunsIndex decoding")
+    func runsIndexDecoding() throws {
         let json = """
         {
             "runs": [
@@ -193,15 +183,16 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let index = try JSONDecoder().decode(RunsIndex.self, from: json)
-        XCTAssertEqual(index.runs.count, 2)
-        XCTAssertEqual(index.total, 2)
-        XCTAssertEqual(index.runs[0].exitCode, 0)
-        XCTAssertNil(index.runs[1].exitCode)
+        #expect(index.runs.count == 2)
+        #expect(index.total == 2)
+        #expect(index.runs[0].exitCode == 0)
+        #expect(index.runs[1].exitCode == nil)
     }
     
     // MARK: - RunDetail Tests
     
-    func testRunDetailDecoding() throws {
+    @Test("RunDetail decoding")
+    func runDetailDecoding() throws {
         let json = """
         {
             "id": "abc-123",
@@ -215,16 +206,17 @@ final class ModelsTests: XCTestCase {
         """.data(using: .utf8)!
         
         let detail = try JSONDecoder().decode(RunDetail.self, from: json)
-        XCTAssertEqual(detail.id, "abc-123")
-        XCTAssertEqual(detail.task, "heartbeat")
-        XCTAssertEqual(detail.trigger, "scheduled")
-        XCTAssertEqual(detail.durationSeconds, 5)
-        XCTAssertEqual(detail.exitCode, 0)
+        #expect(detail.id == "abc-123")
+        #expect(detail.task == "heartbeat")
+        #expect(detail.trigger == "scheduled")
+        #expect(detail.durationSeconds == 5)
+        #expect(detail.exitCode == 0)
     }
     
     // MARK: - Encoding Tests
     
-    func testRunSummaryEncoding() throws {
+    @Test("RunSummary encoding")
+    func runSummaryEncoding() throws {
         let run = RunSummary(
             id: "test-123",
             task: "heartbeat",
@@ -239,8 +231,8 @@ final class ModelsTests: XCTestCase {
         let data = try encoder.encode(run)
         let decoded = try JSONDecoder().decode(RunSummary.self, from: data)
         
-        XCTAssertEqual(decoded.id, run.id)
-        XCTAssertEqual(decoded.task, run.task)
-        XCTAssertEqual(decoded.exitCode, run.exitCode)
+        #expect(decoded.id == run.id)
+        #expect(decoded.task == run.task)
+        #expect(decoded.exitCode == run.exitCode)
     }
 }

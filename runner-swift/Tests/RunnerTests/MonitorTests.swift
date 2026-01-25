@@ -1,34 +1,42 @@
-import XCTest
-@testable import runner
+import Testing
+import Foundation
+@testable import RunnerLib
 
-final class MonitorTests: XCTestCase {
+@Suite("Monitor Tests")
+struct MonitorTests {
     
-    var tempDir: URL!
-    var storage: Storage!
-    
-    override func setUp() async throws {
-        tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    func createTempStorage() async throws -> (URL, Storage) {
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        storage = Storage(dataDir: tempDir)
+        let storage = Storage(dataDir: tempDir)
         try await storage.initialize()
+        return (tempDir, storage)
     }
     
-    override func tearDown() async throws {
+    func cleanup(_ tempDir: URL) {
         try? FileManager.default.removeItem(at: tempDir)
     }
     
     // MARK: - Empty State Tests
     
-    func testCheckRunningTasksEmpty() async throws {
+    @Test("Check running tasks empty")
+    func checkRunningTasksEmpty() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
         let monitor = Monitor(storage: storage, verbose: false)
         let interrupted = try await monitor.checkRunningTasks()
         
-        XCTAssertTrue(interrupted.isEmpty)
+        #expect(interrupted.isEmpty)
     }
     
     // MARK: - Running Tasks Tests
     
-    func testCheckRunningTasksWithCompletedTask() async throws {
+    @Test("Check running tasks with completed task")
+    func checkRunningTasksWithCompletedTask() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
         // Add a completed task
         let run = RunSummary(
             id: "completed-1",
@@ -44,10 +52,14 @@ final class MonitorTests: XCTestCase {
         let monitor = Monitor(storage: storage, verbose: false)
         let interrupted = try await monitor.checkRunningTasks()
         
-        XCTAssertTrue(interrupted.isEmpty) // Completed tasks should not be affected
+        #expect(interrupted.isEmpty) // Completed tasks should not be affected
     }
     
-    func testCheckRunningTasksGracePeriod() async throws {
+    @Test("Check running tasks grace period")
+    func checkRunningTasksGracePeriod() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
         // Add a task that just started (within grace period)
         let now = Int64(Date().timeIntervalSince1970)
         let run = RunSummary(
@@ -65,10 +77,14 @@ final class MonitorTests: XCTestCase {
         let interrupted = try await monitor.checkRunningTasks()
         
         // Should be skipped due to grace period
-        XCTAssertTrue(interrupted.isEmpty)
+        #expect(interrupted.isEmpty)
     }
     
-    func testCheckRunningTasksNoPid() async throws {
+    @Test("Check running tasks no PID")
+    func checkRunningTasksNoPid() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
         // Add a task with no PID - this shouldn't be returned by getRunningTasks
         let run = RunSummary(
             id: "no-pid",
@@ -85,10 +101,14 @@ final class MonitorTests: XCTestCase {
         let interrupted = try await monitor.checkRunningTasks()
         
         // Tasks without PID are not considered "running" by getRunningTasks
-        XCTAssertTrue(interrupted.isEmpty)
+        #expect(interrupted.isEmpty)
     }
     
-    func testCheckRunningTasksMarksDeadProcess() async throws {
+    @Test("Check running tasks marks dead process")
+    func checkRunningTasksMarksDeadProcess() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
         // Add a task with a PID that definitely doesn't exist
         let oldTime = Int64(Date().timeIntervalSince1970) - 200 // 200 seconds ago (past grace period)
         let run = RunSummary(
@@ -105,15 +125,19 @@ final class MonitorTests: XCTestCase {
         let monitor = Monitor(storage: storage, verbose: false)
         let interrupted = try await monitor.checkRunningTasks()
         
-        XCTAssertEqual(interrupted, ["dead-process"])
+        #expect(interrupted == ["dead-process"])
         
         // Verify it was marked as interrupted
         let index = try await storage.loadRunsIndex()
         let updatedRun = index.runs.first { $0.id == "dead-process" }
-        XCTAssertEqual(updatedRun?.exitCode, -1)
+        #expect(updatedRun?.exitCode == -1)
     }
     
-    func testCheckRunningTasksLeavesRunningProcess() async throws {
+    @Test("Check running tasks leaves running process")
+    func checkRunningTasksLeavesRunningProcess() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
         // Add a task with current process PID (which is definitely running)
         let oldTime = Int64(Date().timeIntervalSince1970) - 200 // Past grace period
         let currentPid = Int(ProcessInfo.processInfo.processIdentifier)
@@ -134,12 +158,16 @@ final class MonitorTests: XCTestCase {
         // Current process is running, but the startedAtEpoch is wrong (PID reuse detection)
         // This will likely mark it as interrupted due to PID reuse
         // This is expected behavior - the test verifies monitor doesn't crash
-        XCTAssertTrue(interrupted.count <= 1)
+        #expect(interrupted.count <= 1)
     }
     
     // MARK: - Multiple Tasks Tests
     
-    func testCheckRunningTasksMultiple() async throws {
+    @Test("Check running tasks multiple")
+    func checkRunningTasksMultiple() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
         let oldTime = Int64(Date().timeIntervalSince1970) - 200
         
         // Add multiple tasks
@@ -156,6 +184,6 @@ final class MonitorTests: XCTestCase {
         let monitor = Monitor(storage: storage, verbose: false)
         let interrupted = try await monitor.checkRunningTasks()
         
-        XCTAssertEqual(Set(interrupted), Set(["dead-1", "dead-2"]))
+        #expect(Set(interrupted) == Set(["dead-1", "dead-2"]))
     }
 }

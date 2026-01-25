@@ -1,7 +1,7 @@
 import Foundation
 
 /// Cron expression for schedule matching
-enum CronExpr: Equatable {
+public enum CronExpr: Equatable {
     case any                    // "*"
     case exact(Int)             // "5"
     case range(Int, Int)        // "1-5"
@@ -9,7 +9,7 @@ enum CronExpr: Equatable {
     case step(Int)              // "*/10"
     
     /// Parse a cron field from JSON value
-    static func parse(_ value: Any, min: Int, max: Int) -> CronExpr {
+    public static func parse(_ value: Any, min: Int, max: Int) -> CronExpr {
         if let num = value as? Int {
             return .exact(num)
         }
@@ -64,7 +64,7 @@ enum CronExpr: Equatable {
     }
     
     /// Check if a value matches this expression
-    func matches(_ value: Int) -> Bool {
+    public func matches(_ value: Int) -> Bool {
         switch self {
         case .any:
             return true

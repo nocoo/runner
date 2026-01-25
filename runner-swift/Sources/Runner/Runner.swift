@@ -1,9 +1,10 @@
 import Foundation
 import ArgumentParser
+import RunnerLib
 
 @main
 struct Runner: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(
+    static let configuration = CommandConfiguration(
         commandName: "runner",
         abstract: "Declarative task scheduler for macOS",
         version: "0.1.0",
@@ -14,7 +15,7 @@ struct Runner: AsyncParsableCommand {
 // MARK: - Auto Command
 
 struct Auto: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(abstract: "Run scheduled tasks based on current time")
+    static let configuration = CommandConfiguration(abstract: "Run scheduled tasks based on current time")
     
     @OptionGroup var options: CommonOptions
     
@@ -46,7 +47,7 @@ struct Auto: AsyncParsableCommand {
         let now = Date()
         let calendar = Calendar.current
         let tz = TimeZone(secondsFromGMT: 8 * 3600)!
-        var components = calendar.dateComponents(in: tz, from: now)
+        let components = calendar.dateComponents(in: tz, from: now)
         
         let hour = mockHour ?? components.hour!
         let minute = mockMinute ?? components.minute!
@@ -90,7 +91,7 @@ struct Auto: AsyncParsableCommand {
 // MARK: - Run Command
 
 struct Run: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(abstract: "Run a specific task")
+    static let configuration = CommandConfiguration(abstract: "Run a specific task")
     
     @OptionGroup var options: CommonOptions
     
@@ -124,7 +125,7 @@ struct Run: AsyncParsableCommand {
 // MARK: - List Command
 
 struct List: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(abstract: "List tasks")
+    static let configuration = CommandConfiguration(abstract: "List tasks")
     
     @OptionGroup var options: CommonOptions
     
@@ -133,7 +134,7 @@ struct List: AsyncParsableCommand {
         let tasks = try await storage.loadTasks()
         
         for task in tasks {
-            print("\(task.id): \(task.description) (\(task.type.rawValue))")
+            print("\(task.id): \(task.description)")
         }
     }
 }
@@ -141,7 +142,7 @@ struct List: AsyncParsableCommand {
 // MARK: - Validate Command
 
 struct Validate: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(abstract: "Validate configuration")
+    static let configuration = CommandConfiguration(abstract: "Validate configuration")
     
     @OptionGroup var options: CommonOptions
     
@@ -153,17 +154,8 @@ struct Validate: AsyncParsableCommand {
         // Validate tasks
         var errors: [String] = []
         for task in tasks {
-            switch task.type {
-            case .simple:
-                if task.command == nil || task.command!.isEmpty {
-                    errors.append("Task '\(task.id)' has no command")
-                }
-            case .agent:
-                if task.prompt == nil || task.prompt!.isEmpty {
-                    errors.append("Task '\(task.id)' has no prompt")
-                }
-            case .manual:
-                break
+            if task.command.isEmpty {
+                errors.append("Task '\(task.id)' has no command")
             }
         }
         
@@ -191,7 +183,7 @@ struct Validate: AsyncParsableCommand {
 // MARK: - Monitor Command
 
 struct MonitorCommand: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(
+    static let configuration = CommandConfiguration(
         commandName: "monitor",
         abstract: "Check running tasks and mark interrupted ones"
     )
@@ -217,7 +209,7 @@ struct MonitorCommand: AsyncParsableCommand {
 // MARK: - Init Command
 
 struct Init: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(abstract: "Initialize data directory")
+    static let configuration = CommandConfiguration(abstract: "Initialize data directory")
     
     @OptionGroup var options: CommonOptions
     
@@ -231,7 +223,7 @@ struct Init: AsyncParsableCommand {
 // MARK: - Logs Command
 
 struct Logs: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(abstract: "Show logs for a task run")
+    static let configuration = CommandConfiguration(abstract: "Show logs for a task run")
     
     @OptionGroup var options: CommonOptions
     
@@ -286,7 +278,7 @@ struct Logs: AsyncParsableCommand {
 // MARK: - API Command
 
 struct Api: AsyncParsableCommand {
-    static var configuration = CommandConfiguration(abstract: "API queries")
+    static let configuration = CommandConfiguration(abstract: "API queries")
     
     @OptionGroup var options: CommonOptions
     
@@ -321,48 +313,5 @@ struct Api: AsyncParsableCommand {
         default:
             throw RunnerError.unknownQuery(query)
         }
-    }
-}
-
-// MARK: - Common Options
-
-struct CommonOptions: ParsableArguments {
-    @Option(name: .shortAndLong, help: "Data directory")
-    var dataDir: URL = URL(fileURLWithPath: "./data")
-    
-    @Flag(name: .shortAndLong, help: "Verbose output")
-    var verbose: Bool = false
-    
-    @Flag(name: .long, help: "Dry run")
-    var dryRun: Bool = false
-    
-    func log(_ message: String) {
-        if verbose {
-            FileHandle.standardError.write("[DEBUG] \(message)\n".data(using: .utf8)!)
-        }
-    }
-}
-
-// MARK: - Errors
-
-enum RunnerError: Error, CustomStringConvertible {
-    case taskNotFound(String)
-    case noRunsFound
-    case unknownQuery(String)
-    
-    var description: String {
-        switch self {
-        case .taskNotFound(let id): return "Task not found: \(id)"
-        case .noRunsFound: return "No runs found"
-        case .unknownQuery(let q): return "Unknown query: \(q)"
-        }
-    }
-}
-
-// MARK: - URL Extension for ArgumentParser
-
-extension URL: ExpressibleByArgument {
-    public init?(argument: String) {
-        self = URL(fileURLWithPath: argument)
     }
 }
