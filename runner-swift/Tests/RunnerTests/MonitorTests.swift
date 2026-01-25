@@ -186,4 +186,94 @@ struct MonitorTests {
         
         #expect(Set(interrupted) == Set(["dead-1", "dead-2"]))
     }
+    
+    // MARK: - Idempotency Tests
+    
+    @Test("Check running tasks is idempotent")
+    func checkRunningTasksIdempotent() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let oldTime = Int64(Date().timeIntervalSince1970) - 200
+        let run = RunSummary(
+            id: "dead-1",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 999999999,
+            startedAtEpoch: oldTime
+        )
+        try await storage.addRun(run)
+        
+        let monitor = Monitor(storage: storage, verbose: false)
+        
+        // First call marks it as interrupted
+        let interrupted1 = try await monitor.checkRunningTasks()
+        #expect(interrupted1 == ["dead-1"])
+        
+        // Second call should find nothing (already marked)
+        let interrupted2 = try await monitor.checkRunningTasks()
+        #expect(interrupted2.isEmpty)
+    }
+    
+    // MARK: - Edge Cases
+    
+    @Test("Check running tasks with mixed state")
+    func checkRunningTasksMixedState() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let now = Int64(Date().timeIntervalSince1970)
+        let oldTime = now - 200
+        let currentPid = Int(ProcessInfo.processInfo.processIdentifier)
+        
+        // Add various task states
+        let tasks = [
+            // Completed successfully
+            RunSummary(id: "success", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: "2026-01-25T08:00:01Z", pid: nil, startedAtEpoch: nil),
+            // Failed
+            RunSummary(id: "failed", task: "t2", exitCode: 1, startedAt: "2026-01-25T08:00:00Z", finishedAt: "2026-01-25T08:00:01Z", pid: nil, startedAtEpoch: nil),
+            // Dead process (past grace period)
+            RunSummary(id: "dead", task: "t3", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: 999999999, startedAtEpoch: oldTime),
+            // Still in grace period
+            RunSummary(id: "grace", task: "t4", exitCode: nil, startedAt: ISO8601DateFormatter().string(from: Date()), finishedAt: nil, pid: currentPid, startedAtEpoch: now),
+            // Already interrupted
+            RunSummary(id: "interrupted", task: "t5", exitCode: -1, startedAt: "2026-01-25T08:00:00Z", finishedAt: "2026-01-25T08:00:01Z", pid: nil, startedAtEpoch: nil),
+        ]
+        
+        for task in tasks {
+            try await storage.addRun(task)
+        }
+        
+        let monitor = Monitor(storage: storage, verbose: false)
+        let interrupted = try await monitor.checkRunningTasks()
+        
+        // Only the dead process should be marked
+        #expect(interrupted == ["dead"])
+    }
+    
+    @Test("Check running tasks with no epoch falls back")
+    func checkRunningTasksNoEpoch() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        // Task without startedAtEpoch - should use fallback behavior
+        let run = RunSummary(
+            id: "no-epoch",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 999999999,
+            startedAtEpoch: nil
+        )
+        try await storage.addRun(run)
+        
+        let monitor = Monitor(storage: storage, verbose: false)
+        let interrupted = try await monitor.checkRunningTasks()
+        
+        // Should still mark as interrupted (process doesn't exist)
+        #expect(interrupted == ["no-epoch"])
+    }
 }

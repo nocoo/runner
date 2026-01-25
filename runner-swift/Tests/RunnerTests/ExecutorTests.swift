@@ -112,4 +112,346 @@ struct ExecutorTests {
         
         #expect(content.contains("/tmp") || content.contains("/private/tmp"))
     }
+    
+    // MARK: - Task Completion Tests
+    
+    @Test("Execute fast command completes")
+    func executeFastCommandCompletes() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = makeTask(command: "echo 'done'")
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        // Wait for background task to complete (increased for CI)
+        try await _Concurrency.Task.sleep(nanoseconds: 2_000_000_000) // 2s
+        
+        // Check detail.json was created
+        let detailPath = tempDir.appendingPathComponent("runs/\(result.id).json")
+        #expect(FileManager.default.fileExists(atPath: detailPath.path))
+        
+        let detail = try await storage.loadRunDetail(id: result.id)
+        #expect(detail != nil)
+        #expect(detail?.exitCode == 0)
+        #expect(detail?.task == "test")
+        #expect(detail?.trigger == "test")
+    }
+    
+    @Test("Execute failing command records exit code")
+    func executeFailingCommand() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = makeTask(command: "exit 42")
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        // Wait for background task to complete (increased for CI)
+        try await _Concurrency.Task.sleep(nanoseconds: 2_000_000_000) // 2s
+        
+        let detail = try await storage.loadRunDetail(id: result.id)
+        #expect(detail?.exitCode == 42)
+    }
+    
+    @Test("Execute updates index after completion")
+    func executeUpdatesIndex() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = makeTask(command: "echo done")
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        // Initially running
+        let indexBefore = try await storage.loadRunsIndex()
+        #expect(indexBefore.runs[0].exitCode == nil)
+        #expect(indexBefore.runs[0].pid != nil)
+        
+        // Wait for completion
+        try await _Concurrency.Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
+        
+        // After completion
+        let indexAfter = try await storage.loadRunsIndex()
+        #expect(indexAfter.runs[0].exitCode == 0)
+        #expect(indexAfter.runs[0].finishedAt != nil)
+        #expect(indexAfter.runs[0].pid == nil)
+    }
+    
+    // MARK: - Timeout Tests
+    
+    @Test("Execute timeout triggers kill")
+    func executeTimeout() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        // Task with 2 second timeout but runs for 10 seconds
+        let task = Task(
+            id: "timeout_test",
+            type: .simple,
+            description: "Timeout test",
+            timeout: 2,
+            command: "sleep 10",
+            prompt: nil,
+            workdir: nil
+        )
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        // Wait for timeout + cleanup (increased for CI)
+        try await _Concurrency.Task.sleep(nanoseconds: 5_000_000_000) // 5s
+        
+        let detail = try await storage.loadRunDetail(id: result.id)
+        #expect(detail?.exitCode == 124) // Timeout exit code
+        
+        let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")
+        let content = try String(contentsOf: outputPath, encoding: .utf8)
+        #expect(content.contains("TIMEOUT"))
+    }
+    
+    // MARK: - Script Cleanup Tests
+    
+    @Test("Execute cleans up script after completion")
+    func executeScriptCleanup() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = makeTask(command: "echo done")
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        // Script should exist initially
+        let scriptPath = tempDir.appendingPathComponent("runs/.\(result.id).sh")
+        try await _Concurrency.Task.sleep(nanoseconds: 100_000_000) // 100ms
+        #expect(FileManager.default.fileExists(atPath: scriptPath.path))
+        
+        // Wait for completion
+        try await _Concurrency.Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
+        
+        // Script should be cleaned up
+        #expect(!FileManager.default.fileExists(atPath: scriptPath.path))
+    }
+    
+    // MARK: - Agent Type Tests
+    
+    @Test("Agent task builds opencode command")
+    func agentTaskBuildsCommand() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = Task(
+            id: "agent_test",
+            type: .agent,
+            description: "Agent test",
+            timeout: 60,
+            command: nil,
+            prompt: "Say hello",
+            workdir: nil
+        )
+        
+        // Use dry run to see the command without executing
+        let executor = Executor(storage: storage, dryRun: true, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        #expect(result.output.contains("opencode"))
+        #expect(result.output.contains("Say hello"))
+    }
+    
+    @Test("Agent task with special characters in prompt")
+    func agentTaskSpecialCharacters() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = Task(
+            id: "special_chars",
+            type: .agent,
+            description: "Special chars test",
+            timeout: 60,
+            command: nil,
+            prompt: "It's a test with \"quotes\" and $variables",
+            workdir: nil
+        )
+        
+        let executor = Executor(storage: storage, dryRun: true, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        // Should not crash and should contain escaped prompt
+        #expect(result.exitCode == 0)
+        #expect(result.output.contains("opencode"))
+    }
+    
+    // MARK: - Missing Command Tests
+    
+    @Test("Task without command or prompt fails")
+    func taskWithoutCommandFails() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = Task(
+            id: "empty",
+            type: .simple,
+            description: "Empty task",
+            timeout: 60,
+            command: nil,
+            prompt: nil,
+            workdir: nil
+        )
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        
+        do {
+            _ = try await executor.execute(task: task, trigger: "test")
+            #expect(Bool(false), "Should have thrown")
+        } catch {
+            #expect(error is ExecutorError)
+        }
+    }
+    
+    @Test("Task with empty command fails")
+    func taskWithEmptyCommandFails() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = Task(
+            id: "empty_cmd",
+            type: .simple,
+            description: "Empty command",
+            timeout: 60,
+            command: "",
+            prompt: nil,
+            workdir: nil
+        )
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        
+        do {
+            _ = try await executor.execute(task: task, trigger: "test")
+            #expect(Bool(false), "Should have thrown")
+        } catch {
+            #expect(error is ExecutorError)
+        }
+    }
+    
+    // MARK: - Concurrent Execution Tests
+    
+    @Test("Execute multiple tasks sequentially")
+    func executeMultipleSequentially() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        
+        // Launch 3 tasks with delays to avoid file lock contention
+        var resultIds: [String] = []
+        for i in 0..<3 {
+            let task = Task(
+                id: "sequential_\(i)",
+                type: .simple,
+                description: "Sequential test \(i)",
+                timeout: 60,
+                command: "echo task_\(i)",
+                prompt: nil,
+                workdir: nil
+            )
+            let result = try await executor.execute(task: task, trigger: "test")
+            resultIds.append(result.id)
+            // Delay between launches to avoid index.json contention
+            try await _Concurrency.Task.sleep(nanoseconds: 500_000_000) // 500ms
+        }
+        
+        #expect(resultIds.count == 3)
+        
+        // Wait for all to complete (increased significantly)
+        try await _Concurrency.Task.sleep(nanoseconds: 5_000_000_000) // 5s
+        
+        let index = try await storage.loadRunsIndex()
+        #expect(index.runs.count == 3)
+        
+        // All should have completed
+        let completed = index.runs.filter { $0.exitCode != nil }
+        #expect(completed.count == 3)
+    }
+    
+    // MARK: - Output Capture Tests
+    
+    @Test("Execute captures stdout")
+    func executeCapturesStdout() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = makeTask(command: "echo 'hello world'")
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        try await _Concurrency.Task.sleep(nanoseconds: 1_000_000_000) // 1s
+        
+        let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")
+        let content = try String(contentsOf: outputPath, encoding: .utf8)
+        
+        #expect(content.contains("hello world"))
+    }
+    
+    @Test("Execute captures stderr")
+    func executeCapturesStderr() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = makeTask(command: "echo 'error message' >&2")
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        try await _Concurrency.Task.sleep(nanoseconds: 1_000_000_000) // 1s
+        
+        let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")
+        let content = try String(contentsOf: outputPath, encoding: .utf8)
+        
+        #expect(content.contains("error message"))
+    }
+    
+    @Test("Execute captures multiline output")
+    func executeCapturesMultilineOutput() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = makeTask(command: "echo 'line1' && echo 'line2' && echo 'line3'")
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        try await _Concurrency.Task.sleep(nanoseconds: 1_000_000_000) // 1s
+        
+        let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")
+        let content = try String(contentsOf: outputPath, encoding: .utf8)
+        
+        #expect(content.contains("line1"))
+        #expect(content.contains("line2"))
+        #expect(content.contains("line3"))
+    }
+    
+    // MARK: - Duration Tracking Tests
+    
+    @Test("Execute tracks duration")
+    func executeTracksDuration() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+        
+        let task = makeTask(command: "sleep 1")
+        
+        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        try await _Concurrency.Task.sleep(nanoseconds: 3_000_000_000) // 3s
+        
+        let detail = try await storage.loadRunDetail(id: result.id)
+        #expect(detail != nil)
+        #expect((detail?.durationSeconds ?? 0) >= 1)
+        #expect((detail?.durationSeconds ?? 100) < 5)
+    }
 }

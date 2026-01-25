@@ -187,7 +187,7 @@ public struct Executor {
     }
 }
 
-public struct ExecutionResult {
+public struct ExecutionResult: Sendable {
     public let id: String
     public let exitCode: Int
     public let output: String
