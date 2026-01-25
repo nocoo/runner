@@ -15,7 +15,7 @@ struct Executor {
     
     /// Execute a task
     func execute(task: Task, trigger: String) async throws -> ExecutionResult {
-        let runId = UUID().uuidString
+        let runId = UUID().uuidString.lowercased()
         let startedAt = ISO8601DateFormatter().string(from: Date())
         let startEpoch = Int64(Date().timeIntervalSince1970)
         

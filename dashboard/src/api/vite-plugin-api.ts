@@ -82,7 +82,7 @@ export function apiPlugin(): Plugin {
           }
 
           // GET /api/runs/:id
-          const runMatch = url.match(/^\/api\/runs\/([a-f0-9-]{36})$/);
+          const runMatch = url.match(/^\/api\/runs\/([a-fA-F0-9-]{36})$/i);
           if (runMatch && req.method === "GET") {
             const id = runMatch[1];
             // Try to read individual .json file first
@@ -119,7 +119,7 @@ export function apiPlugin(): Plugin {
           }
 
           // GET /api/runs/:id/output - get full task output
-          const outputMatch = url.match(/^\/api\/runs\/([a-f0-9-]{36})\/output$/);
+          const outputMatch = url.match(/^\/api\/runs\/([a-fA-F0-9-]{36})\/output$/i);
           if (outputMatch && req.method === "GET") {
             const id = outputMatch[1];
             const outputPath = resolve(DATA_DIR, `runs/${id}.output`);
