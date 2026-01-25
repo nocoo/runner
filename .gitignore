@@ -14,8 +14,9 @@ vibeusage/
 dashboard/dist/
 dashboard/node_modules/
 
-# Rust build output
-runner-rs/target/
+# Swift build output
+runner-swift/.build/
+runner-swift/.swiftpm/
 
-# Compiled binary (built from runner-rs)
+# Compiled binary (built from runner-swift)
 /runner
