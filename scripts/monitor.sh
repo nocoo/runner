@@ -46,15 +46,20 @@ lstart_to_epoch() {
 mark_interrupted() {
     local run_id="$1"
     local finished_at=$(get_timestamp)
-    local temp_file=$(mktemp)
+    local lock_file="$RUNNER_DATA_DIR/runs/.index.lock"
     
-    jq --arg id "$run_id" \
-       --arg finished_at "$finished_at" \
-       '(.runs[] | select(.id == $id)) |= . + {
-           exit_code: -1,
-           finished_at: $finished_at,
-           pid: null
-       }' "$index_file" > "$temp_file" && mv "$temp_file" "$index_file"
+    # Use flock for atomic file operations (prevent race conditions)
+    (
+        flock -x 200
+        local temp_file=$(mktemp)
+        jq --arg id "$run_id" \
+           --arg finished_at "$finished_at" \
+           '(.runs[] | select(.id == $id)) |= . + {
+               exit_code: -1,
+               finished_at: $finished_at,
+               pid: null
+           }' "$index_file" > "$temp_file" && mv "$temp_file" "$index_file"
+    ) 200>"$lock_file"
     
     log_info "Task $run_id marked as interrupted"
 }

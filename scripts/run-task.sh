@@ -11,7 +11,11 @@
 # =============================================================================
 
 # Load environment variables (needed for launchd which doesn't load shell config)
-[[ -f "$HOME/.zshrc" ]] && source "$HOME/.zshrc" 2>/dev/null || true
+# Only export specific vars, avoid sourcing entire .zshrc which may have side effects
+if [[ -f "$HOME/.zshrc" ]]; then
+    # Extract export lines and evaluate them
+    eval "$(grep -E '^export [A-Z_]+=' "$HOME/.zshrc" 2>/dev/null)" 2>/dev/null || true
+fi
 
 task_name="$1"
 task_type="$2"
@@ -94,13 +98,18 @@ cat > "$run_file" << EOF
 EOF
 
 # Update index with final exit_code and finished_at, clear pid
+# Use flock for atomic file operations (prevent race conditions)
 index_file="$data_dir/runs/index.json"
-temp_file=$(mktemp)
-jq --arg id "$run_id" \
-   --argjson exit_code "$exit_code" \
-   --arg finished_at "$finished_at" \
-   '(.runs[] | select(.id == $id)) |= . + {exit_code: $exit_code, finished_at: $finished_at, pid: null}' \
-   "$index_file" > "$temp_file" && mv "$temp_file" "$index_file"
+lock_file="$data_dir/runs/.index.lock"
+(
+    flock -x 200
+    temp_file=$(mktemp)
+    jq --arg id "$run_id" \
+       --argjson exit_code "$exit_code" \
+       --arg finished_at "$finished_at" \
+       '(.runs[] | select(.id == $id)) |= . + {exit_code: $exit_code, finished_at: $finished_at, pid: null}' \
+       "$index_file" > "$temp_file" && mv "$temp_file" "$index_file"
+) 200>"$lock_file"
 
 # Update state
 state_file="$data_dir/state.json"

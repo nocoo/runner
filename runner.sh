@@ -798,49 +798,55 @@ update_runs_index() {
     local started_at_epoch="${6:-}"  # Epoch timestamp for PID reuse detection
     
     local index_file="$RUNNER_DATA_DIR/runs/index.json"
+    local lock_file="$RUNNER_DATA_DIR/runs/.index.lock"
     local temp_file=$(mktemp)
     
-    # Check if run already exists (update) or is new (add)
-    local exists=$(jq --arg id "$run_id" '.runs[] | select(.id == $id) | .id' "$index_file" 2>/dev/null)
-    
-    if [[ -n "$exists" ]]; then
-        # Update existing run
-        jq --arg id "$run_id" \
-           --argjson exit_code "${exit_code:-null}" \
-           --arg finished_at "${finished_at:-null}" \
-           --argjson pid "${pid:-null}" \
-           --argjson started_at_epoch "${started_at_epoch:-null}" \
-           --arg updated_at "$(get_timestamp)" \
-           '(.runs[] | select(.id == $id)) |= . + {
-               exit_code: (if $exit_code == null then null else $exit_code end),
-               finished_at: (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
-               pid: (if $pid == null then .pid else $pid end),
-               started_at_epoch: (if $started_at_epoch == null then .started_at_epoch else $started_at_epoch end)
-           } | .updated_at = $updated_at' \
-           "$index_file" > "$temp_file"
-    else
-        # Add new run
-        jq --arg id "$run_id" \
-           --arg task "$task" \
-           --argjson exit_code "${exit_code:-null}" \
-           --arg started_at "$(get_timestamp)" \
-           --arg finished_at "${finished_at:-null}" \
-           --argjson pid "${pid:-null}" \
-           --argjson started_at_epoch "${started_at_epoch:-null}" \
-           --arg updated_at "$(get_timestamp)" \
-           '.runs += [{
-               id: $id,
-               task: $task,
-               exit_code: (if $exit_code == null then null else $exit_code end),
-               started_at: $started_at,
-               finished_at: (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
-               pid: $pid,
-               started_at_epoch: $started_at_epoch
-           }] | .total = (.runs | length) | .updated_at = $updated_at' \
-           "$index_file" > "$temp_file"
-    fi
-    
-    mv "$temp_file" "$index_file"
+    # Use flock for atomic file operations (prevent race conditions)
+    (
+        flock -x 200  # Exclusive lock
+        
+        # Check if run already exists (update) or is new (add)
+        local exists=$(jq --arg id "$run_id" '.runs[] | select(.id == $id) | .id' "$index_file" 2>/dev/null)
+        
+        if [[ -n "$exists" ]]; then
+            # Update existing run
+            jq --arg id "$run_id" \
+               --argjson exit_code "${exit_code:-null}" \
+               --arg finished_at "${finished_at:-null}" \
+               --argjson pid "${pid:-null}" \
+               --argjson started_at_epoch "${started_at_epoch:-null}" \
+               --arg updated_at "$(get_timestamp)" \
+               '(.runs[] | select(.id == $id)) |= . + {
+                   exit_code: (if $exit_code == null then null else $exit_code end),
+                   finished_at: (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
+                   pid: (if $pid == null then .pid else $pid end),
+                   started_at_epoch: (if $started_at_epoch == null then .started_at_epoch else $started_at_epoch end)
+               } | .updated_at = $updated_at' \
+               "$index_file" > "$temp_file"
+        else
+            # Add new run
+            jq --arg id "$run_id" \
+               --arg task "$task" \
+               --argjson exit_code "${exit_code:-null}" \
+               --arg started_at "$(get_timestamp)" \
+               --arg finished_at "${finished_at:-null}" \
+               --argjson pid "${pid:-null}" \
+               --argjson started_at_epoch "${started_at_epoch:-null}" \
+               --arg updated_at "$(get_timestamp)" \
+               '.runs += [{
+                   id: $id,
+                   task: $task,
+                   exit_code: (if $exit_code == null then null else $exit_code end),
+                   started_at: $started_at,
+                   finished_at: (if $finished_at == "null" or $finished_at == "" then null else $finished_at end),
+                   pid: $pid,
+                   started_at_epoch: $started_at_epoch
+               }] | .total = (.runs | length) | .updated_at = $updated_at' \
+               "$index_file" > "$temp_file"
+        fi
+        
+        mv "$temp_file" "$index_file"
+    ) 200>"$lock_file"
 }
 
 # Note: cleanup_stale_runs() removed - now handled by scripts/monitor.sh
