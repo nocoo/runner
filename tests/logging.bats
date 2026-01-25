@@ -109,3 +109,25 @@ load 'test_helper'
         "$RUNNER_DATA_DIR/runs/index.json"
     assert_success
 }
+
+# -----------------------------------------------------------------------------
+# Test: Output file is created with task output
+# -----------------------------------------------------------------------------
+@test "output file is created with task output" {
+    run runner morning_briefing
+    assert_success
+    
+    # Wait for async task
+    wait_for_any_completion 10
+    
+    local run_id=$(get_latest_run_id)
+    local output_file="$RUNNER_DATA_DIR/runs/${run_id}.output"
+    
+    # Verify output file exists and has content
+    [[ -f "$output_file" ]]
+    [[ -s "$output_file" ]]
+    
+    # Verify output file has expected header
+    grep -q "# Task:" "$output_file"
+    grep -q "# Exit code:" "$output_file"
+}

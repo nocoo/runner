@@ -104,12 +104,12 @@ load 'test_helper'
     local run_id=$(get_latest_run_id)
     [[ -n "$run_id" ]]
     
-    # Verify the log file exists
+    # Verify the metadata file exists
     [[ -f "$RUNNER_DATA_DIR/runs/${run_id}.json" ]]
     
-    # Verify output contains success message
-    local output_preview=$(jq -r '.output_preview' "$RUNNER_DATA_DIR/runs/${run_id}.json")
-    [[ "$output_preview" == *"Command executed successfully"* ]]
+    # Verify the output file exists and contains success info
+    [[ -f "$RUNNER_DATA_DIR/runs/${run_id}.output" ]]
+    grep -q "# Exit code: 0" "$RUNNER_DATA_DIR/runs/${run_id}.output"
 }
 
 # -----------------------------------------------------------------------------
@@ -146,10 +146,10 @@ EOF
     local run_id=$(get_latest_run_id)
     [[ -n "$run_id" ]]
     
-    # Check that it went through opencode (mock returns specific output)
-    local output_preview=$(jq -r '.output_preview' "$RUNNER_DATA_DIR/runs/${run_id}.json")
-    # The mock opencode should have been called
-    [[ -n "$output_preview" ]]
+    # Check that output file was created
+    [[ -f "$RUNNER_DATA_DIR/runs/${run_id}.output" ]]
+    # The mock opencode should have been called, output file should have content
+    [[ -s "$RUNNER_DATA_DIR/runs/${run_id}.output" ]]
 }
 
 # -----------------------------------------------------------------------------

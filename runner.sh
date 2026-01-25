@@ -686,14 +686,26 @@ _execute_simple_task() {
     # Record running status
     update_runs_index "$run_id" "$task_name" "" ""
 
-    local output=""
+    local output_file="$RUNNER_DATA_DIR/runs/${run_id}.output"
     local exit_code=0
 
+    # Write header to output file
+    {
+        echo "# Task: $task_name"
+        echo "# Type: simple"
+        echo "# Started: $started_at"
+        echo "# Workdir: ${workdir:-<default>}"
+        echo ""
+        echo "$ $command"
+        echo ""
+    } > "$output_file"
+
+    # Execute and capture output
     set +e
     if [[ -n "$workdir" && -d "$workdir" ]]; then
-        output=$(cd "$workdir" && eval "$command" 2>&1)
+        (cd "$workdir" && eval "$command") >> "$output_file" 2>&1
     else
-        output=$(eval "$command" 2>&1)
+        eval "$command" >> "$output_file" 2>&1
     fi
     exit_code=$?
     set -e
@@ -705,15 +717,14 @@ _execute_simple_task() {
 
     log_debug "Duration: ${duration}s, Exit code: $exit_code"
 
-    # Prepare output
-    if [[ $exit_code -eq 0 ]]; then
-        output="Command executed successfully: $command"
-    else
-        output="Command failed (exit $exit_code): $command\n$output"
-    fi
-    local output_preview="${output:0:500}"
+    # Append footer to output file
+    {
+        echo ""
+        echo "# Exit code: $exit_code"
+        echo "# Finished: $finished_at"
+    } >> "$output_file"
 
-    # Write run log
+    # Write run metadata (output is in .output file)
     local run_file="$RUNNER_DATA_DIR/runs/${run_id}.json"
     cat > "$run_file" << EOF
 {
@@ -723,8 +734,7 @@ _execute_simple_task() {
   "started_at": "$started_at",
   "finished_at": "$finished_at",
   "duration_seconds": $duration,
-  "exit_code": $exit_code,
-  "output_preview": $(echo "$output_preview" | jq -Rs '.')
+  "exit_code": $exit_code
 }
 EOF
 
@@ -989,6 +999,103 @@ handle_api() {
 # CLI Functions
 # =============================================================================
 
+# =============================================================================
+# Logs Command
+# =============================================================================
+
+# Show task output
+# Usage: show_logs <run_id> [--tail] [--follow]
+show_logs() {
+    local run_id="$1"
+    local tail_mode=false
+    local follow_mode=false
+    
+    shift
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            --tail|-t) tail_mode=true ;;
+            --follow|-f) follow_mode=true ;;
+            *) ;;
+        esac
+        shift
+    done
+    
+    # If no run_id, show latest
+    if [[ -z "$run_id" || "$run_id" == "--tail" || "$run_id" == "-t" || "$run_id" == "--follow" || "$run_id" == "-f" ]]; then
+        # Re-parse if run_id was actually a flag
+        [[ "$run_id" == "--tail" || "$run_id" == "-t" ]] && tail_mode=true
+        [[ "$run_id" == "--follow" || "$run_id" == "-f" ]] && follow_mode=true
+        run_id=$(jq -r '.runs[-1].id // empty' "$RUNNER_DATA_DIR/runs/index.json" 2>/dev/null)
+        if [[ -z "$run_id" ]]; then
+            log_error "No runs found"
+            exit 1
+        fi
+    fi
+    
+    local output_file="$RUNNER_DATA_DIR/runs/${run_id}.output"
+    
+    if [[ ! -f "$output_file" ]]; then
+        log_error "Output file not found: $output_file"
+        exit 1
+    fi
+    
+    if [[ "$follow_mode" == true ]]; then
+        # Follow mode: tail -f for running tasks
+        tail -f "$output_file"
+    elif [[ "$tail_mode" == true ]]; then
+        # Tail mode: show last 50 lines
+        tail -50 "$output_file"
+    else
+        # Default: show full output
+        cat "$output_file"
+    fi
+}
+
+# List recent runs with their output file status
+list_logs() {
+    local limit="${1:-10}"
+    
+    echo "Recent runs (last $limit):"
+    echo ""
+    printf "%-36s  %-20s  %-8s  %-6s  %s\n" "RUN_ID" "TASK" "STATUS" "OUTPUT" "TIME"
+    printf "%-36s  %-20s  %-8s  %-6s  %s\n" "------" "----" "------" "------" "----"
+    
+    jq -r ".runs | .[-$limit:] | reverse | .[] | \"\(.id)\t\(.task)\t\(.exit_code // \"running\")\t\(.finished_at // \"running\")\"" \
+        "$RUNNER_DATA_DIR/runs/index.json" 2>/dev/null | while IFS=$'\t' read -r id task exit_code finished_at; do
+        local status="running"
+        [[ "$exit_code" == "0" ]] && status="success"
+        [[ "$exit_code" != "null" && "$exit_code" != "running" && "$exit_code" != "0" ]] && status="failed"
+        
+        local has_output="no"
+        [[ -f "$RUNNER_DATA_DIR/runs/${id}.output" ]] && has_output="yes"
+        
+        local time_str="running"
+        [[ "$finished_at" != "null" && "$finished_at" != "running" ]] && time_str="${finished_at:0:19}"
+        
+        printf "%-36s  %-20s  %-8s  %-6s  %s\n" "$id" "$task" "$status" "$has_output" "$time_str"
+    done
+}
+
+# Handle logs command
+handle_logs() {
+    local subcommand="${1:-}"
+    
+    case "$subcommand" in
+        list|ls)
+            shift
+            list_logs "${1:-10}"
+            ;;
+        ""|--tail|-t|--follow|-f)
+            # No subcommand or flags: show latest or specified run
+            show_logs "$@"
+            ;;
+        *)
+            # Assume it's a run_id
+            show_logs "$@"
+            ;;
+    esac
+}
+
 show_usage() {
     cat << EOF
 Usage: $(basename "$0") <command> [options]
@@ -999,6 +1106,7 @@ Commands:
   list                    List all available tasks
   validate                Validate configuration file
   api <endpoint> [args]   Output JSON data for API
+  logs [run_id] [opts]    View task output logs
 
 API Endpoints:
   api tasks               List all tasks
@@ -1006,6 +1114,13 @@ API Endpoints:
   api runs [id]           List runs or get run details
   api status              Get system status
   api init                Initialize data files
+
+Logs Commands:
+  logs                    Show output of latest run
+  logs <run_id>           Show output of specific run
+  logs list [n]           List recent n runs (default: 10)
+  logs --tail             Show last 50 lines of latest run
+  logs --follow           Follow output of running task (tail -f)
 
 Options:
   --dry-run               Preview prompt without execution
@@ -1019,6 +1134,8 @@ Examples:
   $(basename "$0") morning_briefing --dry-run   # Preview prompt
   $(basename "$0") validate                # Validate config
   $(basename "$0") api runs                # Get execution history
+  $(basename "$0") logs                    # View latest task output
+  $(basename "$0") logs --follow           # Follow running task
 EOF
 }
 
@@ -1127,6 +1244,9 @@ main() {
             ;;
         api)
             handle_api "${args[@]:-}"
+            ;;
+        logs)
+            handle_logs "${args[@]:-}"
             ;;
         *)
             # Assume it's a task name
