@@ -6,7 +6,7 @@
 import { useState, useMemo } from "react";
 import type { RunSummary, RunStatus } from "@/models/types";
 import { AsciiBox, MatrixButton } from "@/ui/foundation";
-import { formatRelativeTime, formatDurationMs } from "@/lib/format";
+import { formatTimeUTC8, formatDurationMs } from "@/lib/format";
 
 interface RunHistoryProps {
   runs: RunSummary[];
@@ -17,7 +17,7 @@ interface RunHistoryProps {
   onSelectRun: (id: string) => void;
 }
 
-type SortKey = "task" | "status" | "duration" | "finished_at";
+type SortKey = "finished_at" | "task" | "status" | "duration";
 type SortDir = "asc" | "desc";
 
 interface Column {
@@ -27,10 +27,10 @@ interface Column {
 }
 
 const COLUMNS: Column[] = [
+  { key: "finished_at", label: "Time", title: "Sort by time" },
   { key: "task", label: "Task", title: "Sort by task name" },
   { key: "status", label: "Status", title: "Sort by status" },
   { key: "duration", label: "Duration", title: "Sort by duration" },
-  { key: "finished_at", label: "Time", title: "Sort by time" },
 ];
 
 function getSortIcon(key: SortKey, sortKey: SortKey, sortDir: SortDir): string {
@@ -202,6 +202,9 @@ export function RunHistory({
                   className="border-b border-[#00FF41]/5 hover:bg-[#00FF41]/5 cursor-pointer transition-colors"
                   onClick={() => onSelectRun(run.id)}
                 >
+                  <td className="px-3 py-2 text-[12px] font-mono opacity-80">
+                    {displayTime ? formatTimeUTC8(displayTime) : "—"}
+                  </td>
                   <td className="px-3 py-2 text-[12px] font-mono font-bold">
                     {run.task}
                   </td>
@@ -224,9 +227,6 @@ export function RunHistory({
                     ) : (
                       "—"
                     )}
-                  </td>
-                  <td className="px-3 py-2 text-[12px] font-mono opacity-80">
-                    {displayTime ? formatRelativeTime(displayTime) : "—"}
                   </td>
                   <td className="px-3 py-2 text-[12px] font-mono opacity-40 text-right">
                     →

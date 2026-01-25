@@ -29,9 +29,14 @@ public struct Monitor {
         
         for run in running {
             guard let pid = run.pid else {
-                log("Task \(run.id) has no PID, marking as interrupted")
-                try await storage.markInterrupted(id: run.id)
-                interrupted.append(run.id)
+                log("Task \(run.id) has no PID, checking detail file...")
+                if try await syncFromDetail(id: run.id) {
+                    log("Task \(run.id) synced from detail file")
+                } else {
+                    log("Task \(run.id) has no detail, marking as interrupted")
+                    try await storage.markInterrupted(id: run.id)
+                    interrupted.append(run.id)
+                }
                 continue
             }
             
@@ -47,19 +52,39 @@ public struct Monitor {
             }
             
             if !isProcessRunning(pid: pid) {
-                log("Process \(pid) not running, marking as interrupted")
-                try await storage.markInterrupted(id: run.id)
-                interrupted.append(run.id)
+                log("Process \(pid) not running, checking detail file...")
+                if try await syncFromDetail(id: run.id) {
+                    log("Task \(run.id) synced from detail file")
+                } else {
+                    log("Task \(run.id) has no detail, marking as interrupted")
+                    try await storage.markInterrupted(id: run.id)
+                    interrupted.append(run.id)
+                }
             } else if isPidReused(pid: pid, recordedStart: run.startedAtEpoch) {
-                log("PID \(pid) reused, marking as interrupted")
-                try await storage.markInterrupted(id: run.id)
-                interrupted.append(run.id)
+                log("PID \(pid) reused, checking detail file...")
+                if try await syncFromDetail(id: run.id) {
+                    log("Task \(run.id) synced from detail file")
+                } else {
+                    log("Task \(run.id) has no detail, marking as interrupted")
+                    try await storage.markInterrupted(id: run.id)
+                    interrupted.append(run.id)
+                }
             } else {
                 log("Task \(run.id) still running")
             }
         }
         
         return interrupted
+    }
+    
+    /// Try to sync index from detail file (returns true if synced)
+    private func syncFromDetail(id: String) async throws -> Bool {
+        if let detail = try await storage.loadRunDetail(id: id) {
+            // Detail exists with exit_code, sync to index
+            try await storage.updateRun(id: id, exitCode: detail.exitCode, finishedAt: detail.finishedAt)
+            return true
+        }
+        return false
     }
     
     /// Check if a process is running

@@ -75,6 +75,25 @@ export function formatDate(isoDate: string): string {
 }
 
 /**
+ * Format ISO date to absolute time in UTC+8 (HH:mm:ss)
+ */
+export function formatTimeUTC8(isoDate: string): string {
+  if (!isoDate) return "-";
+
+  const date = new Date(isoDate);
+  if (isNaN(date.getTime())) return "-";
+
+  // Convert to UTC+8
+  const utc8Date = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+  
+  const hours = utc8Date.getUTCHours().toString().padStart(2, "0");
+  const minutes = utc8Date.getUTCMinutes().toString().padStart(2, "0");
+  const seconds = utc8Date.getUTCSeconds().toString().padStart(2, "0");
+  
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+/**
  * Format exit code to status string
  */
 export function formatExitCode(exitCode: number): string {

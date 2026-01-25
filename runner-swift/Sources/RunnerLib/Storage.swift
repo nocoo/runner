@@ -122,6 +122,12 @@ public actor Storage {
         try writeJSON(detail, to: path)
     }
     
+    public func loadRunDetail(id: String) throws -> RunDetail? {
+        let path = dataDir.appendingPathComponent("runs/\(id).json")
+        guard fileManager.fileExists(atPath: path.path) else { return nil }
+        return try readJSON(from: path)
+    }
+    
     // MARK: - Helpers
     
     private func timestamp() -> String {
