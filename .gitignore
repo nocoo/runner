@@ -13,3 +13,9 @@ vibeusage/
 # Dashboard build output
 dashboard/dist/
 dashboard/node_modules/
+
+# Rust build output
+runner-rs/target/
+
+# Compiled binary (built from runner-rs)
+/runner
