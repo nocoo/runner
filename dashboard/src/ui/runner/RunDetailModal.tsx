@@ -92,7 +92,7 @@ export function RunDetailModal({ run, loading, onClose }: RunDetailModalProps) {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
               <div>
                 <span className="text-caption text-matrix-dim uppercase">Status</span>
-                <p className={`font-bold ${run.exit_code === 0 ? "text-success" : "text-error"}`}>
+                <p className={`font-bold ${run.exit_code == null ? "text-cyan-400" : run.exit_code === 0 ? "text-success" : "text-error"}`}>
                   {formatExitCode(run.exit_code)}
                 </p>
               </div>
@@ -102,8 +102,8 @@ export function RunDetailModal({ run, loading, onClose }: RunDetailModalProps) {
               </div>
               <div>
                 <span className="text-caption text-matrix-dim uppercase">Exit Code</span>
-                <p className={run.exit_code === 0 ? "text-success" : "text-error"}>
-                  {run.exit_code}
+                <p className={run.exit_code == null ? "text-cyan-400" : run.exit_code === 0 ? "text-success" : "text-error"}>
+                  {run.exit_code ?? "-"}
                 </p>
               </div>
               <div>

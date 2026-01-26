@@ -76,5 +76,41 @@
     "hour": 5,
     "minute": 0,
     "weekday": "*"
+  },
+  {
+    "task": "xray_insights",
+    "hour": 0,
+    "minute": 20,
+    "weekday": "*"
+  },
+  {
+    "task": "xray_insights",
+    "hour": 4,
+    "minute": 20,
+    "weekday": "*"
+  },
+  {
+    "task": "xray_insights",
+    "hour": 8,
+    "minute": 20,
+    "weekday": "*"
+  },
+  {
+    "task": "xray_insights",
+    "hour": 12,
+    "minute": 20,
+    "weekday": "*"
+  },
+  {
+    "task": "xray_insights",
+    "hour": 16,
+    "minute": 20,
+    "weekday": "*"
+  },
+  {
+    "task": "xray_insights",
+    "hour": 20,
+    "minute": 20,
+    "weekday": "*"
   }
 ]

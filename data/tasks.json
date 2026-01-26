@@ -30,24 +30,11 @@
     "workdir": "/Users/nocoo/workspace/personal/workflow/skills/news-aggregator-skill"
   },
   {
-    "id": "test_fast",
-    "type": "simple",
-    "description": "Test task - fast (5-10s)",
-    "timeout": 30,
-    "command": "echo 'fast task done' && date"
-  },
-  {
-    "id": "test_medium",
-    "type": "simple",
-    "description": "Test task - medium (30-60s)",
-    "timeout": 120,
-    "command": "ls -la && sleep 30 && date"
-  },
-  {
-    "id": "test_slow",
-    "type": "simple",
-    "description": "Test task - slow (90-120s)",
-    "timeout": 180,
-    "command": "date && sleep 45 && echo 'middle' && date && sleep 45 && echo 'done' && date"
+    "id": "xray_insights",
+    "type": "agent",
+    "description": "Xray insights",
+    "timeout": 300,
+    "prompt": "/xray-insights",
+    "workdir": "/Users/nocoo/workspace/personal/xray"
   }
 ]

@@ -92,7 +92,7 @@ export interface RunDetail {
   started_at: string;
   finished_at?: string;
   duration_seconds?: number;
-  exit_code: number;
+  exit_code: number | null;  // null = running
   output_preview?: string;
 }
 
