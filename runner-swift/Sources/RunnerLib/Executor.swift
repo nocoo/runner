@@ -159,18 +159,19 @@ public struct Executor {
         DURATION=$((END_TIME - START_TIME))
         FINISHED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
         
-        # Write detail JSON
-        cat > '\(detailPath)' << EOF
-        {
-          "id": "\(runId)",
-          "task": "\(task.id)",
-          "trigger": "\(trigger)",
-          "started_at": "\(startedAt)",
-          "finished_at": "$FINISHED_AT",
-          "duration_seconds": $DURATION,
-          "exit_code": $EXIT_CODE
-        }
-        EOF
+        # Write detail JSON atomically using jq (type-safe, handles escaping)
+        if command -v jq &> /dev/null; then
+            jq -n \\
+               --arg id "\(runId)" \\
+               --arg task "\(task.id)" \\
+               --arg trigger "\(trigger)" \\
+               --arg started_at "\(startedAt)" \\
+               --arg finished_at "$FINISHED_AT" \\
+               --argjson duration_seconds "$DURATION" \\
+               --argjson exit_code "$EXIT_CODE" \\
+               '{id: $id, task: $task, trigger: $trigger, started_at: $started_at, finished_at: $finished_at, duration_seconds: $duration_seconds, exit_code: $exit_code}' \\
+               > '\(detailPath).tmp' && mv '\(detailPath).tmp' '\(detailPath)'
+        fi
         
         # Update index.json atomically
         if command -v jq &> /dev/null; then
