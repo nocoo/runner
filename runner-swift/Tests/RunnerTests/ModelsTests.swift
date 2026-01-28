@@ -213,6 +213,29 @@ struct ModelsTests {
         #expect(index.runs[1].exitCode == nil)
     }
     
+    @Test("RunsIndex decoding with missing total and updated_at")
+    func runsIndexDecodingMissingFields() throws {
+        // This tests the fallback behavior when total and updated_at are missing
+        // (e.g., after data corruption or manual rebuild from detail files)
+        let json = """
+        {
+            "runs": [
+                {
+                    "id": "run-1",
+                    "task": "heartbeat",
+                    "exit_code": 0,
+                    "started_at": "2026-01-25T08:00:00Z"
+                }
+            ]
+        }
+        """.data(using: .utf8)!
+        
+        let index = try JSONDecoder().decode(RunsIndex.self, from: json)
+        #expect(index.runs.count == 1)
+        #expect(index.total == 1)  // Fallback: computed from runs.count
+        #expect(index.updatedAt == "")  // Fallback: empty string
+    }
+    
     // MARK: - RunDetail Tests
     
     @Test("RunDetail decoding")
@@ -235,6 +258,78 @@ struct ModelsTests {
         #expect(detail.trigger == "scheduled")
         #expect(detail.durationSeconds == 5)
         #expect(detail.exitCode == 0)
+    }
+    
+    @Test("RunsIndex decoding with empty runs array")
+    func runsIndexDecodingEmptyRuns() throws {
+        let json = """
+        {
+            "runs": []
+        }
+        """.data(using: .utf8)!
+        
+        let index = try JSONDecoder().decode(RunsIndex.self, from: json)
+        #expect(index.runs.count == 0)
+        #expect(index.total == 0)
+    }
+    
+    @Test("RunsIndex encoding preserves all fields")
+    func runsIndexEncoding() throws {
+        let index = RunsIndex(
+            runs: [],
+            total: 5,
+            updatedAt: "2026-01-28T00:00:00Z"
+        )
+        
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(index)
+        let decoded = try JSONDecoder().decode(RunsIndex.self, from: data)
+        
+        #expect(decoded.total == 5)
+        #expect(decoded.updatedAt == "2026-01-28T00:00:00Z")
+    }
+    
+    // MARK: - RunSummary Compatibility Tests
+    
+    @Test("RunSummary ignores extra fields from detail.json format")
+    func runSummaryIgnoresExtraFields() throws {
+        // When index.json is rebuilt from detail.json files, extra fields may be present
+        // RunSummary should ignore unknown fields (default Swift behavior)
+        let json = """
+        {
+            "id": "abc-123",
+            "task": "heartbeat",
+            "trigger": "manual",
+            "started_at": "2026-01-25T08:00:00Z",
+            "finished_at": "2026-01-25T08:00:05Z",
+            "duration_seconds": 5,
+            "exit_code": 0
+        }
+        """.data(using: .utf8)!
+        
+        let run = try JSONDecoder().decode(RunSummary.self, from: json)
+        #expect(run.id == "abc-123")
+        #expect(run.exitCode == 0)
+        // Extra fields (trigger, duration_seconds) are silently ignored
+    }
+    
+    @Test("RunSummary with minimal fields")
+    func runSummaryMinimalFields() throws {
+        // Minimum required fields for RunSummary
+        let json = """
+        {
+            "id": "abc-123",
+            "task": "heartbeat",
+            "started_at": "2026-01-25T08:00:00Z"
+        }
+        """.data(using: .utf8)!
+        
+        let run = try JSONDecoder().decode(RunSummary.self, from: json)
+        #expect(run.id == "abc-123")
+        #expect(run.task == "heartbeat")
+        #expect(run.exitCode == nil)
+        #expect(run.finishedAt == nil)
+        #expect(run.pid == nil)
     }
     
     // MARK: - Encoding Tests

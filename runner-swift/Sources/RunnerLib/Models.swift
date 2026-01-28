@@ -98,6 +98,16 @@ public struct RunsIndex: Codable, Sendable {
         case runs, total
         case updatedAt = "updated_at"
     }
+    
+    /// Custom decoder with fallback for missing fields
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        runs = try container.decode([RunSummary].self, forKey: .runs)
+        // Fallback: compute total from runs array if missing
+        total = try container.decodeIfPresent(Int.self, forKey: .total) ?? runs.count
+        // Fallback: use empty string if missing (will be updated on next write)
+        updatedAt = try container.decodeIfPresent(String.self, forKey: .updatedAt) ?? ""
+    }
 }
 
 /// Run detail

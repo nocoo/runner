@@ -178,7 +178,7 @@ public struct Executor {
             jq --arg id "\(runId)" \\
                --argjson exit_code "$EXIT_CODE" \\
                --arg finished_at "$FINISHED_AT" \\
-               '(.runs[] | select(.id == $id)) |= . + {exit_code: $exit_code, finished_at: $finished_at, pid: null}' \\
+               '(.runs[] | select(.id == $id)) |= . + {exit_code: $exit_code, finished_at: $finished_at, pid: null} | .total = (.runs | length) | .updated_at = $finished_at' \\
                '\(indexPath)' > '\(indexPath).tmp' && mv '\(indexPath).tmp' '\(indexPath)'
         fi
         
