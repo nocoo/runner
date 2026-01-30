@@ -85,12 +85,17 @@ cd runner-swift && swift test
 
 ## Testing Policy
 
-- Pre-commit hooks run all TypeScript and Swift tests.
+- Pre-commit hooks run TypeScript lint, TypeScript tests, Swift tests, and SwiftLint.
 - Do not skip tests in normal workflows.
+- For check-in validation, run the full suite three times before push.
 
 ```bash
-cd dashboard && bun test --coverage
+cd dashboard && bun run lint
+cd dashboard && bun test --bail
 cd runner-swift && swift test
+cd runner-swift && swiftlint --config .swiftlint.yml
+
+# Repeat the full suite 3x before push
 ```
 
 ## launchd Management
