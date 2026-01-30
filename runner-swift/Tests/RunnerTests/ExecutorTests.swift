@@ -4,6 +4,9 @@ import Foundation
 
 @Suite("Executor Tests")
 struct ExecutorTests {
+    func makeScriptBuilder(dataDir: URL) -> ScriptBuilder {
+        ScriptBuilder(dataDir: dataDir)
+    }
     
     func makeTask(id: String = "test", command: String = "echo hello", workdir: String? = nil) -> Task {
         Task(
@@ -27,6 +30,49 @@ struct ExecutorTests {
     
     func cleanup(_ tempDir: URL) {
         try? FileManager.default.removeItem(at: tempDir)
+    }
+
+    // MARK: - Script Builder Tests
+
+    @Test("Script builder includes command, paths, and timeout")
+    func scriptBuilderIncludesBasics() async throws {
+        let (tempDir, _) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let task = makeTask(command: "echo hello", workdir: "/tmp")
+        let builder = makeScriptBuilder(dataDir: tempDir)
+        let script = builder.build(
+            task: task,
+            command: "echo hello",
+            runId: "run-1",
+            startedAt: "2026-01-25T08:00:00Z",
+            trigger: "manual"
+        )
+
+        #expect(script.contains("cd '/tmp'"))
+        #expect(script.contains("TIMEOUT=60"))
+        #expect(script.contains("eval 'echo hello'"))
+        #expect(script.contains("runs/run-1.output"))
+        #expect(script.contains("runs/run-1.json"))
+        #expect(script.contains("runs/index.json"))
+    }
+
+    @Test("Script builder escapes single quotes in command")
+    func scriptBuilderEscapesCommand() async throws {
+        let (tempDir, _) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let task = makeTask(command: "echo 'hello'", workdir: nil)
+        let builder = makeScriptBuilder(dataDir: tempDir)
+        let script = builder.build(
+            task: task,
+            command: "echo 'hello'",
+            runId: "run-2",
+            startedAt: "2026-01-25T08:00:00Z",
+            trigger: "manual"
+        )
+
+        #expect(script.contains("eval 'echo '\"'\"'hello'\"'\"''"))
     }
     
     // MARK: - Dry Run Tests
