@@ -1,12 +1,12 @@
 {
   "version": "1.0.0",
   "last_run": {
-    "id": "edbffb5b-f658-401e-bce6-3895bcbf0cad",
-    "task": "news_briefing",
+    "id": "7d90a1b7-bf18-4d38-9610-a465a6a82dcd",
+    "task": "test_slow",
     "exit_code": 0,
-    "finished_at": "2026-01-24T08:52:18Z"
+    "finished_at": "2026-01-25T09:00:55Z"
   },
   "next_scheduled": null,
-  "total_runs_today": 29,
+  "total_runs_today": 15,
   "success_rate_today": 1.00
 }

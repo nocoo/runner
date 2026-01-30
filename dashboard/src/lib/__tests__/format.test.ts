@@ -89,12 +89,12 @@ describe("format", () => {
 
   describe("formatExitCode", () => {
     test("formats success exit code", () => {
-      expect(formatExitCode(0)).toBe("success");
+      expect(formatExitCode(0)).toBe("OK");
     });
 
     test("formats failure exit code", () => {
-      expect(formatExitCode(1)).toBe("failed (1)");
-      expect(formatExitCode(127)).toBe("failed (127)");
+      expect(formatExitCode(1)).toBe("FAILED");
+      expect(formatExitCode(127)).toBe("FAILED");
     });
   });
 

@@ -14,11 +14,11 @@ import type { RunSummary, Task, Schedule } from "../types";
 
 describe("transforms", () => {
   const sampleRuns: RunSummary[] = [
-    { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T10:00:00Z" },
-    { id: "2", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T11:00:00Z" },
-    { id: "3", task: "heartbeat", exit_code: 1, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-20T12:00:00Z" },
-    { id: "4", task: "morning_briefing", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-21T09:00:00Z" },
-    { id: "5", task: "heartbeat", exit_code: 0, started_at: "2026-01-24T09:00:00Z", finished_at: "2026-01-21T10:00:00Z" },
+    { id: "1", task: "heartbeat", exit_code: 0, started_at: "2026-01-20T09:55:00Z", finished_at: "2026-01-20T10:00:00Z" },
+    { id: "2", task: "heartbeat", exit_code: 0, started_at: "2026-01-20T10:55:00Z", finished_at: "2026-01-20T11:00:00Z" },
+    { id: "3", task: "heartbeat", exit_code: 1, started_at: "2026-01-20T11:55:00Z", finished_at: "2026-01-20T12:00:00Z" },
+    { id: "4", task: "morning_briefing", exit_code: 0, started_at: "2026-01-21T08:55:00Z", finished_at: "2026-01-21T09:00:00Z" },
+    { id: "5", task: "heartbeat", exit_code: 0, started_at: "2026-01-21T09:55:00Z", finished_at: "2026-01-21T10:00:00Z" },
   ];
 
   describe("runsToHeatmap", () => {
@@ -76,7 +76,7 @@ describe("transforms", () => {
 
   describe("runsToTrend", () => {
     test("converts runs to 10-minute trend points for last 48 hours", () => {
-      // Create runs within the last 48 hours using relative timestamps
+      // Create runs within the last 24 hours using relative timestamps
       const now = new Date();
       // Create a base time that is exactly 2 hours ago at the start of a 10-min slot
       const twoHoursAgoBase = new Date(now.getTime() - 2 * 60 * 60 * 1000);

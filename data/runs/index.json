@@ -1,468 +1,2893 @@
 {
   "runs": [
     {
-      "id": "819585c4-03ba-4966-9b10-b0afd33b4d4f",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T01:21:22Z",
-      "duration_ms": 78000
+      "finished_at": "2026-01-27T04:28:25Z",
+      "id": "8019F0FB-7180-43DA-B96B-F6ED6C9E69AC",
+      "started_at": "2026-01-27T04:28:22Z",
+      "task": "heartbeat"
     },
     {
-      "id": "d19016de-a85b-4f49-932a-1f45a6f3cd9a",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T01:50:51Z",
-      "duration_ms": 46000
+      "finished_at": "2026-01-27T04:05:04Z",
+      "id": "463A983A-2B32-44B0-9A49-6669478DEE60",
+      "started_at": "2026-01-27T04:00:05Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "5a3c0f03-6215-488b-a217-2906d77da9e0",
-      "task": "twitter_collect",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T02:11:06Z",
-      "duration_ms": 660000
+      "exit_code": 124,
+      "finished_at": "2026-01-27T04:05:00Z",
+      "id": "22EA7C9F-8B69-4ACC-9AEB-E07B761C4E83",
+      "started_at": "2026-01-27T04:00:05Z",
+      "task": "clock"
     },
     {
-      "id": "a47f38bb-2330-456d-b5a6-b7a644a80b5c",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T03:08:42Z",
-      "duration_ms": 517000
+      "exit_code": 124,
+      "finished_at": "2026-01-27T03:53:39Z",
+      "id": "82ED8C41-8F3D-4343-A121-D2A02185CD10",
+      "started_at": "2026-01-27T03:50:04Z",
+      "task": "heartbeat"
     },
     {
-      "id": "10de7f1e-a5bb-4f72-a356-8024830b9c0e",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T05:01:27Z",
-      "duration_ms": 82000
+      "finished_at": "2026-01-27T03:53:54Z",
+      "id": "9A05F08D-8FC0-4AE9-9592-F1666B02EDC9",
+      "started_at": "2026-01-27T03:45:04Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "887479d6-39ce-44b4-9870-41610a1037e3",
-      "task": "test_workdir",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T06:23:17Z",
-      "duration_ms": 11000
+      "exit_code": 124,
+      "finished_at": "2026-01-27T03:43:39Z",
+      "id": "AEB331B1-E075-411C-AAA2-C39F8D7F3733",
+      "started_at": "2026-01-27T03:40:04Z",
+      "task": "heartbeat"
     },
     {
-      "id": "98c2f4da-134e-4ce3-b491-062987abde4e",
-      "task": "stress_test",
       "exit_code": 0,
-      "finished_at": "2026-01-23T06:30:24Z",
-      "duration_ms": 18000
+      "finished_at": "2026-01-27T03:30:31Z",
+      "id": "A0C96BB5-BD1B-4254-97B0-41807F68B128",
+      "started_at": "2026-01-27T03:30:01Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "06f58249-5673-4813-a430-42755c82d280",
-      "task": "stress_test",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T06:36:16Z",
-      "duration_ms": 71000
+      "exit_code": 124,
+      "finished_at": "2026-01-27T03:33:43Z",
+      "id": "2216361E-3DBE-4CBF-925B-3C14B3D05AD4",
+      "started_at": "2026-01-27T03:30:01Z",
+      "task": "clock"
     },
     {
-      "id": "65d42f9f-7b01-45ca-a102-4e77dc24342a",
-      "task": "stress_test",
       "exit_code": 0,
-      "finished_at": "2026-01-23T06:40:18Z",
-      "duration_ms": 16000
+      "finished_at": "2026-01-27T03:20:09Z",
+      "id": "FE7A1FF2-31EC-4D88-95AC-26AA5526DF66",
+      "started_at": "2026-01-27T03:20:05Z",
+      "task": "heartbeat"
     },
     {
-      "id": "4fa7db1d-72aa-41e6-a693-1d7ac7408d77",
-      "task": "stress_test",
       "exit_code": 0,
-      "finished_at": "2026-01-23T06:55:02Z",
-      "duration_ms": 596000
+      "finished_at": "2026-01-27T03:15:22Z",
+      "id": "0E60514F-C34C-4E0F-A22B-3854482BECCC",
+      "started_at": "2026-01-27T03:15:05Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "dd51284c-5df8-4fdd-ba4b-30dc308530ec",
-      "task": "stress_test",
       "exit_code": 0,
-      "finished_at": "2026-01-23T06:55:26Z",
-      "duration_ms": 21000
+      "finished_at": "2026-01-27T03:10:06Z",
+      "id": "101439E9-A9D4-4153-BC02-3354C4B8F529",
+      "started_at": "2026-01-27T03:10:04Z",
+      "task": "heartbeat"
     },
     {
-      "id": "7c66e6b7-58f1-4805-92d8-1956ce4b42bf",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T07:30:34Z",
-      "duration_ms": 1829000
+      "finished_at": "2026-01-27T03:00:52Z",
+      "id": "8A0D8D73-7131-4812-B424-6600EDA9415E",
+      "started_at": "2026-01-27T03:00:05Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "4d2c09b1-42e6-4b55-8bd4-cb2ed2ec9f29",
-      "task": "heartbeat",
+      "exit_code": 0,
+      "finished_at": "2026-01-27T03:00:36Z",
+      "id": "19ABA9F9-689C-4D82-901C-EC10F9AE4A37",
+      "started_at": "2026-01-27T03:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:50:07Z",
+      "id": "EF2BAFB4-5517-4F7E-846B-05E4A52CB720",
+      "started_at": "2026-01-27T02:50:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:45:15Z",
+      "id": "9671D37F-DB1B-4155-BB0A-BB19BB30E961",
+      "started_at": "2026-01-27T02:45:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:40:08Z",
+      "id": "C2F9BDC2-B5FB-48C6-9259-02BDBC56E6ED",
+      "started_at": "2026-01-27T02:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:30:33Z",
+      "id": "5804F86A-98AD-488E-8EA8-782FECFE9BC1",
+      "started_at": "2026-01-27T02:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:30:14Z",
+      "id": "54451A44-1702-4B90-93C8-23CA3618FC0A",
+      "started_at": "2026-01-27T02:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:20:07Z",
+      "id": "BD4E17FF-3440-4566-BA52-3A8A242D56E2",
+      "started_at": "2026-01-27T02:20:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:15:20Z",
+      "id": "4C404BA2-B6F8-4B17-9156-84226258FFF6",
+      "started_at": "2026-01-27T02:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:10:09Z",
+      "id": "92BB9E17-0AB8-4FB8-ADB8-B98478B4B914",
+      "started_at": "2026-01-27T02:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:00:44Z",
+      "id": "B8B14B0C-6133-4FCC-B13D-04F5AD998B21",
+      "started_at": "2026-01-27T02:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T02:00:20Z",
+      "id": "B2DA75F6-3EA8-4ECE-A62D-D1E97EA599EB",
+      "started_at": "2026-01-27T02:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:50:08Z",
+      "id": "BDBB2557-AB7C-4B16-87C4-A67860CF770E",
+      "started_at": "2026-01-27T01:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:45:12Z",
+      "id": "2CE93613-42F8-42A8-8563-ABE93B07CF66",
+      "started_at": "2026-01-27T01:45:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:40:03Z",
+      "id": "60F8FA30-6652-4314-AE12-A84094092ED0",
+      "started_at": "2026-01-27T01:40:00Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:30:25Z",
+      "id": "6FCD5D6A-99CA-48A6-9C01-D9D23810D22C",
+      "started_at": "2026-01-27T01:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:30:16Z",
+      "id": "54C98990-6D26-4482-915C-8EA8C5CF1D20",
+      "started_at": "2026-01-27T01:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:24:40Z",
+      "id": "FB9A5AEB-FB03-4F4A-8E4D-1DD475B1CCA1",
+      "started_at": "2026-01-27T01:24:38Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:20:08Z",
+      "id": "10C4FDBF-8517-49A6-A74C-569C64D746BC",
+      "started_at": "2026-01-27T01:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:15:39Z",
+      "id": "393F6A49-13F7-40F0-A131-94412233739D",
+      "started_at": "2026-01-27T01:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:10:08Z",
+      "id": "1C69461E-0F52-4511-8F43-B282943F2340",
+      "started_at": "2026-01-27T01:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:10:34Z",
+      "id": "F832AEE7-5B5B-4191-A30C-160966D8CDDB",
+      "started_at": "2026-01-27T01:00:02Z",
+      "task": "news_briefing"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:00:32Z",
+      "id": "A5066BE9-C9AE-4FD4-B1FE-83D42CB032A7",
+      "started_at": "2026-01-27T01:00:02Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T01:00:42Z",
+      "id": "84443DFC-7D0F-4E7A-BA5D-F4BC8FE8B3EF",
+      "started_at": "2026-01-27T01:00:02Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:50:08Z",
+      "id": "CCC346A3-964E-454C-AF2D-1302BE26A23C",
+      "started_at": "2026-01-27T00:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:45:26Z",
+      "id": "3C3A5E75-6ACA-4C5F-B219-B894C28DBA15",
+      "started_at": "2026-01-27T00:45:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:40:08Z",
+      "id": "8A6918C8-EFB7-4A91-92F9-AC4B28D9F5D9",
+      "started_at": "2026-01-27T00:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:30:21Z",
+      "id": "70681C38-C28B-4955-A962-6776A9CA9F3C",
+      "started_at": "2026-01-27T00:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:30:20Z",
+      "id": "6B6718E2-40B3-4E08-A4E0-3E9F93F38EBA",
+      "started_at": "2026-01-27T00:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:20:07Z",
+      "id": "B1AD6D40-6323-4CAB-BC20-E5ECD74D4DD8",
+      "started_at": "2026-01-27T00:20:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:22:15Z",
+      "id": "1BEBCF3C-6D87-4F69-B5C8-675A6BCA2EAC",
+      "started_at": "2026-01-27T00:20:04Z",
+      "task": "xray_insights"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:15:21Z",
+      "id": "64E64CE3-6AF9-43C8-A609-D13C94FACA0C",
+      "started_at": "2026-01-27T00:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:10:08Z",
+      "id": "DE53E3B0-517C-48DC-B651-BCA6CF50D78C",
+      "started_at": "2026-01-27T00:10:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:00:31Z",
+      "id": "FD40312D-CA1A-4BE5-8C4D-4B4A38D1E5D0",
+      "started_at": "2026-01-27T00:00:04Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-27T00:00:11Z",
+      "id": "A4FC07E4-E753-4838-9B9B-B075E424751F",
+      "started_at": "2026-01-27T00:00:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:50:09Z",
+      "id": "F65E167E-292B-41A8-9CCF-5B1A133795C7",
+      "started_at": "2026-01-26T23:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:45:15Z",
+      "id": "B97043DE-9053-4036-8B1A-44EDE48DD21C",
+      "started_at": "2026-01-26T23:45:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:40:08Z",
+      "id": "AF326AE1-6601-49AB-B174-2585C1012287",
+      "started_at": "2026-01-26T23:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:30:14Z",
+      "id": "71EF8D38-F542-4626-933A-2144A0742883",
+      "started_at": "2026-01-26T23:30:03Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:30:18Z",
+      "id": "6AFF6E0E-0142-4836-A478-3E83A5197D7C",
+      "started_at": "2026-01-26T23:30:03Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:20:07Z",
+      "id": "10B4DBBD-2A2D-47AF-86AE-9C58AB7C109C",
+      "started_at": "2026-01-26T23:20:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:15:15Z",
+      "id": "CA248630-A7BF-491F-B480-4A529BBB3A66",
+      "started_at": "2026-01-26T23:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:10:05Z",
+      "id": "C020B4A7-DD87-4106-8389-A6CEABB76103",
+      "started_at": "2026-01-26T23:10:02Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:00:39Z",
+      "id": "7D5B2B84-78A4-4384-9DCB-3C74DD41A038",
+      "started_at": "2026-01-26T23:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T23:00:13Z",
+      "id": "74CEAF65-B265-455B-9491-F8F66761F05C",
+      "started_at": "2026-01-26T23:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T22:50:08Z",
+      "id": "278225CC-1E89-4CD9-B907-69817C074F80",
+      "started_at": "2026-01-26T22:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T22:45:14Z",
+      "id": "7DEEA2B9-FEC5-4671-89E4-89D98BF3B617",
+      "started_at": "2026-01-26T22:45:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T22:40:03Z",
+      "id": "0AE3F35C-DBE4-4A2C-90C6-E7A6D4FE4889",
+      "started_at": "2026-01-26T22:40:00Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T22:36:03Z",
+      "id": "59C08F72-A822-42C7-BD62-D18F084235BB",
+      "started_at": "2026-01-26T22:36:00Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T22:31:11Z",
+      "id": "8E97EBFD-8118-4D32-8564-5741E2AD25C0",
+      "started_at": "2026-01-26T22:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T22:31:08Z",
+      "id": "163DA2B9-ECE4-4560-A4F6-4ACC37BCCA70",
+      "started_at": "2026-01-26T22:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T22:00:26Z",
+      "id": "BBC7BE56-C821-4701-9C03-106AAE0B144D",
+      "started_at": "2026-01-26T22:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T22:00:27Z",
+      "id": "7CDEEB59-B6DF-43CB-A83A-28D5068268A0",
+      "started_at": "2026-01-26T22:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T20:35:40Z",
+      "id": "AA0AAF6B-9AE4-4936-99E4-94C2D3F16CFD",
+      "started_at": "2026-01-26T19:50:57Z",
+      "task": "heartbeat"
+    },
+    {
       "exit_code": 1,
-      "finished_at": "2026-01-23T08:00:24Z",
-      "duration_ms": 4000
+      "finished_at": "2026-01-26T16:20:26Z",
+      "id": "9353D257-BF45-4A61-ACB1-0B848C9B2BED",
+      "started_at": "2026-01-26T16:20:07Z",
+      "task": "heartbeat"
     },
     {
-      "id": "d2282716-49cf-4404-94bb-7ce03b465153",
-      "task": "heartbeat",
+      "exit_code": 124,
+      "finished_at": "2026-01-26T21:57:36Z",
+      "id": "499A172F-77EA-4551-97AE-3ABE6A6775A7",
+      "started_at": "2026-01-26T16:20:07Z",
+      "task": "xray_insights"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T18:06:26Z",
+      "id": "6A6454B0-1DBA-413C-998C-64DAAA56147F",
+      "started_at": "2026-01-26T15:30:43Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T16:48:57Z",
+      "id": "52785D5A-9168-467F-A0C9-AB4843A28E58",
+      "started_at": "2026-01-26T15:30:43Z",
+      "task": "clock"
+    },
+    {
       "exit_code": 0,
-      "finished_at": "2026-01-23T10:38:48Z",
-      "duration_ms": 2000
+      "finished_at": "2026-01-26T12:20:06Z",
+      "id": "A90CBD47-211B-4265-83D3-617DBE1F5174",
+      "started_at": "2026-01-26T12:20:03Z",
+      "task": "heartbeat"
     },
     {
-      "id": "0d2eeb40-9f0d-4460-a3d1-d472c5c0f849",
-      "task": "heartbeat",
+      "exit_code": 124,
+      "finished_at": "2026-01-26T12:25:26Z",
+      "id": "509B24F5-C0AE-4D3B-A0F7-E0A721F96BE9",
+      "started_at": "2026-01-26T12:20:03Z",
+      "task": "xray_insights"
+    },
+    {
       "exit_code": 0,
-      "finished_at": "2026-01-23T11:13:31Z",
-      "duration_ms": 3000
+      "finished_at": "2026-01-26T12:15:38Z",
+      "id": "E87394AC-BD71-47D0-94C3-19AA89374771",
+      "started_at": "2026-01-26T12:15:00Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "ea107bf9-263b-4c75-a767-406660f72437",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T11:13:54Z",
-      "duration_ms": 2000
+      "finished_at": "2026-01-26T12:10:08Z",
+      "id": "B1853A39-78B8-4D73-914D-0CCC0E2B2337",
+      "started_at": "2026-01-26T12:10:04Z",
+      "task": "heartbeat"
     },
     {
-      "id": "5ea892cd-2dff-4d79-97e9-7db13c666518",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T11:20:10Z",
-      "duration_ms": 3000
+      "finished_at": "2026-01-26T12:07:24Z",
+      "id": "4092558D-A264-438D-B6F9-AAAF5CCDF324",
+      "started_at": "2026-01-26T12:05:05Z",
+      "task": "xray_insights"
     },
     {
-      "id": "169f7add-ba6a-481d-b7a0-d044d83bce0a",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T11:30:08Z",
-      "duration_ms": 3000
+      "finished_at": "2026-01-26T12:00:18Z",
+      "id": "EA96138D-55E4-4901-8C85-1375FCCC4404",
+      "started_at": "2026-01-26T12:00:05Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "d617d644-d3bc-4fbd-9913-0e4be5aed87b",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T11:40:07Z",
-      "duration_ms": 2000
+      "finished_at": "2026-01-26T12:00:36Z",
+      "id": "14BF4FFB-669E-4A99-B70A-D0B18427C0A4",
+      "started_at": "2026-01-26T12:00:05Z",
+      "task": "clock"
     },
     {
-      "id": "600aa2c3-9241-4940-a726-f0e9b137c697",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T12:00:05Z",
-      "duration_ms": 3000
+      "finished_at": "2026-01-26T11:50:08Z",
+      "id": "27AA7F98-51E9-4727-B731-D98FAEA0CCF7",
+      "started_at": "2026-01-26T11:50:04Z",
+      "task": "heartbeat"
     },
     {
-      "id": "3843af4f-b00c-408a-8642-7c4882b40d99",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T12:10:08Z",
-      "duration_ms": 3000
+      "finished_at": "2026-01-26T11:45:48Z",
+      "id": "BFCA6F57-DE86-4559-800D-C9FFA4C03DD2",
+      "started_at": "2026-01-26T11:45:04Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "a70ede41-bd56-4cb6-bea4-4c07f83d2fe4",
-      "task": "heartbeat",
+      "exit_code": 124,
+      "finished_at": "2026-01-26T11:40:18Z",
+      "id": "1BDD192A-44B4-4DCC-BA29-7B91B23AF86D",
+      "started_at": "2026-01-26T11:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T11:32:24Z",
+      "id": "CB44C587-EFA9-4BFF-A74E-3C78F418F331",
+      "started_at": "2026-01-26T11:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T11:31:15Z",
+      "id": "7B429939-B39D-494D-AEB9-8774ED6E5855",
+      "started_at": "2026-01-26T11:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T11:20:18Z",
+      "id": "EB90E9CE-2D09-4F7D-A165-132F9CDE394F",
+      "started_at": "2026-01-26T11:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T11:26:22Z",
+      "id": "CB98962E-3A16-477A-8DDE-BE1DCD9741E0",
+      "started_at": "2026-01-26T11:20:05Z",
+      "task": "news_briefing"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T11:15:16Z",
+      "id": "4AB4AF15-A2F5-4E22-803A-575E3ECA4CD0",
+      "started_at": "2026-01-26T11:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T11:10:18Z",
+      "id": "E9663A5A-DEB5-4F8C-991E-75DBD4A2C77F",
+      "started_at": "2026-01-26T11:10:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T11:01:15Z",
+      "id": "A2765627-5975-4B34-845C-0C53D889B117",
+      "started_at": "2026-01-26T11:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T11:00:39Z",
+      "id": "1DF1F933-F35C-40AA-B2FD-918F5A619748",
+      "started_at": "2026-01-26T11:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T10:50:18Z",
+      "id": "4DC64509-FC76-4CE3-B1B7-123E52861A8C",
+      "started_at": "2026-01-26T10:50:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T10:45:15Z",
+      "id": "ACBE442D-68F4-4842-8263-38B8366A053C",
+      "started_at": "2026-01-26T10:45:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T10:40:19Z",
+      "id": "EF378574-4D4A-4D23-ADA5-555B2FB72976",
+      "started_at": "2026-01-26T10:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T10:31:15Z",
+      "id": "83F35977-E8D4-4B18-82E8-A7663922B831",
+      "started_at": "2026-01-26T10:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T10:30:14Z",
+      "id": "40AC6A7E-6F7A-4E1C-8033-657B1BA5B29A",
+      "started_at": "2026-01-26T10:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T10:20:18Z",
+      "id": "43C3FEB7-0C37-453D-A033-EA4A69F54E9E",
+      "started_at": "2026-01-26T10:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T10:15:17Z",
+      "id": "67D18286-F6F6-4D43-B7C9-DB4706483F19",
+      "started_at": "2026-01-26T10:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T10:10:18Z",
+      "id": "F1ECF5F2-5E97-4B71-88FA-13CA6DDD21EB",
+      "started_at": "2026-01-26T10:10:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T09:45:16Z",
+      "id": "66F02F2B-3FC3-4C3C-B98F-6FF0AE7A70F4",
+      "started_at": "2026-01-26T09:45:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T09:40:06Z",
+      "id": "C4EDB222-4C4C-4A9E-98EF-8BECA745BEA6",
+      "started_at": "2026-01-26T09:40:03Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T09:30:41Z",
+      "id": "71785E2F-E7EF-48C2-8A97-6195C143F184",
+      "started_at": "2026-01-26T09:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T09:30:27Z",
+      "id": "3F8A7F30-36E5-4CD8-B387-7B0679993FEB",
+      "started_at": "2026-01-26T09:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T09:20:05Z",
+      "id": "5A3BFFA5-E83A-4560-8DFC-FBFFC1828694",
+      "started_at": "2026-01-26T09:20:02Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T09:15:41Z",
+      "id": "8EF82FB5-A872-41A8-8E07-931A301501E5",
+      "started_at": "2026-01-26T09:15:02Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T09:10:08Z",
+      "id": "8363D9E7-8FC7-4A42-87CF-C1840847D7B2",
+      "started_at": "2026-01-26T09:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T08:50:08Z",
+      "id": "2D3E7049-8AE5-4CC2-BB99-30880331F2FD",
+      "started_at": "2026-01-26T08:50:05Z",
+      "task": "heartbeat"
+    },
+    {
       "exit_code": 1,
-      "finished_at": "2026-01-23T14:54:27Z",
-      "duration_ms": 2064000
+      "finished_at": "2026-01-26T08:45:04Z",
+      "id": "0060A41E-6A22-4A26-B2AA-FC90A235F8A9",
+      "started_at": "2026-01-26T08:45:02Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "4d0c8ef1-a6ff-4367-a218-51a38e95be51",
-      "task": "heartbeat",
+      "exit_code": 124,
+      "finished_at": "2026-01-26T08:40:19Z",
+      "id": "8254C2AC-E33F-4173-8CDB-E8862D23A96D",
+      "started_at": "2026-01-26T08:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T08:15:14Z",
+      "id": "8F8CD86A-E358-42DF-B3F7-D7BC6E7F34EF",
+      "started_at": "2026-01-26T08:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T08:10:08Z",
+      "id": "83EA03D6-6A49-436F-9E99-236BD6F689E1",
+      "started_at": "2026-01-26T08:10:04Z",
+      "task": "heartbeat"
+    },
+    {
       "exit_code": 1,
-      "finished_at": "2026-01-23T16:54:19Z",
-      "duration_ms": 2608000
+      "finished_at": "2026-01-26T07:30:45Z",
+      "id": "800CE6D0-BB7C-4DCE-A663-08E062CAF99C",
+      "started_at": "2026-01-26T07:30:44Z",
+      "task": "obsidian_sync"
     },
     {
-      "id": "7e997568-efb8-4467-a26a-94c941eaf561",
-      "task": "heartbeat",
       "exit_code": 1,
-      "finished_at": "2026-01-23T18:24:07Z",
-      "duration_ms": 2599000
+      "finished_at": "2026-01-26T07:30:45Z",
+      "id": "4A732E48-25B6-4F5E-8594-7FBE24795310",
+      "started_at": "2026-01-26T07:30:44Z",
+      "task": "clock"
     },
     {
-      "id": "854b0b56-8c41-4945-b576-163169c77eae",
-      "task": "heartbeat",
+      "exit_code": 0,
+      "finished_at": "2026-01-26T06:50:07Z",
+      "id": "EEF4AB78-C240-4038-A994-9D8E64CD14FB",
+      "started_at": "2026-01-26T06:50:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T06:47:15Z",
+      "id": "2212353C-2BF7-4D01-B8B2-5EAC7F0EBFA6",
+      "started_at": "2026-01-26T06:45:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T06:40:04Z",
+      "id": "74F0F8B4-1DE6-4B77-BBA5-871A2FBF4A36",
+      "started_at": "2026-01-26T06:40:01Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T06:31:10Z",
+      "id": "D444D192-1D31-4578-AC35-B0E11F321147",
+      "started_at": "2026-01-26T06:30:04Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T06:30:32Z",
+      "id": "78916AEB-A57E-4922-9649-7F79A7FBD43C",
+      "started_at": "2026-01-26T06:30:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T06:20:08Z",
+      "id": "6086FA0B-BA3F-4589-ABCB-69CE7C0AFE68",
+      "started_at": "2026-01-26T06:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T06:15:15Z",
+      "id": "67B83A6E-4C91-4193-AB08-2E4A9EAC94D6",
+      "started_at": "2026-01-26T06:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T06:10:08Z",
+      "id": "CD5B5C9B-81D1-4D8D-ADB0-9BF4D1A2A0A4",
+      "started_at": "2026-01-26T06:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T06:00:22Z",
+      "id": "E6A4D2D0-2943-4129-9850-E1C05208DE1C",
+      "started_at": "2026-01-26T06:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T06:00:13Z",
+      "id": "9B1F6137-1B4F-472B-AFAF-E7B1D4F506C3",
+      "started_at": "2026-01-26T06:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:50:08Z",
+      "id": "B36AFD6F-940C-4580-9E67-9B5DDF8A8CC7",
+      "started_at": "2026-01-26T05:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:45:40Z",
+      "id": "96BB1475-A4E8-4A66-9264-AF991A2E8AE1",
+      "started_at": "2026-01-26T05:45:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:40:08Z",
+      "id": "654780C6-5782-4F9D-950D-5D63E4AF9391",
+      "started_at": "2026-01-26T05:40:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:30:16Z",
+      "id": "D3043EE8-9478-4A6A-8AD8-D8CAB6ECFEFB",
+      "started_at": "2026-01-26T05:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:30:24Z",
+      "id": "5F6FA80C-038E-4BB0-B51C-481582F61406",
+      "started_at": "2026-01-26T05:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:20:09Z",
+      "id": "CF8017B3-1EC9-48BB-AE8C-C46C9483BC1B",
+      "started_at": "2026-01-26T05:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:15:17Z",
+      "id": "C806473B-45F2-48BC-B99D-41AF93C5C886",
+      "started_at": "2026-01-26T05:15:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:10:09Z",
+      "id": "E20671AD-342D-4DD2-B9DB-06235804842D",
+      "started_at": "2026-01-26T05:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:00:21Z",
+      "id": "C395EAC0-76A4-4E58-ABDF-88C7909F8D7A",
+      "started_at": "2026-01-26T05:00:04Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T05:00:14Z",
+      "id": "98DC5869-EB72-4893-AAE5-F6C9BB6C6D58",
+      "started_at": "2026-01-26T05:00:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:50:04Z",
+      "id": "74D9FACC-238B-4C81-9316-28CD2D478426",
+      "started_at": "2026-01-26T04:50:01Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:45:16Z",
+      "id": "1C0FCAB8-8D0C-4EF9-B72F-72116AB36C71",
+      "started_at": "2026-01-26T04:45:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:40:08Z",
+      "id": "63114829-2D6A-493B-B711-07E8AEC6309C",
+      "started_at": "2026-01-26T04:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:30:34Z",
+      "id": "C26DC25B-69ED-41D8-BE81-B866C27F383D",
+      "started_at": "2026-01-26T04:30:04Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:30:14Z",
+      "id": "50A93F71-59E8-4EC6-9CB6-2B5279A13584",
+      "started_at": "2026-01-26T04:30:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:20:09Z",
+      "id": "5F3D03F3-990A-4681-B25F-AD86F91D91EF",
+      "started_at": "2026-01-26T04:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:15:14Z",
+      "id": "30743EB5-75D8-4649-AED2-9FCAAEA73C63",
+      "started_at": "2026-01-26T04:15:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:10:09Z",
+      "id": "8D90AD3C-5181-40AA-806F-DFC6BB26404D",
+      "started_at": "2026-01-26T04:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:00:27Z",
+      "id": "FCD58A0A-CD3C-4895-957F-5656D045F311",
+      "started_at": "2026-01-26T04:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T04:00:16Z",
+      "id": "2ED6547E-DCC1-4B1E-9099-91D3B7C65ED4",
+      "started_at": "2026-01-26T04:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:50:08Z",
+      "id": "CD85F302-92B9-452A-B064-BFC93E2B20D1",
+      "started_at": "2026-01-26T03:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:45:30Z",
+      "id": "E1FDA6D1-58DB-4E07-835E-606944287BBC",
+      "started_at": "2026-01-26T03:45:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:40:08Z",
+      "id": "E065588E-F67E-4D11-9238-26D662F6E7D4",
+      "started_at": "2026-01-26T03:40:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:30:13Z",
+      "id": "32FDA727-ED00-4768-A84E-963074CC026D",
+      "started_at": "2026-01-26T03:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:30:59Z",
+      "id": "15D38C05-5BCE-4D3A-90E1-548D96E39FD8",
+      "started_at": "2026-01-26T03:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:20:08Z",
+      "id": "E05F92EB-DEA8-402F-931F-CEF9785BF6B0",
+      "started_at": "2026-01-26T03:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:15:15Z",
+      "id": "AA318632-D4B1-41F3-A876-8950B20C4C6B",
+      "started_at": "2026-01-26T03:15:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:10:04Z",
+      "id": "0C89D119-DCF2-40C6-A8F7-58B82CC95458",
+      "started_at": "2026-01-26T03:10:01Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T03:00:16Z",
+      "id": "7B2CF635-9DD4-4D6A-A246-7E8B14C454B0",
+      "started_at": "2026-01-26T03:00:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-26T03:01:11Z",
+      "id": "2027DB36-C9CC-4ECA-9C02-437AAAE0001F",
+      "started_at": "2026-01-26T03:00:04Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:50:08Z",
+      "id": "8BF34A96-7F7D-4E0D-B6AD-BB33651EBA9C",
+      "started_at": "2026-01-26T02:50:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:45:15Z",
+      "id": "912C6CC6-21F6-473F-9D4C-6155B1C228D9",
+      "started_at": "2026-01-26T02:45:02Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:40:07Z",
+      "id": "EB2D2458-0212-43CE-8332-F8F7E788CE5A",
+      "started_at": "2026-01-26T02:40:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:30:13Z",
+      "id": "8FD539B5-8049-41E6-9506-A1FA44D3FBA3",
+      "started_at": "2026-01-26T02:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:30:38Z",
+      "id": "44B216D6-FA30-4F77-8659-9ACF69730F8E",
+      "started_at": "2026-01-26T02:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:20:07Z",
+      "id": "356FE906-1C4C-434C-B6FF-64402ED7EA5A",
+      "started_at": "2026-01-26T02:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:15:16Z",
+      "id": "74CC64ED-A5D9-4FDC-BC62-A78BBE6D28C9",
+      "started_at": "2026-01-26T02:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:10:08Z",
+      "id": "75942D4B-8033-4F6B-92D8-E6918D5A779E",
+      "started_at": "2026-01-26T02:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:00:11Z",
+      "id": "C822933C-6A75-41CF-B015-0C00F14B9D42",
+      "started_at": "2026-01-26T02:00:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T02:00:50Z",
+      "id": "0F0C261C-E454-4B7E-BBC8-93D03444CE7A",
+      "started_at": "2026-01-26T02:00:04Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:50:08Z",
+      "id": "F9638A79-9BB9-4235-ACC5-4381606D58F4",
+      "started_at": "2026-01-26T01:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:45:15Z",
+      "id": "A91BF211-4B97-419A-9C4B-30AF33F9467E",
+      "started_at": "2026-01-26T01:45:03Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:40:09Z",
+      "id": "19A544C0-226A-40B6-A568-4B59B64BB266",
+      "started_at": "2026-01-26T01:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:30:13Z",
+      "id": "E8ECF314-3AA8-4578-A4FA-42AEAAF64CBD",
+      "started_at": "2026-01-26T01:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:30:57Z",
+      "id": "6D8BFFCE-EEC0-4923-AD55-582308D0F4AA",
+      "started_at": "2026-01-26T01:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:20:08Z",
+      "id": "AEF29FA5-F562-4F93-8FB7-384B7EC7A05F",
+      "started_at": "2026-01-26T01:20:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:15:36Z",
+      "id": "B326A358-C379-4119-9D62-942B94B311EB",
+      "started_at": "2026-01-26T01:15:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:10:08Z",
+      "id": "5D0CF202-B041-418D-A2D4-C2999909F59B",
+      "started_at": "2026-01-26T01:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:03:40Z",
+      "id": "E11134E5-BF8D-48C8-84D3-82EC2AB9602B",
+      "started_at": "2026-01-26T01:00:02Z",
+      "task": "news_briefing"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:00:10Z",
+      "id": "BEBFDD24-C3DE-4C22-BA44-CF144446546E",
+      "started_at": "2026-01-26T01:00:02Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T01:00:18Z",
+      "id": "241A2A0F-A275-4181-81A2-3B6D8972E1DD",
+      "started_at": "2026-01-26T01:00:02Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:50:07Z",
+      "id": "205AB797-5FBE-4DB4-926E-4C3558AA86A7",
+      "started_at": "2026-01-26T00:50:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:45:16Z",
+      "id": "288A1948-B4DA-47A6-806F-39F7064D6693",
+      "started_at": "2026-01-26T00:45:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:40:08Z",
+      "id": "1265CA1A-3587-4DF4-ACDA-1689117DA287",
+      "started_at": "2026-01-26T00:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:30:33Z",
+      "id": "BCD814B6-093B-422E-A041-C6F5564A60DD",
+      "started_at": "2026-01-26T00:30:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:30:22Z",
+      "id": "7E00EA98-69C0-466E-B077-B70B38EB3422",
+      "started_at": "2026-01-26T00:30:04Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:20:06Z",
+      "id": "563967F7-CD43-4C2B-858A-10AB6525B9A5",
+      "started_at": "2026-01-26T00:20:03Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:15:15Z",
+      "id": "57BD5BF1-513C-4506-AED3-E5447BBE6A90",
+      "started_at": "2026-01-26T00:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:10:07Z",
+      "id": "6DBD3BB7-6930-4DD0-BFCE-E8000DB0C512",
+      "started_at": "2026-01-26T00:10:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:00:13Z",
+      "id": "D1A8E167-DAC0-4A76-B297-3BF1DF999588",
+      "started_at": "2026-01-26T00:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-26T00:00:40Z",
+      "id": "858E8FE1-1803-44A9-A6E0-2E1FB5C6F4CB",
+      "started_at": "2026-01-26T00:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:50:08Z",
+      "id": "47EAD751-A35A-4C76-BEAF-FE18926EDCFD",
+      "started_at": "2026-01-25T23:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:45:11Z",
+      "id": "676BE698-7B13-47D7-85B3-67DCF646B13B",
+      "started_at": "2026-01-25T23:45:01Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:40:08Z",
+      "id": "22848066-44B8-4452-AE85-B60311E6F88C",
+      "started_at": "2026-01-25T23:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:30:17Z",
+      "id": "EB6C05E1-372F-4118-B4F1-4ED5F7174E4F",
+      "started_at": "2026-01-25T23:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:30:32Z",
+      "id": "8706DE73-0C66-453B-99A9-21BBEB73A651",
+      "started_at": "2026-01-25T23:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:20:07Z",
+      "id": "3D6315B7-3890-46DD-A7D2-977E368AD8B3",
+      "started_at": "2026-01-25T23:20:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:15:07Z",
+      "id": "2522FB1E-E4A0-4BEE-B857-2AD976C4E820",
+      "started_at": "2026-01-25T23:15:00Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:10:08Z",
+      "id": "A36AEB55-E946-4AC4-AE53-D95B13B0FCE2",
+      "started_at": "2026-01-25T23:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:00:26Z",
+      "id": "44900743-EDA3-4488-BF19-6218209CE0C6",
+      "started_at": "2026-01-25T23:00:03Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T23:00:11Z",
+      "id": "20B2C442-0FD1-43E5-8D55-761278556684",
+      "started_at": "2026-01-25T23:00:03Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:50:08Z",
+      "id": "520CF657-F220-4EDD-821C-D121B16206E2",
+      "started_at": "2026-01-25T22:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:45:14Z",
+      "id": "9D4DF0D0-3916-4CFA-8C68-6C22A9E0765A",
+      "started_at": "2026-01-25T22:45:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:40:08Z",
+      "id": "00437280-4E1F-48CA-9D3B-E7EB08984FAD",
+      "started_at": "2026-01-25T22:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:37:38Z",
+      "id": "2F244EDE-59F4-4BC8-98B8-A2D4F6DC7480",
+      "started_at": "2026-01-25T22:37:35Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:31:18Z",
+      "id": "EEC2BF67-68D3-4BEF-963E-9436CD3E5EB7",
+      "started_at": "2026-01-25T22:31:15Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:30:14Z",
+      "id": "EB3FABB1-D969-4692-A401-1324282E792A",
+      "started_at": "2026-01-25T22:30:03Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:30:13Z",
+      "id": "3A47B234-54FA-4C41-984C-F78DAA24689A",
+      "started_at": "2026-01-25T22:30:03Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:20:08Z",
+      "id": "45583357-3FAE-4870-9950-2540F5010A32",
+      "started_at": "2026-01-25T22:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:15:12Z",
+      "id": "4FA9EDC5-913C-4562-846D-65169D6C18A8",
+      "started_at": "2026-01-25T22:15:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T22:10:07Z",
+      "id": "E030639A-C368-444C-9F1B-EE60C7AF52DA",
+      "started_at": "2026-01-25T22:10:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-25T21:50:17Z",
+      "id": "2D7D12EA-CB10-4F16-AA56-9061200B1608",
+      "started_at": "2026-01-25T21:50:03Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-25T21:40:14Z",
+      "id": "F0575D99-0511-4356-BE1F-3E7FA11E73C7",
+      "started_at": "2026-01-25T21:40:01Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:40:08Z",
+      "id": "4C4B8E83-F247-4797-860E-CFB311717455",
+      "started_at": "2026-01-25T11:40:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-25T11:34:56Z",
+      "id": "439316F3-338D-4F8B-8D76-BC238E91D522",
+      "started_at": "2026-01-25T11:34:49Z",
+      "task": "test_timeout"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:30:29Z",
+      "id": "FF096D69-410A-4874-B840-21C7703A5ADC",
+      "started_at": "2026-01-25T11:30:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:30:22Z",
+      "id": "86B15939-9ACC-42CD-8347-E1B413BF2EAA",
+      "started_at": "2026-01-25T11:30:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:24:05Z",
+      "id": "97E108A5-EF14-4F63-A76A-C39D9730DB1E",
+      "started_at": "2026-01-25T11:24:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:25:35Z",
+      "id": "36D9C35F-5624-469B-8226-C965059C2BD3",
+      "started_at": "2026-01-25T11:24:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:24:35Z",
+      "id": "28952C22-DFA0-42CA-AF61-7BE3ED68ECF9",
+      "started_at": "2026-01-25T11:24:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:23:35Z",
+      "id": "F3C41DA8-C4A2-4ED7-8993-B29CDBEB19AD",
+      "started_at": "2026-01-25T11:23:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:24:35Z",
+      "id": "AC9A53DB-0C82-4392-A325-D4BB395FFB4E",
+      "started_at": "2026-01-25T11:23:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:23:05Z",
+      "id": "1B280133-7DE1-4E8D-B1CA-29260EBE224D",
+      "started_at": "2026-01-25T11:23:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:22:05Z",
+      "id": "CF54D6EC-F675-4EC8-BCAF-0FEAFCF0E225",
+      "started_at": "2026-01-25T11:22:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:23:35Z",
+      "id": "9D603621-DB10-4448-88CB-42B41BED0974",
+      "started_at": "2026-01-25T11:22:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:22:35Z",
+      "id": "668EBCA3-68FE-4D73-AB23-922AA3C5B499",
+      "started_at": "2026-01-25T11:22:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:22:35Z",
+      "id": "EAE10776-0CA3-4A3E-BB27-0E9AAABBFBFB",
+      "started_at": "2026-01-25T11:21:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:21:35Z",
+      "id": "BEA2CB71-384D-4342-A142-8DF2680644FF",
+      "started_at": "2026-01-25T11:21:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:21:05Z",
+      "id": "AB5EE7DA-6F3A-4C5C-B943-4F6E6748EF4F",
+      "started_at": "2026-01-25T11:21:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:23:33Z",
+      "id": "E9252F3C-29F0-46A3-9DA7-434C7CF29483",
+      "started_at": "2026-01-25T11:20:05Z",
+      "task": "news_briefing"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:21:35Z",
+      "id": "B927850E-8301-4A07-9CA9-27503D4B3355",
+      "started_at": "2026-01-25T11:20:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:20:35Z",
+      "id": "7F4F7C92-F4D8-4037-8F2A-40EFADC2128D",
+      "started_at": "2026-01-25T11:20:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:20:05Z",
+      "id": "0D658860-2296-4FCE-9682-2B6B166B5A1C",
+      "started_at": "2026-01-25T11:20:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:20:08Z",
+      "id": "0AB50191-DD20-4C26-9EFB-E31206EF1DC1",
+      "started_at": "2026-01-25T11:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:21:01Z",
+      "id": "9EE1E1B6-8DD6-46F0-ABBC-51AE939B8FCE",
+      "started_at": "2026-01-25T11:19:31Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:19:31Z",
+      "id": "184990BC-E531-42BF-B0C5-C5FCC377D612",
+      "started_at": "2026-01-25T11:19:31Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:20:01Z",
+      "id": "08A35F53-253D-47BA-80EB-5C1EC45D0757",
+      "started_at": "2026-01-25T11:19:31Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:20:25Z",
+      "id": "DF8B370C-8211-4174-9808-3F7F98DA4776",
+      "started_at": "2026-01-25T11:13:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:13:35Z",
+      "id": "A3D1463F-9439-45FC-A3C3-80A81F762C5D",
+      "started_at": "2026-01-25T11:13:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:13:05Z",
+      "id": "94A65AA8-F991-4453-A65E-CB5DCFDC6995",
+      "started_at": "2026-01-25T11:13:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:13:11Z",
+      "id": "E72436DC-174C-4173-8A9D-88875669D8F0",
+      "started_at": "2026-01-25T11:12:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:20:01Z",
+      "id": "D2F1785E-B64D-443D-AD84-ECB945B149DA",
+      "started_at": "2026-01-25T11:12:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:12:05Z",
+      "id": "32178836-FA45-4DCE-83FD-36F767BE4B5F",
+      "started_at": "2026-01-25T11:12:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:13:31Z",
+      "id": "B8FECED5-940E-4548-A104-BCA2F04CE419",
+      "started_at": "2026-01-25T11:11:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:11:56Z",
+      "id": "ADFBE55B-5A56-49F5-98D9-D6395E72D5D7",
+      "started_at": "2026-01-25T11:11:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:11:05Z",
+      "id": "2EBBA0F6-B71E-4051-A90D-AA1A2FBF33C6",
+      "started_at": "2026-01-25T11:11:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:10:05Z",
+      "id": "F1A7954C-206B-40F1-9083-7890F8989A03",
+      "started_at": "2026-01-25T11:10:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:10:39Z",
+      "id": "E36347D4-3D73-487A-BC30-DF69AFC489F4",
+      "started_at": "2026-01-25T11:10:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:12:00Z",
+      "id": "67498D2C-BAA1-4F88-9547-FEAAC2AFF773",
+      "started_at": "2026-01-25T11:10:05Z",
+      "task": "test_slow"
+    },
+    {
       "exit_code": 1,
-      "finished_at": "2026-01-23T18:57:41Z",
-      "duration_ms": 1058000
+      "finished_at": "2026-01-25T11:10:24Z",
+      "id": "150402CD-CC73-4D2F-ABF6-1A4806FF876C",
+      "started_at": "2026-01-25T11:10:05Z",
+      "task": "heartbeat"
     },
     {
-      "id": "1b964c9d-4d47-4d5f-82e4-e7c0e005683c",
-      "task": "heartbeat",
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:10:36Z",
+      "id": "83495337-E012-43EA-AED4-BA18ADB6A656",
+      "started_at": "2026-01-25T11:09:02Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:09:33Z",
+      "id": "3140905E-C183-4F1E-B1C5-B70ED68E354C",
+      "started_at": "2026-01-25T11:09:02Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:09:02Z",
+      "id": "159D7C06-E366-4EA4-A3BD-AF75C2806F8A",
+      "started_at": "2026-01-25T11:09:02Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:09:33Z",
+      "id": "B4E733AB-DE4C-4915-9D57-70A86705C964",
+      "started_at": "2026-01-25T11:08:03Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:08:33Z",
+      "id": "44537C40-81A6-43DF-B2DC-10AF1BFAF467",
+      "started_at": "2026-01-25T11:08:03Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:08:03Z",
+      "id": "31AAE496-B6BD-4642-A0D2-3BD4BB9EC30A",
+      "started_at": "2026-01-25T11:08:02Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:07:35Z",
+      "id": "F3F74153-0C6F-4848-9501-456CC26D6914",
+      "started_at": "2026-01-25T11:07:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:07:05Z",
+      "id": "7A02EE9A-8D6E-4DB4-9888-7B287B597BD3",
+      "started_at": "2026-01-25T11:07:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:08:35Z",
+      "id": "4F05F9AF-6B94-4914-9536-A16A7A3320E6",
+      "started_at": "2026-01-25T11:07:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:06:05Z",
+      "id": "96058BE5-6EFF-4502-A6DD-705F810C4A51",
+      "started_at": "2026-01-25T11:06:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:06:35Z",
+      "id": "38A31227-F6E6-4926-9466-76138B4A70E0",
+      "started_at": "2026-01-25T11:06:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:07:35Z",
+      "id": "1452642E-2A75-4A90-AEBE-BDCA7A708899",
+      "started_at": "2026-01-25T11:06:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:05:04Z",
+      "id": "DC49EA43-06C4-4C43-BB6C-A9F67BA94C12",
+      "started_at": "2026-01-25T11:05:04Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:06:35Z",
+      "id": "C6FBAF2E-7C01-44A0-952E-8D6DAA686940",
+      "started_at": "2026-01-25T11:05:04Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:05:34Z",
+      "id": "04021450-114D-4A86-AA99-06AF1CF74700",
+      "started_at": "2026-01-25T11:05:04Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:04:31Z",
+      "id": "B5B6BA35-54DD-4AE7-B950-46F0085FCB95",
+      "started_at": "2026-01-25T11:04:01Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:04:01Z",
+      "id": "480B6220-3ADA-4AD5-9A8D-01518FA010EE",
+      "started_at": "2026-01-25T11:04:01Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:05:32Z",
+      "id": "4477E8C6-D6A9-4552-AC21-4705415E6D74",
+      "started_at": "2026-01-25T11:04:01Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:03:35Z",
+      "id": "D6D42020-B856-4D20-8443-510A1C077394",
+      "started_at": "2026-01-25T11:03:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:04:35Z",
+      "id": "8000CC75-A76C-418A-BD9C-6296C57D3FC9",
+      "started_at": "2026-01-25T11:03:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:03:05Z",
+      "id": "6A9D3FCE-CFF3-4730-9BC3-1DAD18FD9047",
+      "started_at": "2026-01-25T11:03:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:03:35Z",
+      "id": "CD9698E4-2474-4A5C-9833-13621F28BAF4",
+      "started_at": "2026-01-25T11:02:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:02:05Z",
+      "id": "ACB28591-2102-44BC-99E6-273823701B35",
+      "started_at": "2026-01-25T11:02:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:02:35Z",
+      "id": "ACADD485-5192-4B1D-A487-B551B427F7B1",
+      "started_at": "2026-01-25T11:02:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:02:35Z",
+      "id": "F401A2DD-3072-48A1-B22E-772137640AA6",
+      "started_at": "2026-01-25T11:01:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:01:35Z",
+      "id": "88D9D38F-E309-4137-B553-C004945AD5E4",
+      "started_at": "2026-01-25T11:01:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:01:05Z",
+      "id": "4F515D45-749E-4671-80A3-1366E8DDB83D",
+      "started_at": "2026-01-25T11:01:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:00:20Z",
+      "id": "F158B3E4-13B7-417D-8F50-62ED44DCDEB8",
+      "started_at": "2026-01-25T11:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:01:36Z",
+      "id": "EED2EC62-F28A-4039-9554-ACB857179333",
+      "started_at": "2026-01-25T11:00:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:00:17Z",
+      "id": "9B76C38B-7221-4770-B5CF-11FFCE9C8DBF",
+      "started_at": "2026-01-25T11:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:00:35Z",
+      "id": "8C6D8871-7703-4B26-A432-09D07BDD88BE",
+      "started_at": "2026-01-25T11:00:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:00:05Z",
+      "id": "47003778-29A3-4690-88EA-3C7D688BF661",
+      "started_at": "2026-01-25T11:00:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:59:01Z",
+      "id": "87B43EA4-4928-443F-BFED-EC5AB7675250",
+      "started_at": "2026-01-25T10:59:01Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:59:31Z",
+      "id": "81FE7F4E-6E98-4183-8C07-AE924A70AEB4",
+      "started_at": "2026-01-25T10:59:01Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T11:00:32Z",
+      "id": "30717027-58FC-430D-A69C-89C4AB9F3DAE",
+      "started_at": "2026-01-25T10:59:01Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:58:35Z",
+      "id": "ABADF6CF-680F-448C-AAF3-55C43C7E1A40",
+      "started_at": "2026-01-25T10:58:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:58:05Z",
+      "id": "AA8503DC-8D3D-4B88-8988-3C83D72E021D",
+      "started_at": "2026-01-25T10:58:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:59:35Z",
+      "id": "0B56F835-10DB-40CA-98D3-01A348FBA689",
+      "started_at": "2026-01-25T10:58:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:57:34Z",
+      "id": "887685F9-CC32-4756-A79B-18E9FE6D9CF4",
+      "started_at": "2026-01-25T10:57:04Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:58:34Z",
+      "id": "13F75A7B-FEAB-4870-90BE-93A0812F5715",
+      "started_at": "2026-01-25T10:57:04Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:57:04Z",
+      "id": "0FB6457A-E27D-4FC0-98D6-E03F63520406",
+      "started_at": "2026-01-25T10:57:04Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:56:35Z",
+      "id": "66D97FE1-4594-435F-AC6E-1B2105ABD3DE",
+      "started_at": "2026-01-25T10:56:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:57:35Z",
+      "id": "38FBDB58-F6A7-44AA-8898-103061D09ADA",
+      "started_at": "2026-01-25T10:56:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:56:05Z",
+      "id": "1BAD4CBF-1852-45B6-9B76-3D9753D02143",
+      "started_at": "2026-01-25T10:56:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:54:18Z",
+      "id": "DC8689AE-717E-498F-944F-994B94D4715F",
+      "started_at": "2026-01-25T10:54:18Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:55:48Z",
+      "id": "B5CCAA15-8816-493A-8049-8FC436892216",
+      "started_at": "2026-01-25T10:54:18Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:54:48Z",
+      "id": "88FBD48A-6871-433A-9927-0D6ED0C94911",
+      "started_at": "2026-01-25T10:54:18Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:54:15Z",
+      "id": "7AFA5939-885E-4D7C-B1CC-11C722AA6A58",
+      "started_at": "2026-01-25T10:54:15Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:50:08Z",
+      "id": "36D8F078-E922-416C-9FFA-BE984AE1C084",
+      "started_at": "2026-01-25T10:50:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:45:12Z",
+      "id": "0F673B0B-ADB9-4A06-B6D6-6C0DA6ADB99A",
+      "started_at": "2026-01-25T10:45:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:40:51Z",
+      "id": "8B44036F-BBA0-431E-9768-C5A5E797FE30",
+      "started_at": "2026-01-25T10:40:21Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:40:51Z",
+      "id": "4A7B4548-CA75-4219-B2AE-2757F30E3703",
+      "started_at": "2026-01-25T10:40:21Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:40:15Z",
+      "id": "DB347E4D-DB3E-4A45-A6FC-E1141361D350",
+      "started_at": "2026-01-25T10:40:15Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:40:24Z",
+      "id": "5D75E663-7BA7-4B6C-95C9-12580415EE4B",
+      "started_at": "2026-01-25T10:40:13Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:40:11Z",
+      "id": "C83F2F0E-F014-4E9E-BE89-61830693B9D1",
+      "started_at": "2026-01-25T10:40:11Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:40:05Z",
+      "id": "3939B5F4-E605-4BDC-AA69-4FC4771FB071",
+      "started_at": "2026-01-25T10:40:02Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:38:30Z",
+      "id": "F82B9D0B-E33B-48C0-90C5-4B858ACB05B5",
+      "started_at": "2026-01-25T10:38:19Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:38:07Z",
+      "id": "B6381F6A-43E0-4507-847C-452C460D8B82",
+      "started_at": "2026-01-25T10:37:48Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:37:21Z",
+      "id": "FD060713-8C64-4847-85E4-9645556B1DFE",
+      "started_at": "2026-01-25T10:37:07Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:37:04Z",
+      "id": "CDFCDF39-D382-4504-A2C7-E14080395FE5",
+      "started_at": "2026-01-25T10:37:01Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:30:31Z",
+      "id": "73F39B4F-BC85-47D1-8837-9DF68D569A02",
+      "started_at": "2026-01-25T10:30:04Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:30:11Z",
+      "id": "243AD85E-4608-43CC-91DB-28468076B951",
+      "started_at": "2026-01-25T10:30:04Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:20:07Z",
+      "id": "617864D7-0BBA-47E2-9572-F44B489A16D5",
+      "started_at": "2026-01-25T10:20:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:15:13Z",
+      "id": "815F7ED9-28F7-4B35-8B90-0BE211E24BFB",
+      "started_at": "2026-01-25T10:15:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:12:02Z",
+      "id": "77365781-65A6-4D01-A085-266F9E55FE0A",
+      "started_at": "2026-01-25T10:12:00Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:11:22Z",
+      "id": "1BFE7820-1A57-45CC-9A67-B35E62582145",
+      "started_at": "2026-01-25T10:11:03Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:10:08Z",
+      "id": "785EE356-C9F9-41C8-ADC9-D5013F4FFAF3",
+      "started_at": "2026-01-25T10:10:05Z",
+      "task": "heartbeat"
+    },
+    {
       "exit_code": 1,
-      "finished_at": "2026-01-23T20:20:44Z",
-      "duration_ms": 15000
+      "finished_at": "2026-01-25T10:08:00Z",
+      "id": "E6F91AB4-DC10-4757-85CF-119CC05B7889",
+      "started_at": "2026-01-25T10:07:53Z",
+      "task": "clock"
     },
     {
-      "id": "d9980d5c-84e2-4452-b705-445c042a15f4",
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:07:51Z",
+      "id": "0C437132-BAC1-4B19-B5D2-EAAC4218232A",
+      "started_at": "2026-01-25T10:07:48Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:00:07Z",
+      "id": "668bf43e-cd10-4687-ae3d-1cd47c639be0",
+      "started_at": "2026-01-25T10:00:05Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T10:00:06Z",
+      "id": "06de067f-f400-47e5-9164-35ff9cf8641f",
+      "started_at": "2026-01-25T10:00:05Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:55:10Z",
+      "id": "641b2dff-b27b-40be-b8f2-f8b2c5e3d98d",
+      "started_at": "2026-01-25T09:55:09Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:53:37Z",
+      "id": "4C527362-FD13-4E13-97E1-5E505DD6FF60",
+      "started_at": "2026-01-25T09:53:34Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:51:56Z",
+      "id": "26A202D5-C89F-44ED-8440-EFFBE780B34E",
+      "started_at": "2026-01-25T09:51:54Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:51:29Z",
+      "id": "C5E3595B-E1CD-4CFB-9959-44F101E7EB10",
+      "started_at": "2026-01-25T09:51:26Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:50:06Z",
+      "id": "876C311A-F630-47E7-AF5D-62D7A1C390F4",
+      "started_at": "2026-01-25T09:50:04Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:44:29Z",
+      "id": "a0a5f4fc-98e5-40dd-97b8-2139ef557cb9",
+      "started_at": "2026-01-25T09:44:26Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:40:04Z",
+      "id": "A6997F20-E03D-49C3-BB33-54B4C8E81872",
+      "started_at": "2026-01-25T09:40:01Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:23:33Z",
+      "id": "04B9C976-6C4A-42F8-A94B-58AFA3346661",
+      "started_at": "2026-01-25T09:23:31Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:10:07Z",
+      "id": "294029f6-42d8-4ab7-9c8c-da3bedcc1be9",
+      "started_at": "2026-01-25T09:10:05Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:59:12Z",
+      "id": "a482d299-2539-414d-a0e0-0af1772e81ae",
+      "started_at": "2026-01-25T08:59:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T09:00:55Z",
+      "id": "7d90a1b7-bf18-4d38-9610-a465a6a82dcd",
+      "started_at": "2026-01-25T08:59:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:59:46Z",
+      "id": "20e3da70-59f5-4c59-8e5c-a3ab2c2ebce6",
+      "started_at": "2026-01-25T08:59:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:58:50Z",
+      "id": "a73db389-78d1-4b68-95bf-efa15e0edbea",
+      "started_at": "2026-01-25T08:58:48Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:59:44Z",
+      "id": "ada86591-9eb2-4496-a757-4ed2acc09df2",
+      "started_at": "2026-01-25T08:58:06Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:58:44Z",
+      "id": "25384705-9743-4acd-bf7a-242fd53514c2",
+      "started_at": "2026-01-25T08:58:06Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:58:14Z",
+      "id": "171e5189-0bcd-43e3-a9e6-c76bd01fe5f5",
+      "started_at": "2026-01-25T08:58:06Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:57:16Z",
+      "id": "d75a14c9-dbd1-493c-b5a2-a26291d75911",
+      "started_at": "2026-01-25T08:57:06Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:58:51Z",
+      "id": "6ec3c8fd-ed20-4f7f-add1-45771072a27e",
+      "started_at": "2026-01-25T08:57:06Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:57:49Z",
+      "id": "06ff3cfb-0c68-4104-a0ab-7dd7f7f7a0e1",
+      "started_at": "2026-01-25T08:57:06Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:56:17Z",
+      "id": "d0b4da47-648f-497c-8abc-d6e2b19b997a",
+      "started_at": "2026-01-25T08:56:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:57:48Z",
+      "id": "65a8e659-9158-4cb2-88df-03e312cb4f7f",
+      "started_at": "2026-01-25T08:56:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:56:52Z",
+      "id": "1ff3b13e-0550-4a93-9d75-1ee24659af88",
+      "started_at": "2026-01-25T08:56:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:55:43Z",
+      "id": "79a28b91-ef5a-4cce-aefa-04690131e38a",
+      "started_at": "2026-01-25T08:55:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:57:05Z",
+      "id": "5257331f-af26-4d93-88f3-8c08bcabe0b6",
+      "started_at": "2026-01-25T08:55:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:55:13Z",
+      "id": "0a03a05a-b9d5-4c39-952c-bd7b0f39dc33",
+      "started_at": "2026-01-25T08:55:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:54:12Z",
+      "id": "c7755adc-43f0-400c-87b3-535afe2b929a",
+      "started_at": "2026-01-25T08:54:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:55:47Z",
+      "id": "bf578e57-6b2d-4761-b9a3-ece4cd1f9693",
+      "started_at": "2026-01-25T08:54:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:54:45Z",
+      "id": "a86ce3b7-e5f8-40b3-bd49-3c540af4baff",
+      "started_at": "2026-01-25T08:54:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:53:45Z",
+      "id": "eae4ab93-836b-455d-b17e-0f38bc7d1510",
+      "started_at": "2026-01-25T08:53:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:53:16Z",
+      "id": "e51d0752-bad8-465c-8b29-e36ea40cfc0d",
+      "started_at": "2026-01-25T08:53:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:54:45Z",
+      "id": "6729f7bc-64c1-4f57-9013-613ac381abca",
+      "started_at": "2026-01-25T08:53:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:53:43Z",
+      "id": "5fe2f374-7a0e-4d20-b21e-7a5aab09f09d",
+      "started_at": "2026-01-25T08:52:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:52:22Z",
+      "id": "38e527b3-07c1-4f60-92aa-c07400a10857",
+      "started_at": "2026-01-25T08:52:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:52:52Z",
+      "id": "025711f0-c6fb-4358-9edd-08bbf72e2e3b",
+      "started_at": "2026-01-25T08:52:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:51:17Z",
+      "id": "c26da1bf-60f3-4bd5-b5b0-a87640a36c51",
+      "started_at": "2026-01-25T08:51:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:51:46Z",
+      "id": "9c86bb2f-149c-42ef-a898-5dadd1aeb6ac",
+      "started_at": "2026-01-25T08:51:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:52:50Z",
+      "id": "8e33d863-e9e0-46e0-89fe-366072689797",
+      "started_at": "2026-01-25T08:51:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:50:48Z",
+      "id": "8143aaa0-1ef2-4ecc-a5e2-f53299725b40",
+      "started_at": "2026-01-25T08:50:06Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:51:46Z",
+      "id": "73eabc20-2e1d-425c-aa76-43196a05c684",
+      "started_at": "2026-01-25T08:50:06Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:50:16Z",
+      "id": "144eeef3-d963-4c31-9fc6-ba88dd0158a4",
+      "started_at": "2026-01-25T08:50:06Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:49:13Z",
+      "id": "8f31dd0c-221a-4b46-a483-bc2fa67368cf",
+      "started_at": "2026-01-25T08:49:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:51:18Z",
+      "id": "48c65d6f-1f70-47de-9cee-01178b10266a",
+      "started_at": "2026-01-25T08:49:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:49:44Z",
+      "id": "3dffffe6-59db-4009-b64d-00761b49852c",
+      "started_at": "2026-01-25T08:49:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:50:22Z",
+      "id": "ad90d13b-d5b9-42dd-9f9a-d0278682fd5c",
+      "started_at": "2026-01-25T08:48:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:48:47Z",
+      "id": "819dc092-7998-48e1-bdaa-2a0f2eb112f9",
+      "started_at": "2026-01-25T08:48:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:48:25Z",
+      "id": "7dfe2348-8817-445b-955b-f453361c6350",
+      "started_at": "2026-01-25T08:48:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:48:47Z",
+      "id": "d5e2cf00-8f4e-42af-9396-ddf52025188c",
+      "started_at": "2026-01-25T08:47:04Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:19Z",
+      "id": "81b8d584-eed2-46ea-8839-ba3e072c9f9d",
+      "started_at": "2026-01-25T08:47:04Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:44Z",
+      "id": "403dee39-b3ab-4ad7-b6bb-8449b5ae864c",
+      "started_at": "2026-01-25T08:47:04Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:47Z",
+      "id": "20347d2b-abef-4c34-9788-730372679bc1",
+      "started_at": "2026-01-25T08:46:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:49:22Z",
+      "id": "201bc895-1bd1-44d4-9301-31e5deb370fe",
+      "started_at": "2026-01-25T08:46:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:46:51Z",
+      "id": "0c625871-27ca-41ad-81b4-ae07399a6dad",
+      "started_at": "2026-01-25T08:46:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:46:49Z",
+      "id": "bcf649d4-f672-4199-9412-e04ad636fc03",
+      "started_at": "2026-01-25T08:45:06Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:45Z",
+      "id": "a6b5dea4-6755-43a7-a298-3f7cc79710c2",
+      "started_at": "2026-01-25T08:45:06Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:49:32Z",
+      "id": "14b0d425-bc1b-44c2-bbac-ad035b43b1bd",
+      "started_at": "2026-01-25T08:45:06Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:14Z",
+      "id": "01b529a5-2bc6-4d81-8287-80e41756a5b1",
+      "started_at": "2026-01-25T08:45:06Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:46:54Z",
+      "id": "c9fd3619-f2f8-4ec7-83c6-64b5ee988ba6",
+      "started_at": "2026-01-25T08:44:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:46:25Z",
+      "id": "c0edf86a-9306-4706-9650-19dc33d1a717",
+      "started_at": "2026-01-25T08:44:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:50:12Z",
+      "id": "32fdfd47-9a66-4452-ad05-926ee2df17a9",
+      "started_at": "2026-01-25T08:44:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:48:10Z",
+      "id": "e0d94b3e-4dac-43ce-98db-8072d6f0a6f3",
+      "started_at": "2026-01-25T08:43:06Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:53:22Z",
+      "id": "497a27c1-8017-4f62-b78a-c777624da73c",
+      "started_at": "2026-01-25T08:43:06Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:35Z",
+      "id": "3f3f675e-3e07-426e-8ceb-a592bc4a7292",
+      "started_at": "2026-01-25T08:43:06Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:51:20Z",
+      "id": "c832e945-d821-4303-bdfe-13cab1025b82",
+      "started_at": "2026-01-25T08:42:06Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:56Z",
+      "id": "71e56334-a11b-415a-938c-48423d4e765d",
+      "started_at": "2026-01-25T08:42:06Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:46:32Z",
+      "id": "37562cb7-c489-41ce-87d5-d0038e8a51ee",
+      "started_at": "2026-01-25T08:42:06Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:46:32Z",
+      "id": "a4015489-a13a-45d5-92e3-63a7fe7ea4a1",
+      "started_at": "2026-01-25T08:41:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:30Z",
+      "id": "89564454-f5c0-4995-bea3-0cfc617b4cc1",
+      "started_at": "2026-01-25T08:41:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:49:50Z",
+      "id": "70efacf8-4771-4368-a131-64a0d56833b2",
+      "started_at": "2026-01-25T08:41:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:41:34Z",
+      "id": "c901483d-0430-41d0-b739-285d46111cea",
+      "started_at": "2026-01-25T08:40:03Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:49:36Z",
+      "id": "26aedf77-29f5-4068-a9a0-ad0538ea69e3",
+      "started_at": "2026-01-25T08:40:03Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:50:24Z",
+      "id": "213664ac-635f-4e8e-b902-00bc3bc32fe5",
+      "started_at": "2026-01-25T08:40:03Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:40:05Z",
+      "id": "1a892e7f-c0c7-47c6-bef1-dbca52ffbff6",
+      "started_at": "2026-01-25T08:40:03Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:49Z",
+      "id": "899d1f02-83e3-46cc-9439-e8192a715add",
+      "started_at": "2026-01-25T08:39:06Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:48:21Z",
+      "id": "39a097a6-f972-4542-b782-d34b0752f275",
+      "started_at": "2026-01-25T08:39:06Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:49:21Z",
+      "id": "2f3d1341-cf30-416b-96a3-e52c42a9dd47",
+      "started_at": "2026-01-25T08:39:06Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:38:28Z",
+      "id": "ede17c73-baad-4ff9-a6a5-8b7f52bd00c9",
+      "started_at": "2026-01-25T08:38:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:38:44Z",
+      "id": "afb45cf5-6304-4a84-886c-b02cfe58fac8",
+      "started_at": "2026-01-25T08:38:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:48:28Z",
+      "id": "17d1647e-db19-4f2a-bd62-a2ee762a3791",
+      "started_at": "2026-01-25T08:38:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:38:12Z",
+      "id": "dc2a93ae-7b60-47ad-a8ff-452495a97e30",
+      "started_at": "2026-01-25T08:37:41Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:38:31Z",
+      "id": "a1b09ffd-8fa9-41df-bdc6-2d493f2e9c6a",
+      "started_at": "2026-01-25T08:37:41Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:48:14Z",
+      "id": "2638c183-b8bb-4a19-92c5-f091bdbe4780",
+      "started_at": "2026-01-25T08:37:41Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:37:31Z",
+      "id": "f260a6fe-22da-4590-a8c8-72b3392f9cdf",
+      "started_at": "2026-01-25T08:37:23Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:38:06Z",
+      "id": "edebb675-fb66-4e4f-a773-dc59e917d6ba",
+      "started_at": "2026-01-25T08:37:23Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:47:43Z",
+      "id": "14ea7ae5-5b13-4e6e-bc1a-c037378a3edc",
+      "started_at": "2026-01-25T08:37:23Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:37:24Z",
+      "id": "fc5e3af7-b8cd-422d-8e1b-f976fe2efe21",
+      "started_at": "2026-01-25T08:37:17Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:37:55Z",
+      "id": "bc076a26-8955-4740-af1d-4fe5659863eb",
+      "started_at": "2026-01-25T08:37:17Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:41:13Z",
+      "id": "29eaa663-1e2b-40d1-9c3c-251a1398e1eb",
+      "started_at": "2026-01-25T08:37:17Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:37:13Z",
+      "id": "98bcc844-df1f-4aec-b644-afdcc6fd55f9",
+      "started_at": "2026-01-25T08:37:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:37:46Z",
+      "id": "96fe00ec-7bc9-4e16-aa0d-2b5b401b823a",
+      "started_at": "2026-01-25T08:37:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:38:52Z",
+      "id": "018c699a-33b0-4ab9-879c-c7781b94cca5",
+      "started_at": "2026-01-25T08:37:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:37:46Z",
+      "id": "f2a5361e-929d-4b58-81e1-794a363842a3",
+      "started_at": "2026-01-25T08:36:06Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:36:13Z",
+      "id": "8490a405-4ee8-42fb-919e-099bc5cdd88c",
+      "started_at": "2026-01-25T08:36:06Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:36:47Z",
+      "id": "5bca8368-fa57-4c44-8608-a55aa47263b5",
+      "started_at": "2026-01-25T08:36:06Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:36:49Z",
+      "id": "fd4865e6-63ce-43ad-a90a-eef5ab2990e8",
+      "started_at": "2026-01-25T08:35:05Z",
+      "task": "test_slow"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:35:51Z",
+      "id": "973b5b5c-f9a8-408e-95f2-5a8293ce66cb",
+      "started_at": "2026-01-25T08:35:05Z",
+      "task": "test_medium"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:35:14Z",
+      "id": "1eee516b-f42c-4e75-9d4e-527115fc24c0",
+      "started_at": "2026-01-25T08:35:05Z",
+      "task": "test_fast"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:32:35Z",
+      "id": "9d06e123-ed46-4b2c-9a85-7d4c16941166",
+      "started_at": "2026-01-25T08:32:32Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:32:10Z",
+      "id": "d94530c6-f59e-4146-9265-f55fe7c7df91",
+      "started_at": "2026-01-25T08:32:00Z",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:32:18Z",
+      "id": "5d807f3d-04d8-412f-83cc-f93676baff8f",
+      "started_at": "2026-01-25T08:31:55Z",
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-25T08:31:53Z",
+      "id": "92286304-fe69-4b0c-845f-0f054f39ccfc",
+      "started_at": "2026-01-25T08:31:51Z",
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-28T00:02:33Z",
+      "id": "C6ACE52B-C8FC-4E85-ABA6-AACCE868EC5C",
+      "started_at": "2026-01-28T00:02:30Z",
+      "started_at_epoch": 1769558550,
+      "task": "heartbeat"
+    },
+    {
+      "id": "8EE95AA8-3AE7-4FB0-8CF3-9988E386D031",
+      "pid": null,
+      "started_at": "2026-01-28T00:10:05Z",
+      "started_at_epoch": 1769559005,
       "task": "heartbeat",
-      "exit_code": 1,
-      "finished_at": "2026-01-23T21:00:18Z",
-      "duration_ms": 15000
-    },
-    {
-      "id": "068ebf96-534a-4be4-b588-2dbad6d7a2d4",
-      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-23T21:30:07Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "113fd4e1-3c14-4cd0-997e-063d93181d42",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T21:40:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "be9524b1-2dcd-4479-8231-94011ca88581",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T21:50:07Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "52066f24-1452-4640-ad33-b33253c053b1",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T22:00:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "fbd624bf-b9c7-435e-ae62-f7f6a75e4b88",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T22:10:07Z",
-      "duration_ms": 2000
-    },
-    {
-      "id": "7dd61d3e-10c3-4a8e-8244-07f995703719",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T22:20:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "246d6a3c-10a9-49c5-93db-3b31a21f306e",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T22:30:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "e44d6edc-baff-40bb-a2af-7b7d73544c41",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T22:40:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "e841b727-0f06-4b69-a519-4823d4b5ced2",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T22:50:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "7786ce5d-e972-4b4b-ad2b-255dc555d87f",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-23T23:00:07Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "e5358a1a-c658-49d1-a161-52b1f5f91ce4",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T00:02:56Z",
-      "duration_ms": 2544000
-    },
-    {
-      "id": "374d57a7-a3c0-42bd-8153-ced79ae5a7d9",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T00:10:08Z",
-      "duration_ms": 2000
-    },
-    {
-      "id": "1c132c6f-18b3-4f66-a4c7-c24aaba1c2d1",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T00:20:03Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "1fbd43fb-f510-40ab-a386-50ea3c946a22",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T00:30:08Z",
-      "duration_ms": 2000
-    },
-    {
-      "id": "69e7068e-cb9d-49a6-a510-5300980619f2",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T00:40:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "1f65b6af-2965-45cf-a7dd-179d1ac8bbca",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T00:50:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "ec8d6246-81ce-4158-bf20-ab1825e49522",
-      "task": "clock",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T01:00:24Z",
-      "duration_ms": 21000
-    },
-    {
-      "id": "18f5b964-06f3-4f30-a8b2-5f2cd45eb962",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T01:10:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "1d79799f-604f-4f03-abcc-c36060d665b7",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T01:20:06Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "a1aee07d-301e-4c89-a1cb-fcfe2fa2dfde",
-      "task": "clock",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T01:30:57Z",
-      "duration_ms": 52000
-    },
-    {
-      "id": "1c700a6a-5051-4a21-91bb-761a1b782065",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T01:40:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "910580ab-6039-4f1b-becd-834106407efe",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T01:50:07Z",
-      "duration_ms": 2000
-    },
-    {
-      "id": "12533076-0b4a-4de8-8031-785817755420",
-      "task": "clock",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T02:01:01Z",
-      "duration_ms": 58000
-    },
-    {
-      "id": "6e041210-def1-4734-ab6a-e2a13645a543",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T02:10:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "f819754c-c531-45c8-8e15-2be08f46d157",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T02:20:05Z",
-      "duration_ms": 2000
-    },
-    {
-      "id": "75456f89-50de-4df3-9231-1675b6a1e496",
-      "task": "clock",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T02:39:45Z",
-      "duration_ms": 584000
-    },
-    {
-      "id": "8051df19-b17c-4714-b173-8b6641bd7eba",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T02:40:07Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "5adeeee7-b583-4250-94d5-cb2fc70f5198",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T02:50:08Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "6f644c93-0ed1-4b5d-9b01-425029ee3a3c",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T03:26:25Z",
-      "duration_ms": 2000
-    },
-    {
-      "id": "f3669fc1-9b9b-4269-8903-29b200a20b7b",
-      "task": "clock",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T03:33:31Z",
-      "duration_ms": 8000
-    },
-    {
-      "id": "68a0a22a-e604-4eec-95b1-45f81c3c1aac",
-      "task": "clock",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T03:36:50Z",
-      "duration_ms": 11000
-    },
-    {
-      "id": "cfc7c9b8-d6e6-4638-bb43-84bfab928432",
-      "task": "x-ray-pipeline",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T06:19:24Z",
-      "duration_ms": 8000
-    },
-    {
-      "id": "b4ccf394-428f-490d-a7ef-4efcf1c74bd9",
-      "task": "obsidian_sync",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T08:15:59Z",
-      "duration_ms": 23000
-    },
-    {
-      "id": "dd73aa60-a37e-4757-bf64-299dc12317ab",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T08:20:03Z",
-      "duration_ms": 2000
-    },
-    {
-      "id": "10a1ad03-04ac-4b5f-b1f6-671f20b60901",
-      "task": "clock",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T08:30:23Z",
-      "duration_ms": 15000
-    },
-    {
-      "id": "2f810653-f242-4f0f-8b5b-67fe8e446e65",
-      "task": "news_briefing",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T08:38:25Z",
-      "duration_ms": 118000
-    },
-    {
-      "id": "945682b0-dbf2-48b9-a75b-d0de5e5e3fb7",
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T08:40:29Z",
-      "duration_ms": 3000
-    },
-    {
-      "id": "cb8e8f9b-11d1-43b0-86cf-d106ebf9be5e",
-      "task": "obsidian_sync",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T08:46:31Z",
-      "duration_ms": 59000
-    },
-    {
-      "id": "edbffb5b-f658-401e-bce6-3895bcbf0cad",
-      "task": "news_briefing",
-      "exit_code": 0,
-      "finished_at": "2026-01-24T08:52:18Z",
-      "duration_ms": 406000
+      "finished_at": "2026-01-28T00:10:13Z"
     }
   ],
-  "total": 66,
-  "updated_at": "2026-01-24T08:52:18Z"
+  "total": 412,
+  "updated_at": "2026-01-28T00:10:13Z"
 }

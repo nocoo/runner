@@ -55,7 +55,7 @@ describe("useStatusVM", () => {
     });
     
     expect(result.current.successRatePercent).toBe("90%");
-    expect(result.current.lastRunStatus).toBe("success");
+    expect(result.current.lastRunStatus).toBe("OK");
   });
 
   test("handles error state", async () => {

@@ -83,6 +83,16 @@ No launchd reload needed - launchd calls `./runner auto` which uses the updated 
 cd runner-swift && swift test
 ```
 
+## Testing Policy
+
+- Pre-commit hooks run all TypeScript and Swift tests.
+- Do not skip tests in normal workflows.
+
+```bash
+cd dashboard && bun test --coverage
+cd runner-swift && swift test
+```
+
 ## launchd Management
 
 ```bash
