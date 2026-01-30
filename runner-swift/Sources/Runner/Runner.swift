@@ -27,12 +27,10 @@ struct Auto: AsyncParsableCommand {
     
     @Option(help: "Mock weekday (0=Sun)")
     var mockWeekday: Int?
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-
-        // Run monitor first
-        let monitor = Monitor(storage: storage, verbose: options.verbose)
+        let wiring = AutoWiring(options: options)
 
         // Get current time (UTC+8)
         let now = Date()
@@ -44,15 +42,13 @@ struct Auto: AsyncParsableCommand {
         let minute = mockMinute ?? components.minute!
         let weekday = mockWeekday ?? (components.weekday! - 1) // Convert to 0=Sunday
 
-        let executor = Executor(storage: storage, dryRun: options.dryRun, verbose: options.verbose)
-
         let service = AutoService()
         let time = AutoTime(hour: hour, minute: minute, weekday: weekday)
 
         try await service.run(
-            storage: storage,
-            monitor: monitor,
-            executor: executor,
+            storage: wiring.storage,
+            monitor: wiring.monitor,
+            executor: wiring.executor,
             time: time,
             log: { message in options.log(message) },
             onError: { taskId, error in
@@ -74,15 +70,15 @@ struct Run: AsyncParsableCommand {
     
     @Option(name: .shortAndLong, help: "Trigger type")
     var trigger: String = "manual"
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-        let executor = Executor(storage: storage, dryRun: options.dryRun, verbose: options.verbose)
+        let wiring = RunWiring(options: options)
 
         let service = RunService()
         let result = try await service.run(
-            storage: storage,
-            executor: executor,
+            storage: wiring.storage,
+            executor: wiring.executor,
             taskId: task,
             trigger: trigger,
             log: { message in options.log(message) }
@@ -102,11 +98,11 @@ struct List: AsyncParsableCommand {
     static let configuration = CommandConfiguration(abstract: "List tasks")
     
     @OptionGroup var options: CommonOptions
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-
-        let service = TaskListService(loader: storage)
+        let wiring = ListWiring(options: options)
+        let service = TaskListService(loader: wiring.storage)
         let entries = try await service.list()
         for entry in entries {
             print("\(entry.id): \(entry.description)")
@@ -120,11 +116,11 @@ struct Validate: AsyncParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Validate configuration")
     
     @OptionGroup var options: CommonOptions
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-
-        let service = ValidateService(tasksLoader: storage, schedulesLoader: storage)
+        let wiring = ValidateWiring(options: options)
+        let service = ValidateService(tasksLoader: wiring.storage, schedulesLoader: wiring.storage)
         let result = try await service.validate()
 
         switch result {
@@ -150,12 +146,11 @@ struct MonitorCommand: AsyncParsableCommand {
     )
     
     @OptionGroup var options: CommonOptions
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-        let monitor = Monitor(storage: storage, verbose: options.verbose)
-
-        let service = MonitorService(monitor: monitor)
+        let wiring = MonitorWiring(options: options)
+        let service = MonitorService(monitor: wiring.monitor)
         let result = try await service.check()
 
         if result.interrupted.isEmpty {
@@ -175,11 +170,11 @@ struct Init: AsyncParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Initialize data directory")
     
     @OptionGroup var options: CommonOptions
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-
-        let service = InitService(initializer: storage, dataDir: options.dataDir)
+        let wiring = InitWiring(options: options)
+        let service = InitService(initializer: wiring.storage, dataDir: options.dataDir)
         let message = try await service.run()
         print(message)
     }
@@ -200,11 +195,11 @@ struct Logs: AsyncParsableCommand {
     
     @Option(name: .shortAndLong, help: "Show last N lines")
     var tail: Int?
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-
-        let service = LogService(dataDir: options.dataDir, loader: storage)
+        let wiring = LogsWiring(options: options)
+        let service = LogService(dataDir: options.dataDir, loader: wiring.storage)
 
         if list {
             let entries = try await service.listRuns(limit: 20)
@@ -228,17 +223,16 @@ struct Api: AsyncParsableCommand {
     
     @Argument(help: "Query: tasks, schedules, runs, status, init")
     var query: String
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-
-        let statePath = options.dataDir.appendingPathComponent("state.json")
+        let wiring = ApiWiring(options: options)
         let service = ApiService(
-            tasksLoader: storage,
-            schedulesLoader: storage,
-            runsLoader: storage,
-            initializer: storage,
-            stateLoader: DefaultStateLoader(path: statePath)
+            tasksLoader: wiring.storage,
+            schedulesLoader: wiring.storage,
+            runsLoader: wiring.storage,
+            initializer: wiring.storage,
+            stateLoader: DefaultStateLoader(path: wiring.statePath)
         )
 
         let output = try await service.handle(query: query)
@@ -255,15 +249,16 @@ struct Cleanup: AsyncParsableCommand {
     
     @Flag(name: .shortAndLong, help: "Actually kill processes (default: dry run)")
     var force: Bool = false
+
     
     func run() async throws {
-        let storage = Storage(dataDir: options.dataDir)
-        let index = try await storage.loadRunsIndex()
+        let wiring = CleanupWiring(options: options)
+        let index = try await wiring.storage.loadRunsIndex()
         
         let planner = CleanupPlanner()
         let plan = try await planner.buildPlan(
             index: index,
-            detailLoader: storage,
+            detailLoader: wiring.storage,
             processInspector: DefaultProcessInspector()
         )
 
@@ -311,7 +306,7 @@ struct Cleanup: AsyncParsableCommand {
         
         // Mark all as interrupted
         for run in runsToMark {
-            try await storage.markInterrupted(id: run.id)
+            try await wiring.storage.markInterrupted(id: run.id)
             print("Marked \(run.id) as interrupted")
         }
         
