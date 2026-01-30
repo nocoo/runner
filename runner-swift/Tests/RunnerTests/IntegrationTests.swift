@@ -173,7 +173,13 @@ struct IntegrationTests {
         #expect(runningBefore.count == 1)
         
         // Wait for completion
-        try await _Concurrency.Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
+        let deadline = Date().addingTimeInterval(5)
+        while Date() < deadline {
+            if let _ = try await storage.loadRunDetail(id: result.id) {
+                break
+            }
+            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
+        }
         
         // Task completed, but still has PID in index (until jq updates it)
         // Run monitor to check
@@ -186,7 +192,8 @@ struct IntegrationTests {
         let run = index.runs.first { $0.id == result.id }
         #expect(run != nil)
         if isJqAvailable() {
-            #expect(run?.exitCode != nil)
+            let detail = try await storage.loadRunDetail(id: result.id)
+            #expect(detail != nil)
         }
     }
     

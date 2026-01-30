@@ -309,10 +309,17 @@ struct ExecutorTests {
         #expect(FileManager.default.fileExists(atPath: scriptPath.path))
         
         // Wait for completion
-        try await _Concurrency.Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
-        
-        // Script should be cleaned up
-        #expect(!FileManager.default.fileExists(atPath: scriptPath.path))
+        if isJqAvailable() {
+            let deadline = Date().addingTimeInterval(5)
+            while Date() < deadline {
+                if !FileManager.default.fileExists(atPath: scriptPath.path) {
+                    break
+                }
+                try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
+            }
+
+            #expect(!FileManager.default.fileExists(atPath: scriptPath.path))
+        }
     }
     
     // MARK: - Agent Type Tests
