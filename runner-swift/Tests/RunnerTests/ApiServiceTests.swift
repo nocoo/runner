@@ -75,4 +75,41 @@ struct ApiServiceTests {
         let output = try await service.handle(query: "init")
         #expect(output.contains("\"status\": \"ok\""))
     }
+
+    @Test("ApiService unknown query throws")
+    func apiServiceUnknownQuery() async throws {
+        let service = ApiService(
+            tasksLoader: StubTasksLoader(tasks: []),
+            schedulesLoader: StubSchedulesLoader(schedules: []),
+            runsLoader: StubRunsLoader(index: RunsIndex(runs: [], total: 0, updatedAt: "")),
+            initializer: StubInitializer(),
+            stateLoader: StubStateLoader(data: Data("{}".utf8))
+        )
+
+        do {
+            _ = try await service.handle(query: "unknown")
+            #expect(Bool(false), "Expected error")
+        } catch {
+            #expect(error is RunnerError)
+        }
+    }
+
+    @Test("ApiService throws on invalid UTF-8 state")
+    func apiServiceInvalidUTF8State() async throws {
+        let invalidData = Data([0xFF, 0xFE, 0xFD])
+        let service = ApiService(
+            tasksLoader: StubTasksLoader(tasks: []),
+            schedulesLoader: StubSchedulesLoader(schedules: []),
+            runsLoader: StubRunsLoader(index: RunsIndex(runs: [], total: 0, updatedAt: "")),
+            initializer: StubInitializer(),
+            stateLoader: StubStateLoader(data: invalidData)
+        )
+
+        do {
+            _ = try await service.handle(query: "state")
+            #expect(Bool(false), "Expected error")
+        } catch {
+            #expect(error is ApiServiceError)
+        }
+    }
 }
