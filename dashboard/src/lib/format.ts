@@ -94,15 +94,17 @@ export function formatTimeUTC8(isoDate: string): string {
 }
 
 /**
- * Format exit code to status string
- * - null/undefined = running
- * - 0 = success
- * - other = failed
+ * Format exit code to status string (uppercase)
+ * - null/undefined = RUNNING
+ * - 0 = OK
+ * - -1 = INTERRUPTED
+ * - other = FAILED
  */
 export function formatExitCode(exitCode: number | null): string {
-  if (exitCode == null) return "running";
-  if (exitCode === 0) return "success";
-  return `failed (${exitCode})`;
+  if (exitCode == null) return "RUNNING";
+  if (exitCode === 0) return "OK";
+  if (exitCode === -1) return "INTERRUPTED";
+  return "FAILED";
 }
 
 /**

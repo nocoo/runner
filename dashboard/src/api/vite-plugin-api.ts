@@ -110,7 +110,7 @@ export function apiPlugin(): Plugin {
                   started_at: runFromIndex.started_at || "",
                   finished_at: runFromIndex.finished_at || undefined,
                   duration_seconds,
-                  exit_code: runFromIndex.exit_code ?? -1,
+                  exit_code: runFromIndex.exit_code,  // Keep null for running tasks
                 }));
                 return;
               }

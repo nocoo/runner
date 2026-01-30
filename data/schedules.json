@@ -78,39 +78,45 @@
     "weekday": "*"
   },
   {
-    "task": "xray_insights",
+    "task": "xray_watchlist",
     "hour": 0,
     "minute": 20,
     "weekday": "*"
   },
   {
-    "task": "xray_insights",
+    "task": "xray_watchlist",
     "hour": 4,
     "minute": 20,
     "weekday": "*"
   },
   {
-    "task": "xray_insights",
+    "task": "xray_watchlist",
     "hour": 8,
     "minute": 20,
     "weekday": "*"
   },
   {
-    "task": "xray_insights",
+    "task": "xray_watchlist",
     "hour": 12,
     "minute": 20,
     "weekday": "*"
   },
   {
-    "task": "xray_insights",
+    "task": "xray_watchlist",
     "hour": 16,
     "minute": 20,
     "weekday": "*"
   },
   {
-    "task": "xray_insights",
+    "task": "xray_watchlist",
     "hour": 20,
     "minute": 20,
+    "weekday": "*"
+  },
+  {
+    "task": "xray_me",
+    "hour": 8,
+    "minute": 0,
     "weekday": "*"
   }
 ]

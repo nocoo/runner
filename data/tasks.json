@@ -2,39 +2,47 @@
   {
     "id": "heartbeat",
     "type": "simple",
-    "description": "Heartbeat - play a soft pop sound",
+    "description": "心跳 - 播放轻柔提示音",
     "timeout": 10,
     "command": "afplay /System/Library/Sounds/Pop.aiff"
   },
   {
     "id": "clock",
     "type": "agent",
-    "description": "Clock chime - announce time with text-to-speech",
+    "description": "报时 - 语音播报当前时间",
     "timeout": 60,
     "prompt": "Get the current time and run `say -v Tingting` to announce it. Format: 'X dian Y fen' (X点Y分), or 'X dian zheng' (X点整) for exact hours."
   },
   {
     "id": "obsidian_sync",
     "type": "agent",
-    "description": "Sync Obsidian vault - commit and push changes to remote",
+    "description": "同步 Obsidian - 提交并推送变更到远程仓库",
     "timeout": 120,
-    "prompt": "Check for changes. If any: 1) git add all changes 2) generate concise commit message 3) push to main. If no changes, output 'No changes'.",
+    "prompt": "Pull from remote first. Then check for local changes. If any: 1) git add all changes 2) generate concise commit message 3) push to main. If no local changes, output 'No changes'.",
     "workdir": "/Users/nocoo/workspace/personal/obsidian"
   },
   {
     "id": "news_briefing",
     "type": "agent",
-    "description": "Daily news briefing - aggregate and analyze news from multiple sources",
+    "description": "每日新闻简报 - 聚合并分析多来源新闻",
     "timeout": 600,
     "prompt": "Run /news-aggregator-skill with option 12 (source=all) for comprehensive news aggregation.",
     "workdir": "/Users/nocoo/workspace/personal/workflow/skills/news-aggregator-skill"
   },
   {
-    "id": "xray_insights",
+    "id": "xray_watchlist",
     "type": "agent",
-    "description": "Xray insights",
-    "timeout": 300,
-    "prompt": "/xray-insights",
+    "description": "获取关注列表中 X 用户的更新，总结并生成报告",
+    "timeout": 1800,
+    "prompt": "/xray-watchlist",
+    "workdir": "/Users/nocoo/workspace/personal/xray"
+  },
+  {
+    "id": "xray_me",
+    "type": "agent",
+    "description": "分析用户过去一天的 X 动态、互动情况和数据统计，生成报告",
+    "timeout": 1800,
+    "prompt": "/xray-me",
     "workdir": "/Users/nocoo/workspace/personal/xray"
   }
 ]

@@ -12,6 +12,7 @@ export default defineConfig({
   },
   server: {
     port: 7009,
+    allowedHosts: ["runner.dev.hexly.ai"],
   },
   preview: {
     port: 7009,

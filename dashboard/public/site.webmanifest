@@ -1,0 +1,19 @@
+{
+  "name": "Runner Dashboard",
+  "short_name": "Runner",
+  "icons": [
+    {
+      "src": "/favicon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#00FF41",
+  "background_color": "#050505",
+  "display": "standalone"
+}
