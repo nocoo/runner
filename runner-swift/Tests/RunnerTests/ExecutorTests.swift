@@ -4,6 +4,20 @@ import Foundation
 
 @Suite("Executor Tests")
 struct ExecutorTests {
+    func isJqAvailable() -> Bool {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
+        process.arguments = ["jq"]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        do {
+            try process.run()
+            process.waitUntilExit()
+            return process.terminationStatus == 0
+        } catch {
+            return false
+        }
+    }
     func makeScriptBuilder(dataDir: URL) -> ScriptBuilder {
         ScriptBuilder(dataDir: dataDir)
     }
@@ -150,12 +164,23 @@ struct ExecutorTests {
         
         #expect(result.exitCode == 0)
         
-        // Wait for background task to complete
-        try await _Concurrency.Task.sleep(nanoseconds: 500_000_000) // 500ms
-        
+        if !isJqAvailable() {
+            return
+        }
+
         let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")
-        let content = try String(contentsOf: outputPath, encoding: .utf8)
-        
+        let deadline = Date().addingTimeInterval(5)
+        var content = ""
+        while Date() < deadline {
+            if let current = try? String(contentsOf: outputPath, encoding: .utf8) {
+                content = current
+                if content.contains("/tmp") || content.contains("/private/tmp") {
+                    break
+                }
+            }
+            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
+        }
+
         #expect(content.contains("/tmp") || content.contains("/private/tmp"))
     }
     
@@ -218,10 +243,17 @@ struct ExecutorTests {
         #expect(indexBefore.runs[0].pid != nil)
         
         // Wait for completion
-        try await _Concurrency.Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
-        
-        // After completion
-        let indexAfter = try await storage.loadRunsIndex()
+        if !isJqAvailable() {
+            return
+        }
+
+        let deadline = Date().addingTimeInterval(8)
+        var indexAfter = try await storage.loadRunsIndex()
+        while Date() < deadline && indexAfter.runs[0].exitCode == nil {
+            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
+            indexAfter = try await storage.loadRunsIndex()
+        }
+
         #expect(indexAfter.runs[0].exitCode == 0)
         #expect(indexAfter.runs[0].finishedAt != nil)
         #expect(indexAfter.runs[0].pid == nil)
