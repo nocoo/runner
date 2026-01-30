@@ -303,6 +303,33 @@ struct MonitorTests {
         #expect(updatedRun?.exitCode == 7)
         #expect(updatedRun?.finishedAt != nil)
     }
+
+    @Test("Check running tasks treats missing start time as not reused")
+    func checkRunningTasksMissingStartTime() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let run = RunSummary(
+            id: "no-start",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 22222,
+            startedAtEpoch: Int64(1769308800)
+        )
+        try await storage.addRun(run)
+
+        let inspector = StubProcessInspector(running: [22222], startTimes: [:])
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: inspector)
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted.isEmpty)
+
+        let index = try await storage.loadRunsIndex()
+        let updatedRun = index.runs.first { $0.id == "no-start" }
+        #expect(updatedRun?.exitCode == nil)
+    }
     
     // MARK: - Multiple Tasks Tests
     
