@@ -15,7 +15,7 @@ public struct Executor {
     
     public func log(_ message: String) {
         if verbose {
-            FileHandle.standardError.write("[DEBUG] \(message)\n".data(using: .utf8)!)
+            FileHandle.standardError.write(Data("[DEBUG] \(message)\n".utf8))
         }
     }
     
@@ -54,43 +54,13 @@ public struct Executor {
             )
         }
         
-        // Write output header
-        let header = """
-        Task: \(task.id)
-        Trigger: \(trigger)
-        Started: \(startedAt)
-        Command: \(command)
-        \(String(repeating: "=", count: 50))
-        
-        """
-        try await storage.writeOutput(id: runId, content: header)
-        
-        // Create wrapper script for background execution
-        let scriptContent = createScript(
+        let pid = try await prepareAndSpawn(
             task: task,
             command: command,
             runId: runId,
             startedAt: startedAt,
-            trigger: trigger,
-            dataDir: storage.dataDir
+            trigger: trigger
         )
-        
-        let scriptPath = storage.dataDir.appendingPathComponent("runs/.\(runId).sh")
-        try scriptContent.write(to: scriptPath, atomically: true, encoding: .utf8)
-        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptPath.path)
-        
-        // Spawn detached process
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/nohup")
-        process.arguments = ["/bin/bash", scriptPath.path]
-        process.standardOutput = FileHandle.nullDevice
-        process.standardError = FileHandle.nullDevice
-        if let workdir = task.workdir {
-            process.currentDirectoryURL = URL(fileURLWithPath: workdir)
-        }
-        
-        try process.run()
-        let pid = process.processIdentifier
         
         // Add to index
         let summary = RunSummary(
@@ -110,13 +80,19 @@ public struct Executor {
     }
     
     /// Create shell script that executes command and updates storage
-    private func createScript(task: Task, command: String, runId: String, startedAt: String, trigger: String, dataDir: URL) -> String {
+    private func createScript(
+        task: Task,
+        command: String,
+        runId: String,
+        startedAt: String,
+        trigger: String
+    ) -> String {
         let escapedCommand = command.replacingOccurrences(of: "'", with: "'\"'\"'")
         let workdir = task.workdir ?? "."
         let timeout = task.effectiveTimeout
-        let outputPath = dataDir.appendingPathComponent("runs/\(runId).output").path
-        let detailPath = dataDir.appendingPathComponent("runs/\(runId).json").path
-        let indexPath = dataDir.appendingPathComponent("runs/index.json").path
+        let outputPath = storage.dataDir.appendingPathComponent("runs/\(runId).output").path
+        let detailPath = storage.dataDir.appendingPathComponent("runs/\(runId).json").path
+        let indexPath = storage.dataDir.appendingPathComponent("runs/index.json").path
         
         return """
         #!/bin/bash
@@ -185,6 +161,48 @@ public struct Executor {
         # Cleanup script
         rm -f "$0"
         """
+    }
+
+    private func prepareAndSpawn(
+        task: Task,
+        command: String,
+        runId: String,
+        startedAt: String,
+        trigger: String
+    ) async throws -> Int32 {
+        let header = """
+        Task: \(task.id)
+        Trigger: \(trigger)
+        Started: \(startedAt)
+        Command: \(command)
+        \(String(repeating: "=", count: 50))
+        
+        """
+        try await storage.writeOutput(id: runId, content: header)
+
+        let scriptContent = createScript(
+            task: task,
+            command: command,
+            runId: runId,
+            startedAt: startedAt,
+            trigger: trigger
+        )
+
+        let scriptPath = storage.dataDir.appendingPathComponent("runs/.\(runId).sh")
+        try scriptContent.write(to: scriptPath, atomically: true, encoding: .utf8)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptPath.path)
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/nohup")
+        process.arguments = ["/bin/bash", scriptPath.path]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        if let workdir = task.workdir {
+            process.currentDirectoryURL = URL(fileURLWithPath: workdir)
+        }
+
+        try process.run()
+        return process.processIdentifier
     }
 }
 

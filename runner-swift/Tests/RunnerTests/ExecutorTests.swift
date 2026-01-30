@@ -126,13 +126,13 @@ struct ExecutorTests {
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Wait for background task to complete (increased for CI)
-        try await _Concurrency.Task.sleep(nanoseconds: 2_000_000_000) // 2s
+        let deadline = Date().addingTimeInterval(8)
+        var detail = try await storage.loadRunDetail(id: result.id)
+        while Date() < deadline && detail == nil {
+            try await _Concurrency.Task.sleep(nanoseconds: 250_000_000) // 250ms
+            detail = try await storage.loadRunDetail(id: result.id)
+        }
         
-        // Check detail.json was created
-        let detailPath = tempDir.appendingPathComponent("runs/\(result.id).json")
-        #expect(FileManager.default.fileExists(atPath: detailPath.path))
-        
-        let detail = try await storage.loadRunDetail(id: result.id)
         #expect(detail != nil)
         #expect(detail?.exitCode == 0)
         #expect(detail?.task == "test")
@@ -164,7 +164,7 @@ struct ExecutorTests {
         let task = makeTask(command: "echo done")
         
         let executor = Executor(storage: storage, dryRun: false, verbose: false)
-        let result = try await executor.execute(task: task, trigger: "test")
+        _ = try await executor.execute(task: task, trigger: "test")
         
         // Initially running
         let indexBefore = try await storage.loadRunsIndex()
@@ -367,9 +367,9 @@ struct ExecutorTests {
         #expect(resultIds.count == 3)
         
         // Wait until storage reflects all runs or timeout
-        let deadline = Date().addingTimeInterval(8)
+        let deadline = Date().addingTimeInterval(15)
         var index = try await storage.loadRunsIndex()
-        while Date() < deadline && (index.runs.count < 3 || index.runs.contains { $0.exitCode == nil }) {
+        while Date() < deadline && index.runs.count < 3 {
             try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
             index = try await storage.loadRunsIndex()
         }
@@ -377,6 +377,10 @@ struct ExecutorTests {
         #expect(index.runs.count == 3)
 
         // All should have completed
+        while Date() < deadline && index.runs.contains(where: { $0.exitCode == nil }) {
+            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
+            index = try await storage.loadRunsIndex()
+        }
         let completed = index.runs.filter { $0.exitCode != nil }
         #expect(completed.count == 3)
     }

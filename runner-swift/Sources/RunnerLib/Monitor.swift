@@ -12,7 +12,7 @@ public struct Monitor {
     
     public func log(_ message: String) {
         if verbose {
-            FileHandle.standardError.write("[MONITOR DEBUG] \(message)\n".data(using: .utf8)!)
+            FileHandle.standardError.write(Data("[MONITOR DEBUG] \(message)\n".utf8))
         }
     }
     

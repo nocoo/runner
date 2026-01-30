@@ -11,3 +11,13 @@ echo ""
 echo "🧪 Running dashboard tests..."
 bun --cwd dashboard test --bail
 echo "✅ Dashboard tests passed."
+
+echo ""
+echo "🧪 Running Swift tests..."
+swift test --package-path runner-swift
+echo "✅ Swift tests passed."
+
+echo ""
+echo "🔍 Running SwiftLint..."
+swiftlint --config runner-swift/.swiftlint.yml runner-swift
+echo "✅ SwiftLint passed."

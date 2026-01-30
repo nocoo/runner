@@ -5,14 +5,14 @@ let package = Package(
     name: "runner",
     platforms: [.macOS(.v13)],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.3.0")
     ],
     targets: [
         // Library containing all core logic (testable)
         .target(
             name: "RunnerLib",
             dependencies: [
-                .product(name: "ArgumentParser", package: "swift-argument-parser"),
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
             ],
             path: "Sources/RunnerLib"
         ),
@@ -26,6 +26,6 @@ let package = Package(
             name: "RunnerTests",
             dependencies: ["RunnerLib"],
             path: "Tests/RunnerTests"
-        ),
+        )
     ]
 )

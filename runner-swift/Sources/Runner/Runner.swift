@@ -81,7 +81,7 @@ struct Auto: AsyncParsableCommand {
                     let result = try await executor.execute(task: task, trigger: "scheduled")
                     options.log("Task \(taskId) completed with exit code \(result.exitCode)")
                 } catch {
-                    FileHandle.standardError.write("Error executing task \(taskId): \(error)\n".data(using: .utf8)!)
+                    FileHandle.standardError.write(Data("Error executing task \(taskId): \(error)\n".utf8))
                 }
             }
         }
@@ -163,10 +163,8 @@ struct Validate: AsyncParsableCommand {
         
         // Validate schedules
         let taskIds = Set(tasks.map { $0.id })
-        for schedule in schedules {
-            if !taskIds.contains(schedule.task) {
-                errors.append("Schedule references unknown task '\(schedule.task)'")
-            }
+        for schedule in schedules where !taskIds.contains(schedule.task) {
+            errors.append("Schedule references unknown task '\(schedule.task)'")
         }
         
         if errors.isEmpty {
@@ -175,7 +173,7 @@ struct Validate: AsyncParsableCommand {
             print("  Schedules: \(schedules.count)")
         } else {
             for error in errors {
-                FileHandle.standardError.write("Error: \(error)\n".data(using: .utf8)!)
+                FileHandle.standardError.write(Data("Error: \(error)\n".utf8))
             }
             Darwin.exit(1)
         }

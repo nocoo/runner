@@ -13,11 +13,9 @@ public struct Scheduler {
         let taskIds = Set(tasks.map { $0.id })
         var matched = Set<String>()
         
-        for schedule in schedules {
-            if matchesSchedule(schedule, hour: hour, minute: minute, weekday: weekday) {
-                if taskIds.contains(schedule.task) {
-                    matched.insert(schedule.task)
-                }
+        for schedule in schedules where matchesSchedule(schedule, hour: hour, minute: minute, weekday: weekday) {
+            if taskIds.contains(schedule.task) {
+                matched.insert(schedule.task)
             }
         }
         

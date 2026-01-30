@@ -17,7 +17,7 @@ public struct CommonOptions: ParsableArguments {
     
     public func log(_ message: String) {
         if verbose {
-            FileHandle.standardError.write("[DEBUG] \(message)\n".data(using: .utf8)!)
+            FileHandle.standardError.write(Data("[DEBUG] \(message)\n".utf8))
         }
     }
 }
