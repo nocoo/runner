@@ -105,10 +105,11 @@ struct List: AsyncParsableCommand {
     
     func run() async throws {
         let storage = Storage(dataDir: options.dataDir)
-        let tasks = try await storage.loadTasks()
-        
-        for task in tasks {
-            print("\(task.id): \(task.description)")
+
+        let service = TaskListService(loader: storage)
+        let entries = try await service.list()
+        for entry in entries {
+            print("\(entry.id): \(entry.description)")
         }
     }
 }
@@ -122,32 +123,18 @@ struct Validate: AsyncParsableCommand {
     
     func run() async throws {
         let storage = Storage(dataDir: options.dataDir)
-        let tasks = try await storage.loadTasks()
-        let schedules = try await storage.loadSchedules()
-        
-        // Validate tasks
-        var errors: [String] = []
-        for task in tasks {
-            let hasCommand = task.command != nil && !task.command!.isEmpty
-            let hasPrompt = task.prompt != nil && !task.prompt!.isEmpty
-            if !hasCommand && !hasPrompt {
-                errors.append("Task '\(task.id)' has no command or prompt")
-            }
-        }
-        
-        // Validate schedules
-        let taskIds = Set(tasks.map { $0.id })
-        for schedule in schedules where !taskIds.contains(schedule.task) {
-            errors.append("Schedule references unknown task '\(schedule.task)'")
-        }
-        
-        if errors.isEmpty {
+
+        let service = ValidateService(tasksLoader: storage, schedulesLoader: storage)
+        let result = try await service.validate()
+
+        switch result {
+        case .success(let summary):
             print("Configuration is valid")
-            print("  Tasks: \(tasks.count)")
-            print("  Schedules: \(schedules.count)")
-        } else {
-            for error in errors {
-                FileHandle.standardError.write(Data("Error: \(error)\n".utf8))
+            print("  Tasks: \(summary.taskCount)")
+            print("  Schedules: \(summary.scheduleCount)")
+        case .failure(let error):
+            for issue in error.issues {
+                FileHandle.standardError.write(Data("Error: \(issue.message)\n".utf8))
             }
             Darwin.exit(1)
         }
@@ -167,13 +154,15 @@ struct MonitorCommand: AsyncParsableCommand {
     func run() async throws {
         let storage = Storage(dataDir: options.dataDir)
         let monitor = Monitor(storage: storage, verbose: options.verbose)
-        let interrupted = try await monitor.checkRunningTasks()
-        
-        if interrupted.isEmpty {
+
+        let service = MonitorService(monitor: monitor)
+        let result = try await service.check()
+
+        if result.interrupted.isEmpty {
             print("No interrupted tasks found")
         } else {
-            print("Marked \(interrupted.count) tasks as interrupted:")
-            for id in interrupted {
+            print("Marked \(result.interrupted.count) tasks as interrupted:")
+            for id in result.interrupted {
                 print("  \(id)")
             }
         }
@@ -189,8 +178,10 @@ struct Init: AsyncParsableCommand {
     
     func run() async throws {
         let storage = Storage(dataDir: options.dataDir)
-        try await storage.initialize()
-        print("Initialized data directory: \(options.dataDir.path)")
+
+        let service = InitService(initializer: storage, dataDir: options.dataDir)
+        let message = try await service.run()
+        print(message)
     }
 }
 
