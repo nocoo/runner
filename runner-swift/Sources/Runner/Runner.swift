@@ -77,16 +77,16 @@ struct Run: AsyncParsableCommand {
     
     func run() async throws {
         let storage = Storage(dataDir: options.dataDir)
-        let tasks = try await storage.loadTasks()
-        
-        guard let task = tasks.first(where: { $0.id == self.task }) else {
-            throw RunnerError.taskNotFound(self.task)
-        }
-        
-        options.log("Executing task: \(task.id)")
-        
         let executor = Executor(storage: storage, dryRun: options.dryRun, verbose: options.verbose)
-        let result = try await executor.execute(task: task, trigger: trigger)
+
+        let service = RunService()
+        let result = try await service.run(
+            storage: storage,
+            executor: executor,
+            taskId: task,
+            trigger: trigger,
+            log: { message in options.log(message) }
+        )
         
         if !options.verbose {
             print(result.output)
