@@ -354,4 +354,113 @@ struct ModelsTests {
         #expect(decoded.task == run.task)
         #expect(decoded.exitCode == run.exitCode)
     }
+
+    // MARK: - SystemState Tests
+
+    @Test("SystemState encoding and decoding")
+    func systemStateEncodingDecoding() throws {
+        let lastRun = LastRun(id: "run-1", task: "test", exitCode: 0, finishedAt: "2026-01-25T08:00:10Z")
+        let state = SystemState(
+            version: "1.2.3",
+            lastRun: lastRun,
+            totalRunsToday: 5,
+            successRateToday: 0.8
+        )
+
+        let data = try JSONEncoder().encode(state)
+        let decoded = try JSONDecoder().decode(SystemState.self, from: data)
+
+        #expect(decoded.version == "1.2.3")
+        #expect(decoded.lastRun?.id == "run-1")
+        #expect(decoded.totalRunsToday == 5)
+        #expect(decoded.successRateToday == 0.8)
+    }
+
+    @Test("LastRun decoding")
+    func lastRunDecoding() throws {
+        let json = """
+        {
+            "id": "run-2",
+            "task": "clock",
+            "exit_code": 1,
+            "finished_at": "2026-01-25T08:00:10Z"
+        }
+        """.data(using: .utf8)!
+
+        let lastRun = try JSONDecoder().decode(LastRun.self, from: json)
+        #expect(lastRun.exitCode == 1)
+        #expect(lastRun.finishedAt == "2026-01-25T08:00:10Z")
+    }
+
+    // MARK: - AnyCodable Tests
+
+    @Test("AnyCodable decodes int")
+    func anyCodableDecodesInt() throws {
+        let json = """
+        {"value": 5}
+        """.data(using: .utf8)!
+
+        struct Wrapper: Decodable {
+            let value: AnyCodable
+        }
+
+        let decoded = try JSONDecoder().decode(Wrapper.self, from: json)
+        #expect(decoded.value.value as? Int == 5)
+    }
+
+    @Test("AnyCodable decodes string")
+    func anyCodableDecodesString() throws {
+        let json = """
+        {"value": "*/15"}
+        """.data(using: .utf8)!
+
+        struct Wrapper: Decodable {
+            let value: AnyCodable
+        }
+
+        let decoded = try JSONDecoder().decode(Wrapper.self, from: json)
+        #expect(decoded.value.value as? String == "*/15")
+    }
+
+    @Test("AnyCodable decodes fallback")
+    func anyCodableDecodesFallback() throws {
+        let json = """
+        {"value": true}
+        """.data(using: .utf8)!
+
+        struct Wrapper: Decodable {
+            let value: AnyCodable
+        }
+
+        let decoded = try JSONDecoder().decode(Wrapper.self, from: json)
+        #expect(decoded.value.value as? String == "*")
+    }
+
+    @Test("AnyCodable encodes int")
+    func anyCodableEncodesInt() throws {
+        let wrapper = EncodedWrapper(value: AnyCodable(3))
+        let data = try JSONEncoder().encode(wrapper)
+        let decoded = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        #expect(decoded?["value"] as? Int == 3)
+    }
+
+    @Test("AnyCodable encodes string")
+    func anyCodableEncodesString() throws {
+        let wrapper = EncodedWrapper(value: AnyCodable("*/10"))
+        let data = try JSONEncoder().encode(wrapper)
+        let decoded = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        #expect(decoded?["value"] as? String == "*/10")
+    }
+
+    @Test("AnyCodable encodes fallback")
+    func anyCodableEncodesFallback() throws {
+        let wrapper = EncodedWrapper(value: AnyCodable(["a": 1]))
+        let data = try JSONEncoder().encode(wrapper)
+        let decoded = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+        #expect(decoded?["value"] as? String == "*")
+    }
+
+    private struct EncodedWrapper: Encodable {
+        let value: AnyCodable
+    }
 }
