@@ -212,40 +212,19 @@ struct Logs: AsyncParsableCommand {
     
     func run() async throws {
         let storage = Storage(dataDir: options.dataDir)
-        let index = try await storage.loadRunsIndex()
-        
+
+        let service = LogService(dataDir: options.dataDir, loader: storage)
+
         if list {
-            for run in index.runs.suffix(20).reversed() {
-                let status: String
-                switch run.exitCode {
-                case nil: status = "⋯"
-                case 0: status = "✓"
-                default: status = "✗"
-                }
-                print("\(status) \(run.id) \(run.task) \(run.startedAt)")
+            let entries = try await service.listRuns(limit: 20)
+            for entry in entries {
+                print("\(entry.status) \(entry.id) \(entry.task) \(entry.startedAt)")
             }
             return
         }
-        
-        let runId: String
-        if let id = id {
-            runId = id
-        } else if let last = index.runs.last {
-            runId = last.id
-        } else {
-            throw RunnerError.noRunsFound
-        }
-        
-        let outputPath = options.dataDir.appendingPathComponent("runs/\(runId).output")
-        let content = try String(contentsOf: outputPath, encoding: .utf8)
-        
-        if let n = tail {
-            let lines = content.components(separatedBy: "\n")
-            let start = max(0, lines.count - n)
-            print(lines[start...].joined(separator: "\n"))
-        } else {
-            print(content)
-        }
+
+        let content = try await service.output(runId: id, tail: tail)
+        print(content)
     }
 }
 
@@ -261,32 +240,18 @@ struct Api: AsyncParsableCommand {
     
     func run() async throws {
         let storage = Storage(dataDir: options.dataDir)
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-        
-        switch query {
-        case "tasks":
-            let tasks = try await storage.loadTasks()
-            let data = try encoder.encode(tasks)
-            print(String(data: data, encoding: .utf8)!)
-        case "schedules":
-            let schedules = try await storage.loadSchedules()
-            let data = try encoder.encode(schedules)
-            print(String(data: data, encoding: .utf8)!)
-        case "runs":
-            let index = try await storage.loadRunsIndex()
-            let data = try encoder.encode(index)
-            print(String(data: data, encoding: .utf8)!)
-        case "status", "state":
-            let path = options.dataDir.appendingPathComponent("state.json")
-            let data = try Data(contentsOf: path)
-            print(String(data: data, encoding: .utf8)!)
-        case "init":
-            try await storage.initialize()
-            print("{\"status\": \"ok\"}")
-        default:
-            throw RunnerError.unknownQuery(query)
-        }
+
+        let statePath = options.dataDir.appendingPathComponent("state.json")
+        let service = ApiService(
+            tasksLoader: storage,
+            schedulesLoader: storage,
+            runsLoader: storage,
+            initializer: storage,
+            stateLoader: DefaultStateLoader(path: statePath)
+        )
+
+        let output = try await service.handle(query: query)
+        print(output)
     }
 }
 
