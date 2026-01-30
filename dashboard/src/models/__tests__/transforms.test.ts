@@ -351,6 +351,26 @@ describe("transforms", () => {
       expect(hours.every(h => h % 2 === 0)).toBe(true);
     });
 
+    test("returns empty array for invalid cron expression", () => {
+      const schedules: Schedule[] = [
+        { task: "heartbeat", hour: "bad", minute: 10, weekday: "*" },
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 2);
+      expect(result.length).toBe(0);
+    });
+
+    test("returns empty array when step is zero", () => {
+      const schedules: Schedule[] = [
+        { task: "heartbeat", hour: "*/0", minute: 10, weekday: "*" },
+      ];
+
+      const result = calculateUpcomingTasks(tasks, schedules, 2);
+      expect(result.length).toBe(0);
+    });
+
+
+
     test("skips schedules for unknown tasks", () => {
       const schedules: Schedule[] = [
         { task: "nonexistent", hour: 10, minute: 0, weekday: "*" },

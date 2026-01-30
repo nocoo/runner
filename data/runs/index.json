@@ -5695,24 +5695,40 @@
       "task": "obsidian_sync"
     },
     {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T08:20:03Z",
       "id": "0E3707FC-2991-47CA-83B3-6FFED9F59D50",
-      "pid": null,
       "started_at": "2026-01-30T08:20:00Z",
       "started_at_epoch": 1769761200,
-      "task": "heartbeat",
-      "exit_code": 0,
-      "finished_at": "2026-01-30T08:20:03Z"
+      "task": "heartbeat"
     },
     {
+      "exit_code": 1,
+      "finished_at": "2026-01-30T08:20:04Z",
       "id": "189B7D43-E319-4F7A-8C65-8AE37CA17B32",
-      "pid": null,
       "started_at": "2026-01-30T08:20:00Z",
       "started_at_epoch": 1769761200,
-      "task": "xray_watchlist",
+      "task": "xray_watchlist"
+    },
+    {
+      "id": "9F1F4F86-44FB-4F8E-92DF-93A16D8AAAD7",
+      "pid": null,
+      "started_at": "2026-01-30T08:30:05Z",
+      "started_at_epoch": 1769761805,
+      "task": "clock",
       "exit_code": 1,
-      "finished_at": "2026-01-30T08:20:04Z"
+      "finished_at": "2026-01-30T08:30:10Z"
+    },
+    {
+      "id": "F58F8CDC-7975-4B45-971D-C6F7975423BC",
+      "pid": null,
+      "started_at": "2026-01-30T08:30:05Z",
+      "started_at_epoch": 1769761805,
+      "task": "obsidian_sync",
+      "exit_code": 1,
+      "finished_at": "2026-01-30T08:30:09Z"
     }
   ],
-  "total": 765,
-  "updated_at": "2026-01-30T08:20:04Z"
+  "total": 767,
+  "updated_at": "2026-01-30T08:30:10Z"
 }

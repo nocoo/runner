@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { formatDuration, formatDurationMs, formatRelativeTime, formatDate, formatExitCode, formatNumber, formatPercent } from "../format";
+import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { formatDuration, formatDurationMs, formatRelativeTime, formatDate, formatTimeUTC8, formatExitCode, formatNumber, formatPercent } from "../format";
 
 describe("format", () => {
   describe("formatDuration", () => {
@@ -47,26 +47,36 @@ describe("format", () => {
   });
 
   describe("formatRelativeTime", () => {
+    const OriginalDateNow = Date.now;
+
+    beforeEach(() => {
+      Date.now = () => Date.parse("2026-01-30T10:00:00Z");
+    });
+
+    afterEach(() => {
+      Date.now = OriginalDateNow;
+    });
+
     test("formats seconds ago", () => {
-      const now = new Date();
+      const now = new Date(Date.now());
       const past = new Date(now.getTime() - 30 * 1000);
       expect(formatRelativeTime(past.toISOString())).toBe("30s ago");
     });
 
     test("formats minutes ago", () => {
-      const now = new Date();
+      const now = new Date(Date.now());
       const past = new Date(now.getTime() - 5 * 60 * 1000);
       expect(formatRelativeTime(past.toISOString())).toBe("5m ago");
     });
 
     test("formats hours ago", () => {
-      const now = new Date();
+      const now = new Date(Date.now());
       const past = new Date(now.getTime() - 2 * 60 * 60 * 1000);
       expect(formatRelativeTime(past.toISOString())).toBe("2h ago");
     });
 
     test("formats days ago", () => {
-      const now = new Date();
+      const now = new Date(Date.now());
       const past = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
       expect(formatRelativeTime(past.toISOString())).toBe("3d ago");
     });
@@ -84,6 +94,17 @@ describe("format", () => {
 
     test("handles invalid date", () => {
       expect(formatDate("invalid")).toBe("-");
+    });
+  });
+
+  describe("formatTimeUTC8", () => {
+    test("formats ISO date to UTC+8 time", () => {
+      expect(formatTimeUTC8("2026-01-30T00:00:05Z")).toBe("08:00:05");
+    });
+
+    test("handles invalid date", () => {
+      expect(formatTimeUTC8("invalid")).toBe("-");
+      expect(formatTimeUTC8("")).toBe("-");
     });
   });
 

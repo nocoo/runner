@@ -83,6 +83,83 @@ describe("useTasksVM", () => {
     });
   });
 
+  test("refresh error sets error state", async () => {
+    const { result } = renderHook(() => useTasksVM({
+      fetchTasks: async () => {
+        throw new Error("fetch fail");
+      },
+      fetchSchedules: async () => [],
+      timeProvider: () => new Date("2026-01-30T10:00:00Z"),
+      tickMs: 10_000,
+      watchData: false,
+      autoRefresh: false,
+    }));
+
+    await result.current.refresh();
+
+    await waitFor(() => {
+      expect(result.current.state).toBe("error");
+      expect(result.current.error).toBe("fetch fail");
+    });
+  });
+
+  test("clearTriggerResult resets trigger state", async () => {
+    const { result } = renderHook(() => useTasksVM({
+      fetchTasks: async () => [],
+      fetchSchedules: async () => [],
+      triggerTask: async () => ({ task: "heartbeat", exit_code: 0, stdout: "", stderr: "" }),
+      timeProvider: () => new Date("2026-01-30T10:00:00Z"),
+      tickMs: 10_000,
+      watchData: false,
+      autoRefresh: false,
+    }));
+
+    await result.current.trigger("heartbeat");
+    await waitFor(() => result.current.triggerState === "success");
+
+    result.current.clearTriggerResult();
+
+    await waitFor(() => {
+      expect(result.current.triggerState).toBe("idle");
+      expect(result.current.triggerResult).toBe(null);
+      expect(result.current.triggerError).toBe(null);
+    });
+  });
+
+  test("interval updates countdown over time", async () => {
+    const tasks: Task[] = [
+      { id: "heartbeat", type: "simple", description: "Heartbeat", timeout: 60, command: "echo hi" },
+    ];
+    const schedules: Schedule[] = [
+      { task: "heartbeat", hour: "*", minute: "*/10", weekday: "*" },
+    ];
+
+    let current = Date.parse("2026-01-30T08:50:00Z");
+    const timeProvider = () => {
+      current += 1000;
+      return new Date(current);
+    };
+
+    const { result } = renderHook(() => useTasksVM({
+      fetchTasks: async () => tasks,
+      fetchSchedules: async () => schedules,
+      timeProvider,
+      tickMs: 5,
+      watchData: false,
+      autoRefresh: false,
+    }));
+
+    await result.current.refresh();
+    await waitFor(() => result.current.state === "success");
+
+    const firstCountdown = result.current.upcomingTasks[0]?.countdown ?? 0;
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    const nextCountdown = result.current.upcomingTasks[0]?.countdown ?? 0;
+    expect(nextCountdown).toBeLessThan(firstCountdown);
+  });
+
   test("computes upcoming tasks with countdown", async () => {
     const tasks: Task[] = [
       { id: "heartbeat", type: "simple", description: "Heartbeat", timeout: 60, command: "echo hi" },

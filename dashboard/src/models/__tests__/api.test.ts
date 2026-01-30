@@ -5,6 +5,7 @@ import {
   fetchSchedules, 
   fetchRuns,
   fetchRunDetail,
+  fetchRunOutput,
   triggerTask,
 } from "../api";
 
@@ -113,6 +114,22 @@ describe("api", () => {
       
       expect(calledUrl).toBe("/api/runs/abc-123");
       expect(result).toEqual(mockRun);
+    });
+  });
+
+  describe("fetchRunOutput", () => {
+    test("calls correct endpoint and returns output", async () => {
+      const mockOutput = { output: "hello" };
+      let calledUrl = "";
+      globalThis.fetch = (async (url: string) => {
+        calledUrl = url;
+        return new Response(JSON.stringify(mockOutput));
+      }) as unknown as typeof fetch;
+
+      const result = await fetchRunOutput("abc-123");
+
+      expect(calledUrl).toBe("/api/runs/abc-123/output");
+      expect(result).toBe("hello");
     });
   });
 
