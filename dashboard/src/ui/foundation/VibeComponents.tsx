@@ -999,7 +999,7 @@ export function UpgradeAlertModal({
       await navigator.clipboard.writeText(installCommand);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (_e) {
+    } catch {
       // ignore
     }
   };

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { renderHook, waitFor, act } from "@testing-library/react";
+import { renderHook, waitFor } from "@testing-library/react";
 import type { Schedule, Task } from "@/models/types";
 import { useTasksVM } from "../useTasksVM";
 

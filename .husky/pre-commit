@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/h"
+
+set -e
+
+echo "🔍 Running dashboard lint..."
+bun --cwd dashboard run lint
+echo "✅ Dashboard lint passed."
+
+echo ""
+echo "🧪 Running dashboard tests..."
+bun --cwd dashboard test --bail
+echo "✅ Dashboard tests passed."

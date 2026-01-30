@@ -47,11 +47,8 @@ export function TrendMonitor({
   data = [],
   color = "#00FF41",
   label = "TREND",
-  from: _from,
-  to: _to,
   period,
   timeZoneLabel,
-  showTimeZoneLabel: _showTimeZoneLabel = true,
   className = "",
 }: TrendMonitorProps) {
   const series = Array.isArray(rows) && rows.length ? rows : null;
@@ -174,14 +171,12 @@ export function TrendMonitor({
     return d;
   };
 
-  const buildXAxisLabels = (): string[] => {
+  const xLabels = useMemo(() => {
     if (period === "day") {
       return ["00:00", "04:00", "08:00", "12:00", "16:00", "20:00", "23:00"];
     }
     return ["T-24", "T-18", "T-12", "T-6", "NOW"];
-  };
-
-  const xLabels = useMemo(() => buildXAxisLabels(), [period]);
+  }, [period]);
 
   const plotRef = useRef<HTMLDivElement>(null);
   const axisRef = useRef<HTMLDivElement>(null);
@@ -419,7 +414,7 @@ interface ActivityHeatmapCell {
   level?: number;
 }
 
-interface ActivityHeatmapWeek extends Array<ActivityHeatmapCell | null> {}
+type ActivityHeatmapWeek = Array<ActivityHeatmapCell | null>;
 
 interface ActivityHeatmapData {
   weeks?: ActivityHeatmapWeek[];
@@ -533,7 +528,7 @@ export function ActivityHeatmap({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const hasAutoScrolledRef = useRef(false);
-  const [_isHoveringHeatmap, setIsHoveringHeatmap] = useState(false);
+  const [, setIsHoveringHeatmap] = useState(false);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -816,18 +811,21 @@ interface ScrambleContext {
   screenshotMode?: boolean;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function shouldFetchGithubStars({ prefersReducedMotion, screenshotCapture }: MotionPreferenceContext): boolean {
   if (screenshotCapture) return false;
   if (prefersReducedMotion) return false;
   return true;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function shouldRunLiveSniffer({ prefersReducedMotion, screenshotMode }: MotionPreferenceContext): boolean {
   if (screenshotMode) return false;
   if (prefersReducedMotion) return false;
   return true;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function shouldScrambleText({
   scrambleRespectReducedMotion,
   prefersReducedMotion,

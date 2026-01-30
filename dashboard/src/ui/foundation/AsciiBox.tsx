@@ -4,7 +4,7 @@
 
 import type { ReactNode } from "react";
 
-export const ASCII_CHARS = {
+const ASCII_CHARS = {
   TOP_LEFT: "┌",
   TOP_RIGHT: "┐",
   BOTTOM_LEFT: "└",
@@ -68,3 +68,5 @@ export function AsciiBox({
     </div>
   );
 }
+
+export { ASCII_CHARS };

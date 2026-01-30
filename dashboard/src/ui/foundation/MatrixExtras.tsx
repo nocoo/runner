@@ -485,15 +485,18 @@ export function LeaderboardRow({
 // ============================================
 
 export function LiveSniffer() {
-  const events = [
-    ">> INTERCEPTING API STREAM...",
-    ">> QUANTIFYING TOKEN FLOW [OK]",
-    ">> NEURAL ANALYSIS COMPLETE",
-    ">> SYNCING TO MATRIX [1/1]",
-    ">> BATCH PROCESSED: 42 CALLS",
-    ">> HOOKING NEW ENDPOINT",
-    ">> CAPTURE MODE: ACTIVE",
-  ];
+  const events = useMemo(
+    () => [
+      ">> INTERCEPTING API STREAM...",
+      ">> QUANTIFYING TOKEN FLOW [OK]",
+      ">> NEURAL ANALYSIS COMPLETE",
+      ">> SYNCING TO MATRIX [1/1]",
+      ">> BATCH PROCESSED: 42 CALLS",
+      ">> HOOKING NEW ENDPOINT",
+      ">> CAPTURE MODE: ACTIVE",
+    ],
+    []
+  );
 
   const [logs, setLogs] = useState(["[SYSTEM] Live sniffer initialized", "[SOCKET] Connection established"]);
 
@@ -504,7 +507,7 @@ export function LiveSniffer() {
       i++;
     }, 1500);
     return () => clearInterval(interval);
-  }, []);
+  }, [events]);
 
   return (
     <div className="font-matrix text-caption text-matrix-muted space-y-2 h-full flex flex-col justify-end">

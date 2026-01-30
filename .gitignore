@@ -1,11 +1,16 @@
 # Runtime data
 data/
+!/data/runs/index.json
 
 # Logs
 logs/
 
 # macOS
 .DS_Store
+
+# Root dependencies
+node_modules/
+
 
 # Reference projects
 vibeusage/

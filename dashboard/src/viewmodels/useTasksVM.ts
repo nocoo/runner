@@ -49,7 +49,10 @@ export function useTasksVM(deps: TasksVMDeps = {}): TasksVM {
   const fetchTasks = deps.fetchTasks ?? fetchTasksDefault;
   const fetchSchedules = deps.fetchSchedules ?? fetchSchedulesDefault;
   const triggerTask = deps.triggerTask ?? triggerTaskDefault;
-  const timeProvider = deps.timeProvider ?? (() => new Date());
+  const timeProvider = useMemo(
+    () => deps.timeProvider ?? (() => new Date()),
+    [deps.timeProvider]
+  );
   const tickMs = deps.tickMs ?? 1000;
   const upcomingCount = deps.upcomingCount ?? 8;
 

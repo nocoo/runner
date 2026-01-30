@@ -3,7 +3,7 @@
 // Based on vibeusage TrendMonitor pattern
 // ============================================
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { TrendPoint } from "@/models/types";
 import { AsciiBox } from "@/ui/foundation";
 
