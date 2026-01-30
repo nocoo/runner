@@ -1,13 +1,63 @@
 import Foundation
+import Darwin
+
+public protocol MonitorProcessInspecting {
+    func isRunning(pid: Int) -> Bool
+    func startTime(pid: Int) -> Int64?
+}
+
+public struct DefaultMonitorProcessInspector: MonitorProcessInspecting {
+    public init() {}
+
+    public func isRunning(pid: Int) -> Bool {
+        kill(Int32(pid), 0) == 0
+    }
+
+    public func startTime(pid: Int) -> Int64? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/ps")
+        process.arguments = ["-o", "lstart=", "-p", String(pid)]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            guard process.terminationStatus == 0 else { return nil }
+
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            guard let lstart = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !lstart.isEmpty else { return nil }
+
+            // Parse "Mon Jan 25 08:00:00 2026" format
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEE MMM dd HH:mm:ss yyyy"
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+
+            if let date = formatter.date(from: lstart) {
+                return Int64(date.timeIntervalSince1970)
+            }
+        } catch {
+            return nil
+        }
+
+        return nil
+    }
+}
 
 /// Process monitor to detect stale/interrupted tasks
 public struct Monitor {
     public let storage: Storage
     public let verbose: Bool
+    private let processInspector: MonitorProcessInspecting
     
-    public init(storage: Storage, verbose: Bool) {
+    public init(storage: Storage, verbose: Bool, processInspector: MonitorProcessInspecting = DefaultMonitorProcessInspector()) {
         self.storage = storage
         self.verbose = verbose
+        self.processInspector = processInspector
     }
     
     public func log(_ message: String) {
@@ -51,7 +101,7 @@ public struct Monitor {
                 }
             }
             
-            if !isProcessRunning(pid: pid) {
+            if !processInspector.isRunning(pid: pid) {
                 log("Process \(pid) not running, checking detail file...")
                 if try await syncFromDetail(id: run.id) {
                     log("Task \(run.id) synced from detail file")
@@ -87,53 +137,12 @@ public struct Monitor {
         return false
     }
     
-    /// Check if a process is running
-    private func isProcessRunning(pid: Int) -> Bool {
-        // Send signal 0 to check if process exists
-        return kill(Int32(pid), 0) == 0
-    }
-    
     /// Check if a PID has been reused
     private func isPidReused(pid: Int, recordedStart: Int64?) -> Bool {
         guard let recorded = recordedStart else { return false }
-        guard let current = getProcessStartTime(pid: pid) else { return false }
+        guard let current = processInspector.startTime(pid: pid) else { return false }
         
         // If process started more than 5 seconds after recorded time, it's likely reused
         return abs(current - recorded) > 5
-    }
-    
-    /// Get process start time using ps
-    private func getProcessStartTime(pid: Int) -> Int64? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/ps")
-        process.arguments = ["-o", "lstart=", "-p", String(pid)]
-        
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-        
-        do {
-            try process.run()
-            process.waitUntilExit()
-            
-            guard process.terminationStatus == 0 else { return nil }
-            
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            guard let lstart = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                  !lstart.isEmpty else { return nil }
-            
-            // Parse "Mon Jan 25 08:00:00 2026" format
-            let formatter = DateFormatter()
-            formatter.dateFormat = "EEE MMM dd HH:mm:ss yyyy"
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            
-            if let date = formatter.date(from: lstart) {
-                return Int64(date.timeIntervalSince1970)
-            }
-        } catch {
-            return nil
-        }
-        
-        return nil
     }
 }

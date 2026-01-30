@@ -1,10 +1,26 @@
 import Testing
 import Foundation
-import Darwin
 @testable import RunnerLib
 
 @Suite("Monitor Tests")
 struct MonitorTests {
+    final class StubProcessInspector: MonitorProcessInspecting {
+        let running: Set<Int>
+        let startTimes: [Int: Int64]
+
+        init(running: Set<Int>, startTimes: [Int: Int64]) {
+            self.running = running
+            self.startTimes = startTimes
+        }
+
+        func isRunning(pid: Int) -> Bool {
+            running.contains(pid)
+        }
+
+        func startTime(pid: Int) -> Int64? {
+            startTimes[pid]
+        }
+    }
     
     func createTempStorage() async throws -> (URL, Storage) {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -42,39 +58,6 @@ struct MonitorTests {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         return String(data: data, encoding: .utf8) ?? ""
     }
-
-    func processStartTime(pid: Int) -> Int64? {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/ps")
-        process.arguments = ["-o", "lstart=", "-p", String(pid)]
-
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = FileHandle.nullDevice
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-
-            guard process.terminationStatus == 0 else { return nil }
-
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            guard let lstart = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                  !lstart.isEmpty else { return nil }
-
-            let formatter = DateFormatter()
-            formatter.dateFormat = "EEE MMM dd HH:mm:ss yyyy"
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-
-            if let date = formatter.date(from: lstart) {
-                return Int64(date.timeIntervalSince1970)
-            }
-        } catch {
-            return nil
-        }
-
-        return nil
-    }
     
     // MARK: - Empty State Tests
     
@@ -83,7 +66,7 @@ struct MonitorTests {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
 
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
 
         #expect(interrupted.isEmpty)
@@ -94,7 +77,7 @@ struct MonitorTests {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
 
-        let monitor = Monitor(storage: storage, verbose: true)
+        let monitor = Monitor(storage: storage, verbose: true, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let output = await captureStderrAsync {
             _ = try? await monitor.checkRunningTasks()
         }
@@ -121,7 +104,7 @@ struct MonitorTests {
         )
         try await storage.addRun(run)
         
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
         
         #expect(interrupted.isEmpty) // Completed tasks should not be affected
@@ -140,12 +123,14 @@ struct MonitorTests {
             exitCode: nil,
             startedAt: ISO8601DateFormatter().string(from: Date()),
             finishedAt: nil,
-            pid: Int(ProcessInfo.processInfo.processIdentifier), // Current process (exists)
+            pid: 11111,
             startedAtEpoch: now
         )
         try await storage.addRun(run)
         
-        let monitor = Monitor(storage: storage, verbose: false)
+        let currentPid = run.pid ?? 0
+        let inspector = StubProcessInspector(running: [currentPid], startTimes: [currentPid: now])
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: inspector)
         let interrupted = try await monitor.checkRunningTasks()
         
         // Should be skipped due to grace period
@@ -169,7 +154,7 @@ struct MonitorTests {
         )
         try await storage.addRun(run)
         
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
         
         // Tasks without PID are not considered "running" by getRunningTasks
@@ -194,7 +179,7 @@ struct MonitorTests {
         )
         try await storage.addRun(run)
         
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
         
         #expect(interrupted == ["dead-process"])
@@ -222,7 +207,7 @@ struct MonitorTests {
         try await storage.addRun(run)
         try await storage.writeRunDetail(createRunDetail(id: "no-pid-detail", exitCode: 0))
 
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
 
         #expect(interrupted.isEmpty)
@@ -251,7 +236,7 @@ struct MonitorTests {
         try await storage.addRun(run)
         try await storage.writeRunDetail(createRunDetail(id: "dead-pid-detail", exitCode: 2))
 
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
 
         #expect(interrupted.isEmpty)
@@ -268,12 +253,8 @@ struct MonitorTests {
         defer { cleanup(tempDir) }
 
         // Add a task with current process PID (which is definitely running)
-        let currentPid = Int(ProcessInfo.processInfo.processIdentifier)
-        let start = processStartTime(pid: currentPid)
-        #expect(start != nil)
-        guard let start else { return }
-
-        let oldTime = start
+        let currentPid = 4242
+        let start = Int64(1769308800)
         let run = RunSummary(
             id: "current-process",
             task: "test",
@@ -281,11 +262,12 @@ struct MonitorTests {
             startedAt: "2026-01-25T08:00:00Z",
             finishedAt: nil,
             pid: currentPid,
-            startedAtEpoch: oldTime
+            startedAtEpoch: start
         )
         try await storage.addRun(run)
 
-        let monitor = Monitor(storage: storage, verbose: false)
+        let inspector = StubProcessInspector(running: [currentPid], startTimes: [currentPid: start])
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: inspector)
         let interrupted = try await monitor.checkRunningTasks()
 
         #expect(interrupted.isEmpty)
@@ -296,11 +278,8 @@ struct MonitorTests {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
 
-        let currentPid = Int(ProcessInfo.processInfo.processIdentifier)
-        let start = processStartTime(pid: currentPid)
-        #expect(start != nil)
-        guard let start else { return }
-
+        let currentPid = 4242
+        let start = Int64(1769308800)
         let run = RunSummary(
             id: "pid-reuse",
             task: "test",
@@ -313,7 +292,8 @@ struct MonitorTests {
         try await storage.addRun(run)
         try await storage.writeRunDetail(createRunDetail(id: "pid-reuse", exitCode: 7))
 
-        let monitor = Monitor(storage: storage, verbose: false)
+        let inspector = StubProcessInspector(running: [currentPid], startTimes: [currentPid: start])
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: inspector)
         let interrupted = try await monitor.checkRunningTasks()
 
         #expect(interrupted.isEmpty)
@@ -344,7 +324,7 @@ struct MonitorTests {
             try await storage.addRun(task)
         }
         
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
         
         #expect(Set(interrupted) == Set(["dead-1", "dead-2"]))
@@ -369,7 +349,7 @@ struct MonitorTests {
         )
         try await storage.addRun(run)
         
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         
         // First call marks it as interrupted
         let interrupted1 = try await monitor.checkRunningTasks()
@@ -389,7 +369,7 @@ struct MonitorTests {
         
         let now = Int64(Date().timeIntervalSince1970)
         let oldTime = now - 200
-        let currentPid = Int(ProcessInfo.processInfo.processIdentifier)
+        let currentPid = 11111
         
         // Add various task states
         let tasks = [
@@ -409,7 +389,7 @@ struct MonitorTests {
             try await storage.addRun(task)
         }
         
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
         
         // Only the dead process should be marked
@@ -433,7 +413,7 @@ struct MonitorTests {
         )
         try await storage.addRun(run)
         
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
         let interrupted = try await monitor.checkRunningTasks()
         
         // Should still mark as interrupted (process doesn't exist)
