@@ -30,61 +30,35 @@ struct Auto: AsyncParsableCommand {
     
     func run() async throws {
         let storage = Storage(dataDir: options.dataDir)
-        
+
         // Run monitor first
-        options.log("Running monitor to check stale tasks")
         let monitor = Monitor(storage: storage, verbose: options.verbose)
-        let interrupted = try await monitor.checkRunningTasks()
-        if !interrupted.isEmpty {
-            options.log("Marked \(interrupted.count) tasks as interrupted")
-        }
-        
-        // Load config
-        let tasks = try await storage.loadTasks()
-        let schedules = try await storage.loadSchedules()
-        
+
         // Get current time (UTC+8)
         let now = Date()
         let calendar = Calendar.current
         let tz = TimeZone(secondsFromGMT: 8 * 3600)!
         let components = calendar.dateComponents(in: tz, from: now)
-        
+
         let hour = mockHour ?? components.hour!
         let minute = mockMinute ?? components.minute!
         let weekday = mockWeekday ?? (components.weekday! - 1) // Convert to 0=Sunday
-        
-        options.log("Current time: hour=\(hour), minute=\(minute), weekday=\(weekday)")
-        
-        // Find scheduled tasks
-        let taskIds = Scheduler.findScheduledTasks(
-            schedules: schedules,
-            tasks: tasks,
-            hour: hour,
-            minute: minute,
-            weekday: weekday
-        )
-        
-        if taskIds.isEmpty {
-            options.log("No tasks scheduled for current time")
-            return
-        }
-        
-        options.log("Found \(taskIds.count) task(s) to execute")
-        
-        // Execute tasks
+
         let executor = Executor(storage: storage, dryRun: options.dryRun, verbose: options.verbose)
-        
-        for taskId in taskIds {
-            if let task = tasks.first(where: { $0.id == taskId }) {
-                options.log("Executing task: \(taskId)")
-                do {
-                    let result = try await executor.execute(task: task, trigger: "scheduled")
-                    options.log("Task \(taskId) completed with exit code \(result.exitCode)")
-                } catch {
-                    FileHandle.standardError.write(Data("Error executing task \(taskId): \(error)\n".utf8))
-                }
+
+        let service = AutoService()
+        let time = AutoTime(hour: hour, minute: minute, weekday: weekday)
+
+        try await service.run(
+            storage: storage,
+            monitor: monitor,
+            executor: executor,
+            time: time,
+            log: { message in options.log(message) },
+            onError: { taskId, error in
+                FileHandle.standardError.write(Data("Error executing task \(taskId): \(error)\n".utf8))
             }
-        }
+        )
     }
 }
 
