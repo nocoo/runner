@@ -4,9 +4,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { RunsIndex, RunSummary, RunDetail, LoadingState } from "@/models/types";
-import { fetchRuns, fetchRunDetail } from "@/models/api";
+import { fetchRuns as fetchRunsDefault, fetchRunDetail as fetchRunDetailDefault } from "@/models/api";
 import { sortRunsByDate, runsToHeatmap, runsToTrend } from "@/models/transforms";
-import { useDataWatcher } from "./useDataWatcher";
+import { useDataWatcher, type HotModuleApi } from "./useDataWatcher";
 
 interface RunsVM {
   runs: RunSummary[];
@@ -23,19 +23,30 @@ interface RunsVM {
   // Selected run detail
   selectedRun: RunDetail | null;
   selectedRunLoading: boolean;
+  selectedRunError: string | null;
   selectRun: (id: string | null) => Promise<void>;
   // Derived data
   heatmapData: ReturnType<typeof runsToHeatmap>;
   trendData: ReturnType<typeof runsToTrend>;
 }
 
-export function useRunsVM(pageSize = 30): RunsVM {
+export type RunsVMDeps = {
+  fetchRuns?: typeof fetchRunsDefault;
+  fetchRunDetail?: typeof fetchRunDetailDefault;
+  hot?: HotModuleApi;
+};
+
+export function useRunsVM(pageSize = 30, deps: RunsVMDeps = {}): RunsVM {
   const [runsIndex, setRunsIndex] = useState<RunsIndex | null>(null);
   const [state, setState] = useState<LoadingState>("loading");
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [selectedRun, setSelectedRun] = useState<RunDetail | null>(null);
   const [selectedRunLoading, setSelectedRunLoading] = useState(false);
+  const [selectedRunError, setSelectedRunError] = useState<string | null>(null);
+
+  const fetchRuns = deps.fetchRuns ?? fetchRunsDefault;
+  const fetchRunDetail = deps.fetchRunDetail ?? fetchRunDetailDefault;
 
   const refresh = useCallback(async () => {
     setState("loading");
@@ -49,10 +60,10 @@ export function useRunsVM(pageSize = 30): RunsVM {
       setError(err instanceof Error ? err.message : String(err));
       setState("error");
     }
-  }, []);
+  }, [fetchRuns]);
 
   // Auto-refresh when data files change
-  useDataWatcher(refresh);
+  useDataWatcher(refresh, deps.hot);
 
   useEffect(() => {
     refresh();
@@ -81,11 +92,13 @@ export function useRunsVM(pageSize = 30): RunsVM {
     }
 
     setSelectedRunLoading(true);
+    setSelectedRunError(null);
     try {
       const detail = await fetchRunDetail(id);
       setSelectedRun(detail);
     } catch {
       setSelectedRun(null);
+      setSelectedRunError("Failed to load run detail");
     } finally {
       setSelectedRunLoading(false);
     }
@@ -108,6 +121,7 @@ export function useRunsVM(pageSize = 30): RunsVM {
     pagedRuns,
     selectedRun,
     selectedRunLoading,
+    selectedRunError,
     selectRun,
     heatmapData,
     trendData,

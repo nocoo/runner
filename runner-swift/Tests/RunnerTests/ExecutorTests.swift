@@ -366,12 +366,16 @@ struct ExecutorTests {
         
         #expect(resultIds.count == 3)
         
-        // Wait for all to complete (increased significantly)
-        try await _Concurrency.Task.sleep(nanoseconds: 5_000_000_000) // 5s
-        
-        let index = try await storage.loadRunsIndex()
+        // Wait until storage reflects all runs or timeout
+        let deadline = Date().addingTimeInterval(8)
+        var index = try await storage.loadRunsIndex()
+        while Date() < deadline && (index.runs.count < 3 || index.runs.contains { $0.exitCode == nil }) {
+            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
+            index = try await storage.loadRunsIndex()
+        }
+
         #expect(index.runs.count == 3)
-        
+
         // All should have completed
         let completed = index.runs.filter { $0.exitCode != nil }
         #expect(completed.count == 3)

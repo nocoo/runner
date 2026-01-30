@@ -4,9 +4,9 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { Task, Schedule, TaskWithSchedule, LoadingState, TriggerResponse } from "@/models/types";
-import { fetchTasks, fetchSchedules, triggerTask } from "@/models/api";
+import { fetchTasks as fetchTasksDefault, fetchSchedules as fetchSchedulesDefault, triggerTask as triggerTaskDefault } from "@/models/api";
 import { combineTasksWithSchedules } from "@/models/transforms";
-import { useDataWatcher } from "./useDataWatcher";
+import { useDataWatcher, type HotModuleApi } from "./useDataWatcher";
 
 interface TasksVM {
   tasks: TaskWithSchedule[];
@@ -23,7 +23,14 @@ interface TasksVM {
   clearTriggerResult: () => void;
 }
 
-export function useTasksVM(): TasksVM {
+export type TasksVMDeps = {
+  fetchTasks?: typeof fetchTasksDefault;
+  fetchSchedules?: typeof fetchSchedulesDefault;
+  triggerTask?: typeof triggerTaskDefault;
+  hot?: HotModuleApi;
+};
+
+export function useTasksVM(deps: TasksVMDeps = {}): TasksVM {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [state, setState] = useState<LoadingState>("loading");
@@ -32,6 +39,10 @@ export function useTasksVM(): TasksVM {
   const [triggerState, setTriggerState] = useState<LoadingState>("idle");
   const [triggerResult, setTriggerResult] = useState<TriggerResponse | null>(null);
   const [triggerError, setTriggerError] = useState<string | null>(null);
+
+  const fetchTasks = deps.fetchTasks ?? fetchTasksDefault;
+  const fetchSchedules = deps.fetchSchedules ?? fetchSchedulesDefault;
+  const triggerTask = deps.triggerTask ?? triggerTaskDefault;
 
   const refresh = useCallback(async () => {
     setState("loading");
@@ -49,10 +60,10 @@ export function useTasksVM(): TasksVM {
       setError(err instanceof Error ? err.message : String(err));
       setState("error");
     }
-  }, []);
+  }, [fetchTasks, fetchSchedules]);
 
   // Auto-refresh when data files change
-  useDataWatcher(refresh);
+  useDataWatcher(refresh, deps.hot);
 
   useEffect(() => {
     refresh();
@@ -74,21 +85,11 @@ export function useTasksVM(): TasksVM {
       const result = await triggerTask(taskId);
       setTriggerResult(result);
       setTriggerState("success");
-      // Auto-dismiss after 3 seconds
-      setTimeout(() => {
-        setTriggerState("idle");
-        setTriggerResult(null);
-      }, 3000);
     } catch (err) {
       setTriggerError(err instanceof Error ? err.message : String(err));
       setTriggerState("error");
-      // Auto-dismiss error after 5 seconds
-      setTimeout(() => {
-        setTriggerState("idle");
-        setTriggerError(null);
-      }, 5000);
     }
-  }, []);
+  }, [triggerTask]);
 
   const clearTriggerResult = useCallback(() => {
     setTriggerState("idle");

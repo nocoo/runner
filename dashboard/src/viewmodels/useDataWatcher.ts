@@ -6,21 +6,27 @@
 
 import { useEffect } from "react";
 
+export type HotModuleApi = {
+  on: (event: string, cb: () => void) => void;
+  off: (event: string, cb: () => void) => void;
+};
+
 /**
  * Watch for data file changes and auto-refresh
  * Only works in dev mode (Vite HMR)
  */
-export function useDataWatcher(refresh: () => void) {
+export function useDataWatcher(refresh: () => void, hot?: HotModuleApi) {
   useEffect(() => {
-    if (import.meta.hot) {
+    const hmr = hot ?? import.meta.hot;
+    if (hmr) {
       const handler = () => {
         refresh();
       };
-      import.meta.hot.on("runner:data-change", handler);
+      hmr.on("runner:data-change", handler);
 
       return () => {
-        import.meta.hot?.off("runner:data-change", handler);
+        hmr.off("runner:data-change", handler);
       };
     }
-  }, [refresh]);
+  }, [refresh, hot]);
 }

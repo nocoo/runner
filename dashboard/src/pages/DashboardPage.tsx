@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { LayoutGrid, RefreshCw } from "lucide-react";
 import { MatrixShell } from "@/ui/foundation";
+import { Toast } from "@/ui/feedback";
 import { useStatusVM, useRunsVM, useTasksVM } from "@/viewmodels";
 import {
   RunHistory,
@@ -23,6 +24,7 @@ export function DashboardPage() {
   const runsVM = useRunsVM(24);
   const tasksVM = useTasksVM();
   const [selectedTask, setSelectedTask] = useState<TaskWithSchedule | null>(null);
+
 
   const handleRefreshAll = () => {
     statusVM.refresh();
@@ -149,36 +151,25 @@ export function DashboardPage() {
 
       {/* Trigger Result Toast */}
       {tasksVM.triggerState === "success" && tasksVM.triggerResult && (
-        <div
-          className="fixed bottom-8 right-8 z-50 matrix-panel p-4 max-w-sm animate-pulse cursor-pointer"
-          onClick={tasksVM.clearTriggerResult}
-        >
-          <div className="flex items-center gap-3">
-            <span
-              className={`w-3 h-3 rounded-full ${
-                tasksVM.triggerResult.exit_code === 0 ? "bg-success" : "bg-error"
-              }`}
-            ></span>
-            <div>
-              <p className="font-bold text-matrix-primary">
-                {tasksVM.triggerResult.task}
-              </p>
-              <p className="text-caption text-matrix-dim">
-                Exit code: {tasksVM.triggerResult.exit_code}
-              </p>
-            </div>
-          </div>
-        </div>
+        <Toast
+          tone={tasksVM.triggerResult.exit_code === 0 ? "success" : "error"}
+          message={tasksVM.triggerResult.task}
+          detail={`Exit code: ${tasksVM.triggerResult.exit_code}`}
+          durationMs={3000}
+          onClose={tasksVM.clearTriggerResult}
+          className="animate-pulse"
+        />
       )}
 
       {tasksVM.triggerState === "error" && (
-        <div
-          className="fixed bottom-8 right-8 z-50 matrix-panel p-4 max-w-sm border-error cursor-pointer"
-          onClick={tasksVM.clearTriggerResult}
-        >
-          <p className="text-error font-bold">Trigger Failed</p>
-          <p className="text-caption text-matrix-dim">{tasksVM.triggerError}</p>
-        </div>
+        <Toast
+          tone="error"
+          message="Trigger Failed"
+          detail={tasksVM.triggerError}
+          durationMs={5000}
+          onClose={tasksVM.clearTriggerResult}
+          className="border-error"
+        />
       )}
     </MatrixShell>
   );

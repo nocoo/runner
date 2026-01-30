@@ -4,9 +4,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { SystemState, LoadingState } from "@/models/types";
-import { fetchStatus } from "@/models/api";
+import { fetchStatus as fetchStatusDefault } from "@/models/api";
 import { formatPercent, formatExitCode } from "@/lib/format";
-import { useDataWatcher } from "./useDataWatcher";
+import { useDataWatcher, type HotModuleApi } from "./useDataWatcher";
 
 interface StatusVM {
   data: SystemState | null;
@@ -20,10 +20,17 @@ interface StatusVM {
   isOnline: boolean;
 }
 
-export function useStatusVM(): StatusVM {
+export type StatusVMDeps = {
+  fetchStatus?: typeof fetchStatusDefault;
+  hot?: HotModuleApi;
+};
+
+export function useStatusVM(deps: StatusVMDeps = {}): StatusVM {
   const [data, setData] = useState<SystemState | null>(null);
   const [state, setState] = useState<LoadingState>("loading");
   const [error, setError] = useState<string | null>(null);
+
+  const fetchStatus = deps.fetchStatus ?? fetchStatusDefault;
 
   const refresh = useCallback(async () => {
     setState("loading");
@@ -37,10 +44,10 @@ export function useStatusVM(): StatusVM {
       setError(err instanceof Error ? err.message : String(err));
       setState("error");
     }
-  }, []);
+  }, [fetchStatus]);
 
   // Auto-refresh when data files change
-  useDataWatcher(refresh);
+  useDataWatcher(refresh, deps.hot);
 
   useEffect(() => {
     refresh();
