@@ -5711,24 +5711,71 @@
       "task": "xray_watchlist"
     },
     {
+      "exit_code": 1,
+      "finished_at": "2026-01-30T08:30:10Z",
       "id": "9F1F4F86-44FB-4F8E-92DF-93A16D8AAAD7",
-      "pid": null,
       "started_at": "2026-01-30T08:30:05Z",
       "started_at_epoch": 1769761805,
-      "task": "clock",
-      "exit_code": 1,
-      "finished_at": "2026-01-30T08:30:10Z"
+      "task": "clock"
     },
     {
+      "exit_code": 1,
+      "finished_at": "2026-01-30T08:30:09Z",
       "id": "F58F8CDC-7975-4B45-971D-C6F7975423BC",
-      "pid": null,
       "started_at": "2026-01-30T08:30:05Z",
       "started_at_epoch": 1769761805,
-      "task": "obsidian_sync",
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T08:50:04Z",
+      "id": "CC76D88E-78F2-4524-812A-369BB5CDA188",
+      "started_at": "2026-01-30T08:50:01Z",
+      "started_at_epoch": 1769763001,
+      "task": "heartbeat"
+    },
+    {
       "exit_code": 1,
-      "finished_at": "2026-01-30T08:30:09Z"
+      "finished_at": "2026-01-30T09:00:03Z",
+      "id": "7CCFD177-3366-4B0B-B700-F44EA5B0E1D0",
+      "started_at": "2026-01-30T09:00:00Z",
+      "started_at_epoch": 1769763600,
+      "task": "clock"
+    },
+    {
+      "exit_code": 1,
+      "finished_at": "2026-01-30T09:00:05Z",
+      "id": "0921F8B3-2702-42CA-9D81-A639A05B5FB5",
+      "started_at": "2026-01-30T09:00:00Z",
+      "started_at_epoch": 1769763600,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T09:10:03Z",
+      "id": "4087D269-4FE3-4E8C-8BAA-632E3FBFBDCE",
+      "started_at": "2026-01-30T09:10:00Z",
+      "started_at_epoch": 1769764200,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 1,
+      "finished_at": "2026-01-30T09:15:11Z",
+      "id": "B4513A54-0A50-4397-8057-21BAB4601C6A",
+      "started_at": "2026-01-30T09:15:05Z",
+      "started_at_epoch": 1769764505,
+      "task": "obsidian_sync"
+    },
+    {
+      "id": "CE713F92-C9D4-47C7-9BFF-DB0AD18C83BA",
+      "pid": null,
+      "started_at": "2026-01-30T09:20:05Z",
+      "started_at_epoch": 1769764805,
+      "task": "heartbeat",
+      "exit_code": 0,
+      "finished_at": "2026-01-30T09:20:07Z"
     }
   ],
-  "total": 767,
-  "updated_at": "2026-01-30T08:30:10Z"
+  "total": 773,
+  "updated_at": "2026-01-30T09:20:07Z"
 }
