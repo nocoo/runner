@@ -24,4 +24,5 @@ struct CommandWiringTests {
         let wiring = ApiWiring(options: options)
         #expect(wiring.statePath.lastPathComponent == "state.json")
     }
+
 }
