@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import Darwin
 @testable import RunnerLib
 
 @Suite("Monitor Tests")
@@ -16,6 +17,64 @@ struct MonitorTests {
     func cleanup(_ tempDir: URL) {
         try? FileManager.default.removeItem(at: tempDir)
     }
+
+    func createRunDetail(id: String, finishedAt: String? = "2026-01-25T08:00:01Z", exitCode: Int = 0) -> RunDetail {
+        RunDetail(
+            id: id,
+            task: "test",
+            trigger: "manual",
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: finishedAt,
+            durationSeconds: 1,
+            exitCode: exitCode
+        )
+    }
+
+    func captureStderrAsync(_ block: () async -> Void) async -> String {
+        let pipe = Pipe()
+        let originalFd = dup(STDERR_FILENO)
+        dup2(pipe.fileHandleForWriting.fileDescriptor, STDERR_FILENO)
+        await block()
+        fflush(stderr)
+        pipe.fileHandleForWriting.closeFile()
+        dup2(originalFd, STDERR_FILENO)
+        close(originalFd)
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        return String(data: data, encoding: .utf8) ?? ""
+    }
+
+    func processStartTime(pid: Int) -> Int64? {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/ps")
+        process.arguments = ["-o", "lstart=", "-p", String(pid)]
+
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = FileHandle.nullDevice
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+
+            guard process.terminationStatus == 0 else { return nil }
+
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            guard let lstart = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                  !lstart.isEmpty else { return nil }
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEE MMM dd HH:mm:ss yyyy"
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+
+            if let date = formatter.date(from: lstart) {
+                return Int64(date.timeIntervalSince1970)
+            }
+        } catch {
+            return nil
+        }
+
+        return nil
+    }
     
     // MARK: - Empty State Tests
     
@@ -23,11 +82,24 @@ struct MonitorTests {
     func checkRunningTasksEmpty() async throws {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
-        
+
         let monitor = Monitor(storage: storage, verbose: false)
         let interrupted = try await monitor.checkRunningTasks()
-        
+
         #expect(interrupted.isEmpty)
+    }
+
+    @Test("Monitor logs when verbose")
+    func monitorLogsWhenVerbose() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let monitor = Monitor(storage: storage, verbose: true)
+        let output = await captureStderrAsync {
+            _ = try? await monitor.checkRunningTasks()
+        }
+
+        #expect(output.contains("[MONITOR DEBUG]"))
     }
     
     // MARK: - Running Tasks Tests
@@ -132,15 +204,76 @@ struct MonitorTests {
         let updatedRun = index.runs.first { $0.id == "dead-process" }
         #expect(updatedRun?.exitCode == -1)
     }
+
+    @Test("Check running tasks syncs from detail when pid missing")
+    func checkRunningTasksSyncsFromDetailNoPid() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let run = RunSummary(
+            id: "no-pid-detail",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 999999999,
+            startedAtEpoch: nil
+        )
+        try await storage.addRun(run)
+        try await storage.writeRunDetail(createRunDetail(id: "no-pid-detail", exitCode: 0))
+
+        let monitor = Monitor(storage: storage, verbose: false)
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted.isEmpty)
+
+        let index = try await storage.loadRunsIndex()
+        let updatedRun = index.runs.first { $0.id == "no-pid-detail" }
+        #expect(updatedRun?.exitCode == 0)
+        #expect(updatedRun?.finishedAt != nil)
+    }
+
+    @Test("Check running tasks syncs from detail when pid dead")
+    func checkRunningTasksSyncsFromDetailDeadPid() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let oldTime = Int64(Date().timeIntervalSince1970) - 200
+        let run = RunSummary(
+            id: "dead-pid-detail",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 999999999,
+            startedAtEpoch: oldTime
+        )
+        try await storage.addRun(run)
+        try await storage.writeRunDetail(createRunDetail(id: "dead-pid-detail", exitCode: 2))
+
+        let monitor = Monitor(storage: storage, verbose: false)
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted.isEmpty)
+
+        let index = try await storage.loadRunsIndex()
+        let updatedRun = index.runs.first { $0.id == "dead-pid-detail" }
+        #expect(updatedRun?.exitCode == 2)
+        #expect(updatedRun?.finishedAt != nil)
+    }
     
     @Test("Check running tasks leaves running process")
     func checkRunningTasksLeavesRunningProcess() async throws {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
-        
+
         // Add a task with current process PID (which is definitely running)
-        let oldTime = Int64(Date().timeIntervalSince1970) - 200 // Past grace period
         let currentPid = Int(ProcessInfo.processInfo.processIdentifier)
+        let start = processStartTime(pid: currentPid)
+        #expect(start != nil)
+        guard let start else { return }
+
+        let oldTime = start
         let run = RunSummary(
             id: "current-process",
             task: "test",
@@ -151,14 +284,44 @@ struct MonitorTests {
             startedAtEpoch: oldTime
         )
         try await storage.addRun(run)
-        
+
         let monitor = Monitor(storage: storage, verbose: false)
         let interrupted = try await monitor.checkRunningTasks()
-        
-        // Current process is running, but the startedAtEpoch is wrong (PID reuse detection)
-        // This will likely mark it as interrupted due to PID reuse
-        // This is expected behavior - the test verifies monitor doesn't crash
-        #expect(interrupted.count <= 1)
+
+        #expect(interrupted.isEmpty)
+    }
+
+    @Test("Check running tasks handles pid reuse")
+    func checkRunningTasksHandlesPidReuse() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let currentPid = Int(ProcessInfo.processInfo.processIdentifier)
+        let start = processStartTime(pid: currentPid)
+        #expect(start != nil)
+        guard let start else { return }
+
+        let run = RunSummary(
+            id: "pid-reuse",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: currentPid,
+            startedAtEpoch: start - 1000
+        )
+        try await storage.addRun(run)
+        try await storage.writeRunDetail(createRunDetail(id: "pid-reuse", exitCode: 7))
+
+        let monitor = Monitor(storage: storage, verbose: false)
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted.isEmpty)
+
+        let index = try await storage.loadRunsIndex()
+        let updatedRun = index.runs.first { $0.id == "pid-reuse" }
+        #expect(updatedRun?.exitCode == 7)
+        #expect(updatedRun?.finishedAt != nil)
     }
     
     // MARK: - Multiple Tasks Tests
