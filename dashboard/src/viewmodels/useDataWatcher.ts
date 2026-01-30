@@ -15,9 +15,10 @@ export type HotModuleApi = {
  * Watch for data file changes and auto-refresh
  * Only works in dev mode (Vite HMR)
  */
-export function useDataWatcher(refresh: () => void, hot?: HotModuleApi) {
+export function useDataWatcher(refresh: () => void, hot?: HotModuleApi | null, enabled: boolean = true) {
   useEffect(() => {
-    const hmr = hot ?? import.meta.hot;
+    if (!enabled) return;
+    const hmr = hot === undefined ? import.meta.hot : hot;
     if (hmr) {
       const handler = () => {
         refresh();
@@ -28,5 +29,5 @@ export function useDataWatcher(refresh: () => void, hot?: HotModuleApi) {
         hmr.off("runner:data-change", handler);
       };
     }
-  }, [refresh, hot]);
+  }, [refresh, hot, enabled]);
 }

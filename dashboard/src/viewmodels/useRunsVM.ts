@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import type { RunsIndex, RunSummary, RunDetail, LoadingState } from "@/models/types";
-import { fetchRuns as fetchRunsDefault, fetchRunDetail as fetchRunDetailDefault } from "@/models/api";
+import { fetchRuns as fetchRunsDefault, fetchRunDetail as fetchRunDetailDefault, fetchRunOutput as fetchRunOutputDefault } from "@/models/api";
 import { sortRunsByDate, runsToHeatmap, runsToTrend } from "@/models/transforms";
 import { useDataWatcher, type HotModuleApi } from "./useDataWatcher";
 
@@ -24,6 +24,9 @@ interface RunsVM {
   selectedRun: RunDetail | null;
   selectedRunLoading: boolean;
   selectedRunError: string | null;
+  selectedRunOutput: string | null;
+  selectedRunOutputLoading: boolean;
+  selectedRunOutputError: string | null;
   selectRun: (id: string | null) => Promise<void>;
   // Derived data
   heatmapData: ReturnType<typeof runsToHeatmap>;
@@ -33,7 +36,10 @@ interface RunsVM {
 export type RunsVMDeps = {
   fetchRuns?: typeof fetchRunsDefault;
   fetchRunDetail?: typeof fetchRunDetailDefault;
+  fetchRunOutput?: typeof fetchRunOutputDefault;
   hot?: HotModuleApi;
+  watchData?: boolean;
+  autoRefresh?: boolean;
 };
 
 export function useRunsVM(pageSize = 30, deps: RunsVMDeps = {}): RunsVM {
@@ -44,9 +50,13 @@ export function useRunsVM(pageSize = 30, deps: RunsVMDeps = {}): RunsVM {
   const [selectedRun, setSelectedRun] = useState<RunDetail | null>(null);
   const [selectedRunLoading, setSelectedRunLoading] = useState(false);
   const [selectedRunError, setSelectedRunError] = useState<string | null>(null);
+  const [selectedRunOutput, setSelectedRunOutput] = useState<string | null>(null);
+  const [selectedRunOutputLoading, setSelectedRunOutputLoading] = useState(false);
+  const [selectedRunOutputError, setSelectedRunOutputError] = useState<string | null>(null);
 
   const fetchRuns = deps.fetchRuns ?? fetchRunsDefault;
   const fetchRunDetail = deps.fetchRunDetail ?? fetchRunDetailDefault;
+  const fetchRunOutput = deps.fetchRunOutput ?? fetchRunOutputDefault;
 
   const refresh = useCallback(async () => {
     setState("loading");
@@ -63,11 +73,12 @@ export function useRunsVM(pageSize = 30, deps: RunsVMDeps = {}): RunsVM {
   }, [fetchRuns]);
 
   // Auto-refresh when data files change
-  useDataWatcher(refresh, deps.hot);
+  useDataWatcher(refresh, deps.hot, deps.watchData ?? true);
 
   useEffect(() => {
+    if (deps.autoRefresh === false) return;
     refresh();
-  }, [refresh]);
+  }, [refresh, deps.autoRefresh]);
 
   // Sorted runs (newest first)
   const runs = useMemo(() => {
@@ -88,21 +99,38 @@ export function useRunsVM(pageSize = 30, deps: RunsVMDeps = {}): RunsVM {
   const selectRun = useCallback(async (id: string | null) => {
     if (!id) {
       setSelectedRun(null);
+      setSelectedRunOutput(null);
+      setSelectedRunOutputError(null);
+      setSelectedRunOutputLoading(false);
       return;
     }
 
     setSelectedRunLoading(true);
     setSelectedRunError(null);
+    setSelectedRunOutput(null);
+    setSelectedRunOutputError(null);
+    setSelectedRunOutputLoading(false);
     try {
       const detail = await fetchRunDetail(id);
       setSelectedRun(detail);
+
+      setSelectedRunOutputLoading(true);
+      try {
+        const output = await fetchRunOutput(id);
+        setSelectedRunOutput(output);
+      } catch {
+        setSelectedRunOutput(null);
+        setSelectedRunOutputError("Failed to load run output");
+      } finally {
+        setSelectedRunOutputLoading(false);
+      }
     } catch {
       setSelectedRun(null);
       setSelectedRunError("Failed to load run detail");
     } finally {
       setSelectedRunLoading(false);
     }
-  }, []);
+  }, [fetchRunDetail, fetchRunOutput]);
 
   // Derived data for visualizations
   const heatmapData = useMemo(() => runsToHeatmap(runs), [runs]);
@@ -122,6 +150,9 @@ export function useRunsVM(pageSize = 30, deps: RunsVMDeps = {}): RunsVM {
     selectedRun,
     selectedRunLoading,
     selectedRunError,
+    selectedRunOutput,
+    selectedRunOutputLoading,
+    selectedRunOutputError,
     selectRun,
     heatmapData,
     trendData,

@@ -23,6 +23,8 @@ interface StatusVM {
 export type StatusVMDeps = {
   fetchStatus?: typeof fetchStatusDefault;
   hot?: HotModuleApi;
+  watchData?: boolean;
+  autoRefresh?: boolean;
 };
 
 export function useStatusVM(deps: StatusVMDeps = {}): StatusVM {
@@ -47,11 +49,12 @@ export function useStatusVM(deps: StatusVMDeps = {}): StatusVM {
   }, [fetchStatus]);
 
   // Auto-refresh when data files change
-  useDataWatcher(refresh, deps.hot);
+  useDataWatcher(refresh, deps.hot, deps.watchData ?? true);
 
   useEffect(() => {
+    if (deps.autoRefresh === false) return;
     refresh();
-  }, [refresh]);
+  }, [refresh, deps.autoRefresh]);
 
   // Derived values
   const successRatePercent = data ? formatPercent(data.success_rate_today) : "-";

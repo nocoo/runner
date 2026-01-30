@@ -107,8 +107,7 @@ export function DashboardPage() {
 
           {/* Upcoming Tasks */}
           <UpcomingTasks
-            tasks={tasksVM.rawTasks}
-            schedules={tasksVM.schedules}
+            items={tasksVM.upcomingTasks}
             count={8}
           />
         </div>
@@ -140,6 +139,9 @@ export function DashboardPage() {
       <RunDetailModal
         run={runsVM.selectedRun}
         loading={runsVM.selectedRunLoading}
+        output={runsVM.selectedRunOutput}
+        outputLoading={runsVM.selectedRunOutputLoading}
+        outputError={runsVM.selectedRunOutputError}
         onClose={() => runsVM.selectRun(null)}
       />
 

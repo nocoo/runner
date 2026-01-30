@@ -3,15 +3,16 @@
 // ============================================
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import type { Task, Schedule, TaskWithSchedule, LoadingState, TriggerResponse } from "@/models/types";
+import type { Task, Schedule, TaskWithSchedule, LoadingState, TriggerResponse, UpcomingTask } from "@/models/types";
 import { fetchTasks as fetchTasksDefault, fetchSchedules as fetchSchedulesDefault, triggerTask as triggerTaskDefault } from "@/models/api";
-import { combineTasksWithSchedules } from "@/models/transforms";
+import { combineTasksWithSchedules, calculateUpcomingTasks } from "@/models/transforms";
 import { useDataWatcher, type HotModuleApi } from "./useDataWatcher";
 
-interface TasksVM {
+export interface TasksVM {
   tasks: TaskWithSchedule[];
   rawTasks: Task[];
   schedules: Schedule[];
+  upcomingTasks: UpcomingTask[];
   state: LoadingState;
   error: string | null;
   refresh: () => Promise<void>;
@@ -28,6 +29,11 @@ export type TasksVMDeps = {
   fetchSchedules?: typeof fetchSchedulesDefault;
   triggerTask?: typeof triggerTaskDefault;
   hot?: HotModuleApi;
+  timeProvider?: () => Date;
+  tickMs?: number;
+  upcomingCount?: number;
+  watchData?: boolean;
+  autoRefresh?: boolean;
 };
 
 export function useTasksVM(deps: TasksVMDeps = {}): TasksVM {
@@ -43,6 +49,11 @@ export function useTasksVM(deps: TasksVMDeps = {}): TasksVM {
   const fetchTasks = deps.fetchTasks ?? fetchTasksDefault;
   const fetchSchedules = deps.fetchSchedules ?? fetchSchedulesDefault;
   const triggerTask = deps.triggerTask ?? triggerTaskDefault;
+  const timeProvider = deps.timeProvider ?? (() => new Date());
+  const tickMs = deps.tickMs ?? 1000;
+  const upcomingCount = deps.upcomingCount ?? 8;
+
+  const [now, setNow] = useState<Date>(() => timeProvider());
 
   const refresh = useCallback(async () => {
     setState("loading");
@@ -63,17 +74,34 @@ export function useTasksVM(deps: TasksVMDeps = {}): TasksVM {
   }, [fetchTasks, fetchSchedules]);
 
   // Auto-refresh when data files change
-  useDataWatcher(refresh, deps.hot);
+  useDataWatcher(refresh, deps.hot, deps.watchData ?? true);
 
   useEffect(() => {
+    if (deps.autoRefresh === false) return;
     refresh();
-  }, [refresh]);
+  }, [refresh, deps.autoRefresh]);
 
   // Combined tasks with schedules
   const combinedTasks = useMemo(
     () => combineTasksWithSchedules(tasks, schedules),
     [tasks, schedules]
   );
+
+  // Upcoming tasks with countdown
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(timeProvider());
+    }, tickMs);
+
+    return () => clearInterval(interval);
+  }, [tickMs, timeProvider]);
+
+  const upcomingTasks = useMemo(() => {
+    return calculateUpcomingTasks(tasks, schedules, upcomingCount).map((item) => ({
+      ...item,
+      countdown: item.nextRun.getTime() - now.getTime(),
+    }));
+  }, [tasks, schedules, upcomingCount, now]);
 
   // Trigger a task
   const trigger = useCallback(async (taskId: string) => {
@@ -101,6 +129,7 @@ export function useTasksVM(deps: TasksVMDeps = {}): TasksVM {
     tasks: combinedTasks,
     rawTasks: tasks,
     schedules,
+    upcomingTasks,
     state,
     error,
     refresh,

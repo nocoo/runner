@@ -29,7 +29,8 @@ describe("useStatusVM", () => {
   });
 
   test("initial state is loading", () => {
-    const { result } = renderHook(() => useStatusVM());
+    const { result } = renderHook(() => useStatusVM({ watchData: false, autoRefresh: false }));
+    result.current.refresh();
     
     expect(result.current.state).toBe("loading");
     expect(result.current.data).toBe(null);
@@ -37,7 +38,8 @@ describe("useStatusVM", () => {
   });
 
   test("fetches status on mount", async () => {
-    const { result } = renderHook(() => useStatusVM());
+    const { result } = renderHook(() => useStatusVM({ watchData: false, autoRefresh: false }));
+    result.current.refresh();
     
     await waitFor(() => {
       expect(result.current.state).toBe("success");
@@ -48,7 +50,8 @@ describe("useStatusVM", () => {
   });
 
   test("provides formatted values", async () => {
-    const { result } = renderHook(() => useStatusVM());
+    const { result } = renderHook(() => useStatusVM({ watchData: false, autoRefresh: false }));
+    result.current.refresh();
     
     await waitFor(() => {
       expect(result.current.state).toBe("success");
@@ -63,7 +66,8 @@ describe("useStatusVM", () => {
       return Promise.reject(new Error("Network error"));
     }) as unknown as typeof fetch;
     
-    const { result } = renderHook(() => useStatusVM());
+    const { result } = renderHook(() => useStatusVM({ watchData: false, autoRefresh: false }));
+    result.current.refresh();
     
     await waitFor(() => {
       expect(result.current.state).toBe("error");
@@ -79,17 +83,16 @@ describe("useStatusVM", () => {
       return new Response(JSON.stringify(mockStatusData));
     }) as unknown as typeof fetch;
 
-    const { result } = renderHook(() => useStatusVM());
-    
+    const { result } = renderHook(() => useStatusVM({ watchData: false, autoRefresh: false }));
+    result.current.refresh();
+
     await waitFor(() => {
       expect(result.current.state).toBe("success");
     });
     
     expect(callCount).toBe(1);
     
-    await act(async () => {
-      await result.current.refresh();
-    });
+    await result.current.refresh();
     
     expect(callCount).toBe(2);
   });

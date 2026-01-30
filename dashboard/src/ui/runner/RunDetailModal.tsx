@@ -2,39 +2,20 @@
 // Run Detail Modal
 // ============================================
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import type { RunDetail } from "@/models/types";
-import { fetchRunOutput } from "@/models/api";
 import { formatDuration, formatDate, formatExitCode } from "@/lib/format";
 
 interface RunDetailModalProps {
   run: RunDetail | null;
   loading: boolean;
+  output: string | null;
+  outputLoading: boolean;
+  outputError: string | null;
   onClose: () => void;
 }
 
-export function RunDetailModal({ run, loading, onClose }: RunDetailModalProps) {
-  const [output, setOutput] = useState<string | null>(null);
-  const [outputLoading, setOutputLoading] = useState(false);
-  const [outputError, setOutputError] = useState<string | null>(null);
-
-  // Load full output when run changes
-  useEffect(() => {
-    if (!run?.id) {
-      setOutput(null);
-      setOutputError(null);
-      return;
-    }
-
-    setOutputLoading(true);
-    setOutputError(null);
-
-    fetchRunOutput(run.id)
-      .then(setOutput)
-      .catch((err) => setOutputError(err.message))
-      .finally(() => setOutputLoading(false));
-  }, [run?.id]);
-
+export function RunDetailModal({ run, loading, output, outputLoading, outputError, onClose }: RunDetailModalProps) {
   // ESC key handler
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {

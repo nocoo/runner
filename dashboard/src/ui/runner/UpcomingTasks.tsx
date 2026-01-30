@@ -2,14 +2,11 @@
 // Upcoming Tasks - Shows next scheduled tasks with countdown
 // ============================================
 
-import { useState, useEffect, useMemo } from "react";
-import type { Task, Schedule, UpcomingTask } from "@/models/types";
-import { calculateUpcomingTasks } from "@/models/transforms";
+import type { UpcomingTask } from "@/models/types";
 import { AsciiBox } from "@/ui/foundation";
 
 interface UpcomingTasksProps {
-  tasks: Task[];
-  schedules: Schedule[];
+  items: UpcomingTask[];
   count?: number;
 }
 
@@ -71,32 +68,10 @@ function getCountdownColor(ms: number): string {
   return "text-matrix-muted";
 }
 
-export function UpcomingTasks({ tasks, schedules, count = 8 }: UpcomingTasksProps) {
-  const [now, setNow] = useState(() => new Date());
+export function UpcomingTasks({ items, count = 8 }: UpcomingTasksProps) {
+  const upcomingWithCountdown = items.slice(0, count);
 
-  // Update countdown every second
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Calculate upcoming tasks
-  const upcoming = useMemo(() => {
-    return calculateUpcomingTasks(tasks, schedules, count);
-  }, [tasks, schedules, count, now]);
-
-  // Recalculate countdowns with current time
-  const upcomingWithCountdown = useMemo(() => {
-    return upcoming.map((item) => ({
-      ...item,
-      countdown: item.nextRun.getTime() - now.getTime(),
-    }));
-  }, [upcoming, now]);
-
-  if (tasks.length === 0 || schedules.length === 0) {
+  if (upcomingWithCountdown.length === 0) {
     return (
       <AsciiBox title="Upcoming" subtitle="no data">
         <div className="h-32 flex items-center justify-center text-matrix-dim">
