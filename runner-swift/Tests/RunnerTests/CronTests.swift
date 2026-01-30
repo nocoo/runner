@@ -68,7 +68,7 @@ struct CronTests {
     
     @Test("Parse nil returns any")
     func parseNilValue() {
-        #expect(CronExpr.parse(nil as Any?, min: 0, max: 59) == .any)
+        #expect(CronExpr.parse(NSNull(), min: 0, max: 59) == .any)
     }
     
     // MARK: - Matching Tests

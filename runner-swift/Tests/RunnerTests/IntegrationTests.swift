@@ -36,7 +36,7 @@ struct IntegrationTests {
     
     @Test("Full task execution flow")
     func fullTaskExecutionFlow() async throws {
-        let (tempDir, storage) = try await createTempStorage()
+        let (tempDir, _) = try await createTempStorage()
         defer { cleanup(tempDir) }
         
         // 1. Create task
