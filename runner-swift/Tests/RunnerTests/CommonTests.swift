@@ -1,9 +1,22 @@
 import Testing
 import Foundation
+import Darwin
 @testable import RunnerLib
 
 @Suite("Common Tests")
 struct CommonTests {
+    func captureStderr(_ block: () -> Void) -> String {
+        let pipe = Pipe()
+        let originalFd = dup(STDERR_FILENO)
+        dup2(pipe.fileHandleForWriting.fileDescriptor, STDERR_FILENO)
+        block()
+        fflush(stderr)
+        pipe.fileHandleForWriting.closeFile()
+        dup2(originalFd, STDERR_FILENO)
+        close(originalFd)
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        return String(data: data, encoding: .utf8) ?? ""
+    }
     
     // MARK: - RunnerError Tests
     
@@ -23,6 +36,29 @@ struct CommonTests {
     func runnerErrorUnknownQuery() {
         let error = RunnerError.unknownQuery("invalid")
         #expect(error.description == "Unknown query: invalid")
+    }
+
+    @Test("CommonOptions defaults")
+    func commonOptionsDefaults() {
+        let options = try? CommonOptions.parse([])
+        #expect(options != nil)
+        guard let options else { return }
+        #expect(options.verbose == false)
+        #expect(options.dryRun == false)
+        #expect(options.dataDir.path.hasSuffix("data") == true)
+    }
+
+    @Test("CommonOptions log writes when verbose")
+    func commonOptionsLogWritesWhenVerbose() {
+        let options = try? CommonOptions.parse(["--verbose"])
+        #expect(options != nil)
+        guard let options else { return }
+
+        let output = captureStderr {
+            options.log("hello")
+        }
+
+        #expect(output.contains("[DEBUG] hello"))
     }
     
     // MARK: - URL Extension Tests
