@@ -4,6 +4,7 @@ import Foundation
 public enum TaskExecutor: String, Codable, Sendable {
     case shell
     case opencode
+    case http
 }
 
 /// Task definition
@@ -15,13 +16,29 @@ public struct Task: Codable, Sendable {
     public let command: String?
     public let prompt: String?
     public let workdir: String?
+    public let url: String?
+    public let method: String?
+    public let headers: [String: String]?
+    public let body: String?
     
     /// Effective timeout in seconds (default: 600 = 10 minutes)
     public var effectiveTimeout: Int {
         timeout ?? 600
     }
     
-    public init(id: String, executor: TaskExecutor, description: String, timeout: Int?, command: String?, prompt: String?, workdir: String?) {
+    public init(
+        id: String,
+        executor: TaskExecutor,
+        description: String,
+        timeout: Int? = nil,
+        command: String? = nil,
+        prompt: String? = nil,
+        workdir: String? = nil,
+        url: String? = nil,
+        method: String? = nil,
+        headers: [String: String]? = nil,
+        body: String? = nil
+    ) {
         self.id = id
         self.executor = executor
         self.description = description
@@ -29,10 +46,14 @@ public struct Task: Codable, Sendable {
         self.command = command
         self.prompt = prompt
         self.workdir = workdir
+        self.url = url
+        self.method = method
+        self.headers = headers
+        self.body = body
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, executor, type, description, timeout, command, prompt, workdir
+        case id, executor, type, description, timeout, command, prompt, workdir, url, method, headers, body
     }
 
     public init(from decoder: Decoder) throws {
@@ -43,6 +64,10 @@ public struct Task: Codable, Sendable {
         command = try container.decodeIfPresent(String.self, forKey: .command)
         prompt = try container.decodeIfPresent(String.self, forKey: .prompt)
         workdir = try container.decodeIfPresent(String.self, forKey: .workdir)
+        url = try container.decodeIfPresent(String.self, forKey: .url)
+        method = try container.decodeIfPresent(String.self, forKey: .method)
+        headers = try container.decodeIfPresent([String: String].self, forKey: .headers)
+        body = try container.decodeIfPresent(String.self, forKey: .body)
 
         if let executorValue = try container.decodeIfPresent(TaskExecutor.self, forKey: .executor) {
             executor = executorValue
@@ -83,6 +108,10 @@ public struct Task: Codable, Sendable {
         try container.encodeIfPresent(command, forKey: .command)
         try container.encodeIfPresent(prompt, forKey: .prompt)
         try container.encodeIfPresent(workdir, forKey: .workdir)
+        try container.encodeIfPresent(url, forKey: .url)
+        try container.encodeIfPresent(method, forKey: .method)
+        try container.encodeIfPresent(headers, forKey: .headers)
+        try container.encodeIfPresent(body, forKey: .body)
     }
 }
 

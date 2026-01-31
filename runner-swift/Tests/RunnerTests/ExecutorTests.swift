@@ -369,6 +369,57 @@ struct ExecutorTests {
         #expect(result.exitCode == 0)
         #expect(result.output.contains("opencode"))
     }
+
+    // MARK: - HTTP Executor Tests
+
+    @Test("HTTP task builds curl command")
+    func httpTaskBuildsCurlCommand() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let task = Task(
+            id: "webhook",
+            executor: .http,
+            description: "Send webhook",
+            timeout: 30,
+            url: "https://example.com/hook",
+            method: "POST",
+            headers: ["Content-Type": "application/json"],
+            body: "{\"hello\":\"world\"}"
+        )
+
+        let executor = Executor(storage: storage, dryRun: true, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+
+        #expect(result.output.contains("curl"))
+        #expect(result.output.contains("--fail-with-body"))
+        #expect(result.output.contains("-X POST"))
+        #expect(result.output.contains("https://example.com/hook"))
+        #expect(result.output.contains("Content-Type: application/json"))
+        #expect(result.output.contains("{\"hello\":\"world\"}"))
+        #expect(result.output.contains("--data"))
+    }
+
+    @Test("HTTP GET task omits body")
+    func httpGetOmitsBody() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let task = Task(
+            id: "ping",
+            executor: .http,
+            description: "Ping",
+            timeout: 30,
+            url: "https://example.com/ping",
+            method: "GET"
+        )
+
+        let executor = Executor(storage: storage, dryRun: true, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+
+        #expect(result.output.contains("-X GET"))
+        #expect(!result.output.contains("--data"))
+    }
     
     // MARK: - Missing Command Tests
     

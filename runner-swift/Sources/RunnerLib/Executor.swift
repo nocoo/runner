@@ -21,6 +21,9 @@ public struct Executor {
     
     /// Get executable command for a task
     private func getCommand(for task: Task) -> String? {
+        if task.executor == .http {
+            return buildHttpCommand(for: task)
+        }
         if let command = task.command, !command.isEmpty {
             return command
         }
@@ -30,6 +33,35 @@ public struct Executor {
             return "opencode run '\(escapedPrompt)' --agent build --model zai-coding-plan/glm-4.7"
         }
         return nil
+    }
+
+    private func buildHttpCommand(for task: Task) -> String? {
+        guard let url = task.url, !url.isEmpty else {
+            return nil
+        }
+        let method = (task.method ?? "GET").uppercased()
+        var parts: [String] = ["curl", "-sS", "--fail-with-body", "-X", method]
+
+        if let headers = task.headers {
+            for (key, value) in headers {
+                let headerValue = "\(key): \(value)"
+                parts.append("-H")
+                parts.append(shellEscape(headerValue))
+            }
+        }
+
+        if method != "GET", let body = task.body, !body.isEmpty {
+            parts.append("--data")
+            parts.append(shellEscape(body))
+        }
+
+        parts.append(shellEscape(url))
+        return parts.joined(separator: " ")
+    }
+
+    private func shellEscape(_ value: String) -> String {
+        let escaped = value.replacingOccurrences(of: "'", with: "'\"'\"'")
+        return "'\(escaped)'"
     }
     
     /// Execute a task

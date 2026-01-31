@@ -46,6 +46,38 @@ struct ModelsTests {
         #expect(task.executor == .opencode)
         #expect(task.prompt == "Announce the time")
         #expect(task.command == nil)
+        #expect(task.url == nil)
+        #expect(task.method == nil)
+        #expect(task.headers == nil)
+        #expect(task.body == nil)
+    }
+
+    @Test("Task decoding - http executor")
+    func taskDecodingHttpExecutor() throws {
+        let json = """
+        {
+            "id": "webhook",
+            "executor": "http",
+            "description": "Send webhook",
+            "timeout": 30,
+            "url": "https://example.com/hook",
+            "method": "POST",
+            "headers": {
+                "Content-Type": "application/json",
+                "X-Token": "abc"
+            },
+            "body": "{\\\"hello\\\":\\\"world\\\"}"
+        }
+        """.data(using: .utf8)!
+
+        let task = try JSONDecoder().decode(Task.self, from: json)
+        #expect(task.id == "webhook")
+        #expect(task.executor == .http)
+        #expect(task.url == "https://example.com/hook")
+        #expect(task.method == "POST")
+        #expect(task.headers?["Content-Type"] == "application/json")
+        #expect(task.headers?["X-Token"] == "abc")
+        #expect(task.body == "{\"hello\":\"world\"}")
     }
 
     @Test("Task decoding - legacy type simple")

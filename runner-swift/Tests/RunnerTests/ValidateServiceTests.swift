@@ -55,4 +55,30 @@ struct ValidateServiceTests {
             #expect(error.issues.contains { $0.message.contains("unknown task") })
         }
     }
+
+    @Test("ValidateService reports invalid http tasks")
+    func validateHttpFailures() async throws {
+        let tasks = [
+            Task(id: "missing_url", executor: .http, description: "Missing URL", timeout: 10),
+            Task(id: "bad_method", executor: .http, description: "Bad method", timeout: 10, url: "https://example.com", method: "TRACE"),
+            Task(id: "get_with_body", executor: .http, description: "GET with body", timeout: 10, url: "https://example.com", method: "GET", body: "nope")
+        ]
+        let schedules: [Schedule] = []
+
+        let service = ValidateService(
+            tasksLoader: StubTasksLoader(tasks: tasks),
+            schedulesLoader: StubSchedulesLoader(schedules: schedules)
+        )
+
+        let result = try await service.validate()
+        switch result {
+        case .success:
+            #expect(Bool(false), "Expected failures")
+        case .failure(let error):
+            #expect(error.issues.count == 3)
+            #expect(error.issues.contains { $0.message.contains("missing URL") })
+            #expect(error.issues.contains { $0.message.contains("invalid method") })
+            #expect(error.issues.contains { $0.message.contains("GET") && $0.message.contains("body") })
+        }
+    }
 }

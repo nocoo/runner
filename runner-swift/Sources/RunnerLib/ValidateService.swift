@@ -34,10 +34,19 @@ public struct ValidateService {
         var issues: [ValidationIssue] = []
 
         for task in tasks {
-            let hasCommand = task.command != nil && !(task.command ?? "").isEmpty
-            let hasPrompt = task.prompt != nil && !(task.prompt ?? "").isEmpty
-            if !hasCommand && !hasPrompt {
-                issues.append(ValidationIssue(message: "Task '\(task.id)' has no command or prompt"))
+            switch task.executor {
+            case .shell:
+                let hasCommand = task.command != nil && !(task.command ?? "").isEmpty
+                if !hasCommand {
+                    issues.append(ValidationIssue(message: "Task '\(task.id)' has no command"))
+                }
+            case .opencode:
+                let hasPrompt = task.prompt != nil && !(task.prompt ?? "").isEmpty
+                if !hasPrompt {
+                    issues.append(ValidationIssue(message: "Task '\(task.id)' has no prompt"))
+                }
+            case .http:
+                validateHttp(task: task, issues: &issues)
             }
         }
 
@@ -51,6 +60,23 @@ public struct ValidateService {
         }
 
         return .failure(ValidationError(issues: issues))
+    }
+
+    private func validateHttp(task: Task, issues: inout [ValidationIssue]) {
+        let url = task.url ?? ""
+        if url.isEmpty {
+            issues.append(ValidationIssue(message: "Task '\(task.id)' missing URL"))
+        }
+
+        let method = (task.method ?? "GET").uppercased()
+        let allowedMethods: Set<String> = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"]
+        if !allowedMethods.contains(method) {
+            issues.append(ValidationIssue(message: "Task '\(task.id)' has invalid method '\(method)'"))
+        }
+
+        if method == "GET", let body = task.body, !body.isEmpty {
+            issues.append(ValidationIssue(message: "Task '\(task.id)' GET must not include body"))
+        }
     }
 }
 
