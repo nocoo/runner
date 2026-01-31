@@ -29,7 +29,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
   const generateJsonConfig = () => {
     const config: Record<string, unknown> = {
       id: task.id,
-      type: task.type,
+      executor: task.executor,
       description: task.description,
       timeout: task.timeout,
     };
@@ -38,11 +38,11 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
       config.workdir = task.workdir;
     }
     
-    if (task.type === "simple" && task.command) {
+    if (task.executor === "shell" && task.command) {
       config.command = task.command;
     }
     
-    if (task.type === "agent" && task.prompt) {
+    if (task.executor === "opencode" && task.prompt) {
       config.prompt = task.prompt;
     }
     
@@ -60,19 +60,19 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
       >
         <AsciiBox
           title={task.id}
-          subtitle={task.type === "simple" ? "CLI Task" : "Agent Task"}
+          subtitle={task.executor === "shell" ? "Shell Task" : "Opencode Task"}
         >
           <div className="space-y-4">
             {/* Type Badge */}
             <div className="flex items-center gap-2">
               <span
                 className={`px-2 py-1 text-caption font-bold uppercase ${
-                  task.type === "simple"
+                  task.executor === "shell"
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
                 }`}
               >
-                {task.type}
+                {task.executor}
               </span>
               <span className="text-matrix-dim text-caption">
                 Timeout: {task.timeout}s
@@ -111,8 +111,8 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
               </div>
             )}
 
-            {/* Command (for simple type) */}
-            {task.type === "simple" && task.command && (
+            {/* Command (for shell executor) */}
+            {task.executor === "shell" && task.command && (
               <div>
                 <h4 className="text-caption text-matrix-ghost uppercase mb-1">
                   Command
@@ -123,8 +123,8 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
               </div>
             )}
 
-            {/* Prompt (for agent type) */}
-            {task.type === "agent" && task.prompt && (
+            {/* Prompt (for opencode executor) */}
+            {task.executor === "opencode" && task.prompt && (
               <div>
                 <h4 className="text-caption text-matrix-ghost uppercase mb-1">
                   Prompt

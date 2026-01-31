@@ -7,12 +7,12 @@ struct ModelsTests {
     
     // MARK: - Task Tests
     
-    @Test("Task decoding - simple type")
-    func taskDecodingSimple() throws {
+    @Test("Task decoding - shell executor")
+    func taskDecodingShellExecutor() throws {
         let json = """
         {
             "id": "heartbeat",
-            "type": "simple",
+            "executor": "shell",
             "description": "Test task",
             "timeout": 60,
             "command": "echo hello"
@@ -21,7 +21,7 @@ struct ModelsTests {
         
         let task = try JSONDecoder().decode(Task.self, from: json)
         #expect(task.id == "heartbeat")
-        #expect(task.type == .simple)
+        #expect(task.executor == .shell)
         #expect(task.description == "Test task")
         #expect(task.timeout == 60)
         #expect(task.command == "echo hello")
@@ -29,12 +29,12 @@ struct ModelsTests {
         #expect(task.workdir == nil)
     }
     
-    @Test("Task decoding - agent type with prompt")
-    func taskDecodingAgent() throws {
+    @Test("Task decoding - opencode executor with prompt")
+    func taskDecodingOpencodeExecutor() throws {
         let json = """
         {
             "id": "clock",
-            "type": "agent",
+            "executor": "opencode",
             "description": "Clock chime",
             "timeout": 60,
             "prompt": "Announce the time"
@@ -43,9 +43,57 @@ struct ModelsTests {
         
         let task = try JSONDecoder().decode(Task.self, from: json)
         #expect(task.id == "clock")
-        #expect(task.type == .agent)
+        #expect(task.executor == .opencode)
         #expect(task.prompt == "Announce the time")
         #expect(task.command == nil)
+    }
+
+    @Test("Task decoding - legacy type simple")
+    func taskDecodingLegacySimpleType() throws {
+        let json = """
+        {
+            "id": "legacy",
+            "type": "simple",
+            "description": "Legacy task",
+            "timeout": 30,
+            "command": "echo legacy"
+        }
+        """.data(using: .utf8)!
+
+        let task = try JSONDecoder().decode(Task.self, from: json)
+        #expect(task.executor == .shell)
+    }
+
+    @Test("Task decoding - legacy type agent")
+    func taskDecodingLegacyAgentType() throws {
+        let json = """
+        {
+            "id": "legacy_agent",
+            "type": "agent",
+            "description": "Legacy agent",
+            "timeout": 30,
+            "prompt": "Hello"
+        }
+        """.data(using: .utf8)!
+
+        let task = try JSONDecoder().decode(Task.self, from: json)
+        #expect(task.executor == .opencode)
+    }
+
+    @Test("Task decoding - legacy type manual")
+    func taskDecodingLegacyManualType() throws {
+        let json = """
+        {
+            "id": "legacy_manual",
+            "type": "manual",
+            "description": "Legacy manual",
+            "timeout": 30,
+            "prompt": "Hello"
+        }
+        """.data(using: .utf8)!
+
+        let task = try JSONDecoder().decode(Task.self, from: json)
+        #expect(task.executor == .opencode)
     }
     
     @Test("Task with workdir")
@@ -53,7 +101,7 @@ struct ModelsTests {
         let json = """
         {
             "id": "task",
-            "type": "simple",
+            "executor": "shell",
             "description": "Task with workdir",
             "timeout": 300,
             "command": "pwd",
@@ -244,7 +292,7 @@ struct ModelsTests {
         {
             "id": "abc-123",
             "task": "heartbeat",
-            "trigger": "scheduled",
+            "trigger": "auto",
             "started_at": "2026-01-25T08:00:00Z",
             "finished_at": "2026-01-25T08:00:05Z",
             "duration_seconds": 5,
@@ -255,7 +303,7 @@ struct ModelsTests {
         let detail = try JSONDecoder().decode(RunDetail.self, from: json)
         #expect(detail.id == "abc-123")
         #expect(detail.task == "heartbeat")
-        #expect(detail.trigger == "scheduled")
+        #expect(detail.trigger == "auto")
         #expect(detail.durationSeconds == 5)
         #expect(detail.exitCode == 0)
     }

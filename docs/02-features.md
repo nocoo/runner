@@ -3,10 +3,9 @@
 ## 调度与执行
 
 - Cron 风格表达式：`*`、`N`、`N-M`、`N,M`、`*/N`
-- 任务类型：
-  - `simple`：直接执行 shell 命令
-  - `agent`：调用 `opencode` 执行 AI prompt
-  - `manual`：仅手动触发的 agent 任务
+- 任务执行方式：
+  - `shell`：直接执行 shell 命令
+  - `opencode`：调用 `opencode` 执行 AI prompt
 
 ## 配置与验证
 

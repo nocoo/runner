@@ -48,12 +48,12 @@ export function TaskSchedule({
                   <span className="font-bold text-matrix-primary">{task.id}</span>
                   <span
                     className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${
-                      task.type === "manual"
+                      task.schedules.length === 0
                         ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                         : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                     }`}
                   >
-                    {task.type}
+                    {task.schedules.length === 0 ? "manual" : "auto"}
                   </span>
                 </div>
                 <p className="text-caption text-matrix-dim mt-1">

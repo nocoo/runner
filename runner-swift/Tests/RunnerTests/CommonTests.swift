@@ -100,7 +100,7 @@ struct ValidationTests {
         let json = """
         {
             "id": "test",
-            "type": "simple",
+            "executor": "shell",
             "description": "Test task",
             "timeout": 60,
             "command": "echo hello"
@@ -117,7 +117,7 @@ struct ValidationTests {
         let json = """
         {
             "id": "test",
-            "type": "agent",
+            "executor": "opencode",
             "description": "Agent task",
             "timeout": 60,
             "prompt": "Do something"
@@ -134,7 +134,7 @@ struct ValidationTests {
         let json = """
         {
             "id": "test",
-            "type": "simple",
+            "executor": "shell",
             "description": "Test",
             "command": "echo"
         }
@@ -150,7 +150,7 @@ struct ValidationTests {
         let json = """
         {
             "id": "test",
-            "type": "simple",
+            "executor": "shell",
             "description": "Test",
             "timeout": 30,
             "command": "echo"

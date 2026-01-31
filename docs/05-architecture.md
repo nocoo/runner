@@ -39,8 +39,8 @@ flowchart TB
     CLI --> Scheduler
     Scheduler --> Executor
     Executor --> Storage
-    Executor -->|agent 类型| opencode
-    Executor -->|simple 类型| shell
+    Executor -->|opencode executor| opencode
+    Executor -->|shell executor| shell
 
     Storage <-->|读写| tasks
     Storage <-->|读写| schedules

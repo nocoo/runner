@@ -27,13 +27,12 @@ export interface NextScheduled {
 
 /**
  * Task definition from data/tasks.json
- * - simple: execute command directly
- * - agent: execute via opencode (can be scheduled)
- * - manual: execute via opencode (manual trigger only)
+ * - shell: execute command directly
+ * - opencode: execute via opencode
  */
 export interface Task {
   id: string;
-  type: "simple" | "agent" | "manual";
+  executor: "shell" | "opencode";
   description: string;
   timeout: number;
   command?: string | null;

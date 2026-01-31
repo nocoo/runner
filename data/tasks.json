@@ -1,21 +1,21 @@
 [
   {
     "id": "heartbeat",
-    "type": "simple",
+    "executor": "shell",
     "description": "心跳 - 播放轻柔提示音",
     "timeout": 10,
     "command": "afplay /System/Library/Sounds/Pop.aiff"
   },
   {
     "id": "clock",
-    "type": "agent",
+    "executor": "opencode",
     "description": "报时 - 语音播报当前时间",
     "timeout": 60,
     "prompt": "获取当前时间，用 `say -v Tingting` 播报。格式：X点Y分；整点：X点整。只执行播报，不做其他操作。"
   },
   {
     "id": "obsidian_sync",
-    "type": "agent",
+    "executor": "opencode",
     "description": "同步 Obsidian - 提交并推送变更到远程仓库",
     "timeout": 120,
     "prompt": "Pull from remote first. Then check for local changes. If any: 1) git add all changes 2) generate concise commit message 3) push to main. If no local changes, output 'No changes'.",
@@ -23,7 +23,7 @@
   },
   {
     "id": "news_briefing",
-    "type": "agent",
+    "executor": "opencode",
     "description": "每日新闻简报 - 聚合并分析多来源新闻",
     "timeout": 600,
     "prompt": "Run /news-aggregator-skill with option 12 (source=all) for comprehensive news aggregation.",
@@ -31,7 +31,7 @@
   },
   {
     "id": "xray_watchlist",
-    "type": "agent",
+    "executor": "opencode",
     "description": "获取关注列表中 X 用户的更新，总结并生成报告",
     "timeout": 1800,
     "prompt": "/xray-watchlist",
@@ -39,7 +39,7 @@
   },
   {
     "id": "xray_me",
-    "type": "agent",
+    "executor": "opencode",
     "description": "分析用户过去一天的 X 动态、互动情况和数据统计，生成报告",
     "timeout": 1800,
     "prompt": "/xray-me",

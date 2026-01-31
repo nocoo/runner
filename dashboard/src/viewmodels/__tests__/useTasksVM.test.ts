@@ -20,7 +20,7 @@ describe("useTasksVM", () => {
 
   test("loads tasks and schedules", async () => {
     const tasks: Task[] = [
-      { id: "heartbeat", type: "simple", description: "Heartbeat", timeout: 60, command: "echo hi" },
+      { id: "heartbeat", executor: "shell", description: "Heartbeat", timeout: 60, command: "echo hi" },
     ];
     const schedules: Schedule[] = [
       { task: "heartbeat", hour: 9, minute: 0, weekday: "*" },
@@ -128,7 +128,7 @@ describe("useTasksVM", () => {
 
   test("interval updates countdown over time", async () => {
     const tasks: Task[] = [
-      { id: "heartbeat", type: "simple", description: "Heartbeat", timeout: 60, command: "echo hi" },
+      { id: "heartbeat", executor: "shell", description: "Heartbeat", timeout: 60, command: "echo hi" },
     ];
     const schedules: Schedule[] = [
       { task: "heartbeat", hour: "*", minute: "*/10", weekday: "*" },
@@ -162,7 +162,7 @@ describe("useTasksVM", () => {
 
   test("computes upcoming tasks with countdown", async () => {
     const tasks: Task[] = [
-      { id: "heartbeat", type: "simple", description: "Heartbeat", timeout: 60, command: "echo hi" },
+      { id: "heartbeat", executor: "shell", description: "Heartbeat", timeout: 60, command: "echo hi" },
     ];
     const schedules: Schedule[] = [
       { task: "heartbeat", hour: 9, minute: 0, weekday: "*" },

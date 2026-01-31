@@ -83,7 +83,7 @@ const MOCK_RUN_DETAIL: RunDetail = {
 const MOCK_TASKS: TaskWithSchedule[] = [
   {
     id: "morning_briefing",
-    type: "agent",
+    executor: "opencode",
     description: "Daily morning briefing with weather, calendar, and tasks",
     timeout: 300,
     prompt: "Generate a morning briefing summary with weather, calendar events, and pending tasks.",
@@ -91,7 +91,7 @@ const MOCK_TASKS: TaskWithSchedule[] = [
   },
   {
     id: "heartbeat",
-    type: "simple",
+    executor: "shell",
     description: "System heartbeat check every 10 minutes",
     timeout: 60,
     command: "afplay /System/Library/Sounds/Pop.aiff",
@@ -104,7 +104,7 @@ const MOCK_TASKS: TaskWithSchedule[] = [
   },
   {
     id: "clock",
-    type: "agent",
+    executor: "opencode",
     description: "Hourly chime with time announcement",
     timeout: 60,
     prompt: "Announce the current time using the say command.",
@@ -115,7 +115,7 @@ const MOCK_TASKS: TaskWithSchedule[] = [
   },
   {
     id: "twitter_collect",
-    type: "agent",
+    executor: "opencode",
     description: "Collect and summarize Twitter feed",
     timeout: 180,
     prompt: "Collect relevant tweets from the timeline and generate a summary.",

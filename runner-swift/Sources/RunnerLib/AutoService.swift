@@ -70,7 +70,7 @@ public struct AutoService {
             if let task = tasks.first(where: { $0.id == taskId }) {
                 log("Executing task: \(taskId)")
                 do {
-                    let result = try await executor.execute(task: task, trigger: "scheduled")
+                    let result = try await executor.execute(task: task, trigger: "auto")
                     log("Task \(taskId) completed with exit code \(result.exitCode)")
                 } catch {
                     onError(taskId, error)

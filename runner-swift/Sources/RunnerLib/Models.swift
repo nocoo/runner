@@ -1,16 +1,15 @@
 import Foundation
 
-/// Task type
-public enum TaskType: String, Codable, Sendable {
-    case simple
-    case agent
-    case manual
+/// Task executor
+public enum TaskExecutor: String, Codable, Sendable {
+    case shell
+    case opencode
 }
 
 /// Task definition
 public struct Task: Codable, Sendable {
     public let id: String
-    public let type: TaskType
+    public let executor: TaskExecutor
     public let description: String
     public let timeout: Int?
     public let command: String?
@@ -22,9 +21,9 @@ public struct Task: Codable, Sendable {
         timeout ?? 600
     }
     
-    public init(id: String, type: TaskType, description: String, timeout: Int?, command: String?, prompt: String?, workdir: String?) {
+    public init(id: String, executor: TaskExecutor, description: String, timeout: Int?, command: String?, prompt: String?, workdir: String?) {
         self.id = id
-        self.type = type
+        self.executor = executor
         self.description = description
         self.timeout = timeout
         self.command = command
@@ -33,7 +32,57 @@ public struct Task: Codable, Sendable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, type, description, timeout, command, prompt, workdir
+        case id, executor, type, description, timeout, command, prompt, workdir
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        description = try container.decode(String.self, forKey: .description)
+        timeout = try container.decodeIfPresent(Int.self, forKey: .timeout)
+        command = try container.decodeIfPresent(String.self, forKey: .command)
+        prompt = try container.decodeIfPresent(String.self, forKey: .prompt)
+        workdir = try container.decodeIfPresent(String.self, forKey: .workdir)
+
+        if let executorValue = try container.decodeIfPresent(TaskExecutor.self, forKey: .executor) {
+            executor = executorValue
+            return
+        }
+
+        if let legacyType = try container.decodeIfPresent(String.self, forKey: .type) {
+            switch legacyType {
+            case "simple":
+                executor = .shell
+            case "agent", "manual":
+                executor = .opencode
+            default:
+                throw DecodingError.dataCorruptedError(
+                    forKey: .type,
+                    in: container,
+                    debugDescription: "Unknown legacy task type: \(legacyType)"
+                )
+            }
+            return
+        }
+
+        throw DecodingError.keyNotFound(
+            CodingKeys.executor,
+            DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: "Missing task executor"
+            )
+        )
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(executor, forKey: .executor)
+        try container.encode(description, forKey: .description)
+        try container.encodeIfPresent(timeout, forKey: .timeout)
+        try container.encodeIfPresent(command, forKey: .command)
+        try container.encodeIfPresent(prompt, forKey: .prompt)
+        try container.encodeIfPresent(workdir, forKey: .workdir)
     }
 }
 

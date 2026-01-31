@@ -144,8 +144,8 @@ describe("transforms", () => {
 
   describe("combineTasksWithSchedules", () => {
     const tasks: Task[] = [
-      { id: "heartbeat", type: "simple", description: "Heartbeat", timeout: 60, command: "afplay /System/Library/Sounds/Pop.aiff" },
-      { id: "morning_briefing", type: "agent", description: "Morning Briefing", timeout: 300, prompt: "Generate morning briefing" },
+      { id: "heartbeat", executor: "shell", description: "Heartbeat", timeout: 60, command: "afplay /System/Library/Sounds/Pop.aiff" },
+      { id: "morning_briefing", executor: "opencode", description: "Morning Briefing", timeout: 300, prompt: "Generate morning briefing" },
     ];
 
     const schedules: Schedule[] = [
@@ -170,7 +170,7 @@ describe("transforms", () => {
 
     test("handles tasks with no schedules", () => {
       const tasksWithNoSchedule: Task[] = [
-        { id: "orphan", type: "agent", description: "Orphan Task", timeout: 60, prompt: "Orphan prompt" },
+        { id: "orphan", executor: "opencode", description: "Orphan Task", timeout: 60, prompt: "Orphan prompt" },
       ];
       
       const result = combineTasksWithSchedules(tasksWithNoSchedule, schedules);
@@ -280,9 +280,9 @@ describe("transforms", () => {
 
   describe("calculateUpcomingTasks", () => {
     const tasks: Task[] = [
-      { id: "heartbeat", type: "simple", description: "System heartbeat", timeout: 60, command: "echo heartbeat" },
-      { id: "morning_briefing", type: "agent", description: "Morning briefing", timeout: 300, prompt: "Morning" },
-      { id: "cleanup", type: "simple", description: "Cleanup task", timeout: 60, command: "echo cleanup" },
+      { id: "heartbeat", executor: "shell", description: "System heartbeat", timeout: 60, command: "echo heartbeat" },
+      { id: "morning_briefing", executor: "opencode", description: "Morning briefing", timeout: 300, prompt: "Morning" },
+      { id: "cleanup", executor: "shell", description: "Cleanup task", timeout: 60, command: "echo cleanup" },
     ];
 
     test("calculates upcoming tasks with wildcard hour/minute", () => {
