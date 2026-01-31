@@ -11,7 +11,7 @@
     "type": "agent",
     "description": "报时 - 语音播报当前时间",
     "timeout": 60,
-    "prompt": "Get the current time and run `say -v Tingting` to announce it. Format: 'X dian Y fen' (X点Y分), or 'X dian zheng' (X点整) for exact hours."
+    "prompt": "获取当前时间，用 `say -v Tingting` 播报。格式：X点Y分；整点：X点整。只执行播报，不做其他操作。"
   },
   {
     "id": "obsidian_sync",
