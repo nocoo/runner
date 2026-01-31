@@ -33,6 +33,32 @@ runner/
 └── logs/               # 运行日志
 ```
 
+## 📦 data 目录规范
+
+- `data/tasks.json`：任务定义（JSON 数组），`executor` 支持 `shell`/`opencode`/`http`
+- `data/schedules.json`：调度规则（JSON 数组），无 schedule 的任务为手动任务
+- `data/state.json`：系统状态快照（Dashboard 读取）
+- `data/runs/index.json`：运行索引（按时间倒序）
+- `data/runs/<id>.json`：单次运行详情
+- `data/runs/<id>.output`：单次运行输出
+- `data/output/`：任务产出文件（由任务自身写入）
+
+注意：`data/` 属于运行态目录，修改任务配置只改 `tasks.json`/`schedules.json`，不要手动编辑 `runs/` 下文件。
+
+## 🧱 Swift 更新规范
+
+- 任何 Swift 变更后必须重新构建 `runner` 二进制，否则 Dashboard 触发仍会使用旧版本
+- 推荐流程：
+
+```bash
+cd runner-swift && swift build && cp .build/debug/Runner ../runner
+```
+
+- 变更影响到任务模型（如新增字段或 executor）时，同时更新：
+  - `schemas/`（如有）
+  - `docs/` 对应说明
+  - Dashboard 类型（`dashboard/src/models/types.ts`）
+
 ## ⚡ 快速运行（开发）
 
 ```bash

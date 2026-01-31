@@ -44,5 +44,13 @@
     "timeout": 1800,
     "prompt": "/xray-me",
     "workdir": "/Users/nocoo/workspace/personal/xray"
+  },
+  {
+    "id": "lizheng_ping",
+    "executor": "http",
+    "description": "手动访问 lizheng.dev",
+    "timeout": 30,
+    "url": "https://lizheng.dev",
+    "method": "GET"
   }
 ]
