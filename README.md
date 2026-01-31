@@ -62,6 +62,22 @@ bun run dev
 - Lint：`cd dashboard && bun run lint`
 - SwiftLint：`cd runner-swift && swiftlint --config .swiftlint.yml`
 
+## 🪝 Husky Hooks（团队共享）
+
+本项目在根目录使用 Husky 统一管理 Git Hooks，禁止跳过测试。
+
+- 安装：`bun install`
+- 初始化 Hook：`bun run prepare`
+- pre-commit：运行 Dashboard + Swift 单元测试
+- pre-push：运行 Dashboard + Swift 单元测试与 lint（ESLint + SwiftLint）
+
+手动执行命令：
+
+- Dashboard UT：`cd dashboard && bun test --bail`
+- Dashboard Lint：`cd dashboard && bun run lint`
+- Swift UT：`cd runner-swift && swift test`
+- SwiftLint：`cd runner-swift && swiftlint --config .swiftlint.yml`
+
 ## 📚 文档要求
 
 - README 只做概览与导航，细节写入 `docs/`

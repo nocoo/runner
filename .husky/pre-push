@@ -11,3 +11,13 @@ echo ""
 echo "🧪 Running Swift tests..."
 swift test --package-path runner-swift
 echo "✅ Swift tests passed."
+
+echo ""
+echo "🔍 Running dashboard lint..."
+bun --cwd dashboard run lint
+echo "✅ Dashboard lint passed."
+
+echo ""
+echo "🔍 Running SwiftLint..."
+swiftlint --config runner-swift/.swiftlint.yml runner-swift
+echo "✅ SwiftLint passed."
