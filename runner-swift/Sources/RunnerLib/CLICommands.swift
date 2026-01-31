@@ -2,6 +2,16 @@ import ArgumentParser
 import Foundation
 import Darwin
 
+enum ExitHandler {
+    nonisolated(unsafe) static var handle: @Sendable (Int32) -> Void = { code in
+        Darwin.exit(code)
+    }
+
+    static func exit(_ code: Int32) {
+        handle(code)
+    }
+}
+
 public struct Auto: AsyncParsableCommand {
     public static let configuration = CommandConfiguration(abstract: "Run scheduled tasks based on current time")
 
@@ -19,30 +29,11 @@ public struct Auto: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = AutoWiring(options: options)
-
-        // Get current time (UTC+8)
-        let now = Date()
-        let calendar = Calendar.current
-        let tz = TimeZone(secondsFromGMT: 8 * 3600)!
-        let components = calendar.dateComponents(in: tz, from: now)
-
-        let hour = mockHour ?? components.hour!
-        let minute = mockMinute ?? components.minute!
-        let weekday = mockWeekday ?? (components.weekday! - 1) // Convert to 0=Sunday
-
-        let service = AutoService()
-        let time = AutoTime(hour: hour, minute: minute, weekday: weekday)
-
-        try await service.run(
-            storage: wiring.storage,
-            monitor: wiring.monitor,
-            executor: wiring.executor,
-            time: time,
-            log: { message in options.log(message) },
-            onError: { taskId, error in
-                FileHandle.standardError.write(Data("Error executing task \(taskId): \(error)\n".utf8))
-            }
+        _ = try await runAutoCommand(
+            options: options,
+            mockHour: mockHour,
+            mockMinute: mockMinute,
+            mockWeekday: mockWeekday
         )
     }
 }
@@ -61,22 +52,18 @@ public struct Run: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = RunWiring(options: options)
-
-        let service = RunService()
-        let result = try await service.run(
-            storage: wiring.storage,
-            executor: wiring.executor,
-            taskId: task,
-            trigger: trigger,
-            log: { message in options.log(message) }
+        let result = try await runTaskCommand(
+            options: options,
+            task: task,
+            trigger: trigger
         )
 
         if !options.verbose {
             print(result.output)
         }
 
-        Darwin.exit(Int32(result.exitCode))
+        ExitHandler.exit(Int32(result.exitCode))
+        return
     }
 }
 
@@ -88,11 +75,9 @@ public struct List: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = ListWiring(options: options)
-        let service = TaskListService(loader: wiring.storage)
-        let entries = try await service.list()
-        for entry in entries {
-            print("\(entry.id): \(entry.description)")
+        let lines = try await listTaskEntries(options: options)
+        for line in lines {
+            print(line)
         }
     }
 }
@@ -105,9 +90,7 @@ public struct Validate: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = ValidateWiring(options: options)
-        let service = ValidateService(tasksLoader: wiring.storage, schedulesLoader: wiring.storage)
-        let result = try await service.validate()
+        let result = try await validateCommand(options: options)
 
         switch result {
         case .success(let summary):
@@ -118,7 +101,8 @@ public struct Validate: AsyncParsableCommand {
             for issue in error.issues {
                 FileHandle.standardError.write(Data("Error: \(issue.message)\n".utf8))
             }
-            Darwin.exit(1)
+            ExitHandler.exit(1)
+            return
         }
     }
 }
@@ -134,15 +118,13 @@ public struct MonitorCommand: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = MonitorWiring(options: options)
-        let service = MonitorService(monitor: wiring.monitor)
-        let result = try await service.check()
+        let interrupted = try await monitorCommand(options: options)
 
-        if result.interrupted.isEmpty {
+        if interrupted.isEmpty {
             print("No interrupted tasks found")
         } else {
-            print("Marked \(result.interrupted.count) tasks as interrupted:")
-            for id in result.interrupted {
+            print("Marked \(interrupted.count) tasks as interrupted:")
+            for id in interrupted {
                 print("  \(id)")
             }
         }
@@ -157,9 +139,7 @@ public struct Init: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = InitWiring(options: options)
-        let service = InitService(initializer: wiring.storage, dataDir: options.dataDir)
-        let message = try await service.run()
+        let message = try await initCommandMessage(options: options)
         print(message)
     }
 }
@@ -181,18 +161,15 @@ public struct Logs: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = LogsWiring(options: options)
-        let service = LogService(dataDir: options.dataDir, loader: wiring.storage)
-
         if list {
-            let entries = try await service.listRuns(limit: 20)
-            for entry in entries {
-                print("\(entry.status) \(entry.id) \(entry.task) \(entry.startedAt)")
+            let lines = try await logsListEntries(options: options, limit: 20)
+            for line in lines {
+                print(line)
             }
             return
         }
 
-        let content = try await service.output(runId: id, tail: tail)
+        let content = try await logsOutput(options: options, id: id, tail: tail)
         print(content)
     }
 }
@@ -208,16 +185,7 @@ public struct Api: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = ApiWiring(options: options)
-        let service = ApiService(
-            tasksLoader: wiring.storage,
-            schedulesLoader: wiring.storage,
-            runsLoader: wiring.storage,
-            initializer: wiring.storage,
-            stateLoader: DefaultStateLoader(path: wiring.statePath)
-        )
-
-        let output = try await service.handle(query: query)
+        let output = try await apiCommandOutput(options: options, query: query)
         print(output)
     }
 }
@@ -233,64 +201,190 @@ public struct Cleanup: AsyncParsableCommand {
     public init() {}
 
     public func run() async throws {
-        let wiring = CleanupWiring(options: options)
-        let index = try await wiring.storage.loadRunsIndex()
-
-        let planner = CleanupPlanner()
-        let plan = try await planner.buildPlan(
-            index: index,
-            detailLoader: wiring.storage,
-            processInspector: DefaultProcessInspector()
-        )
-
-        if plan.staleRuns.isEmpty {
-            print("No stale runs found")
-            return
+        let result = try await cleanupCommand(options: options, force: force)
+        for line in result.lines {
+            print(line)
         }
-
-        print("Found \(plan.staleRuns.count) stale run(s):\n")
-
-        for process in plan.processesToKill {
-            print("  ⚠️  \(process.id) [\(process.task)] PID \(process.pid) - orphaned (PPID=1), started \(process.startedAt)")
-        }
-
-        for process in plan.runningProcesses {
-            print("  ⋯  \(process.id) [\(process.task)] PID \(process.pid) - still running, started \(process.startedAt)")
-        }
-
-        for run in plan.runsToMark {
-            print("  ✗  \(run.id) [\(run.task)] - \(run.reason)")
-        }
-
-        print("")
-
-        if !force {
-            print("Dry run mode. Use --force to:")
-            if !plan.processesToKill.isEmpty {
-                print("  - Kill \(plan.processesToKill.count) orphaned process(es)")
-            }
-            if !plan.runsToMark.isEmpty {
-                print("  - Mark \(plan.runsToMark.count) run(s) as interrupted")
-            }
-            return
-        }
-
-        // Kill orphaned processes
-        var runsToMark = plan.runsToMark
-        for proc in plan.processesToKill {
-            print("Killing PID \(proc.pid)...")
-            kill(Int32(proc.pid), SIGTERM)
-            usleep(500_000) // Wait 0.5s
-            kill(Int32(proc.pid), SIGKILL)
-            runsToMark.append(CleanupRun(id: proc.id, task: proc.task, reason: "killed"))
-        }
-
-        // Mark all as interrupted
-        for run in runsToMark {
-            try await wiring.storage.markInterrupted(id: run.id)
-            print("Marked \(run.id) as interrupted")
-        }
-
-        print("\n✅ Cleanup complete")
     }
+}
+
+public func runAutoCommand(
+    options: CommonOptions,
+    mockHour: Int?,
+    mockMinute: Int?,
+    mockWeekday: Int?
+) async throws -> AutoTime {
+    let wiring = AutoWiring(options: options)
+
+    // Get current time (UTC+8)
+    let now = Date()
+    let calendar = Calendar.current
+    let tz = TimeZone(secondsFromGMT: 8 * 3600)!
+    let components = calendar.dateComponents(in: tz, from: now)
+
+    let hour = mockHour ?? components.hour!
+    let minute = mockMinute ?? components.minute!
+    let weekday = mockWeekday ?? (components.weekday! - 1) // Convert to 0=Sunday
+
+    let service = AutoService()
+    let time = AutoTime(hour: hour, minute: minute, weekday: weekday)
+
+    try await service.run(
+        storage: wiring.storage,
+        monitor: wiring.monitor,
+        executor: wiring.executor,
+        time: time,
+        log: { message in options.log(message) },
+        onError: { taskId, error in
+            FileHandle.standardError.write(Data("Error executing task \(taskId): \(error)\n".utf8))
+        }
+    )
+
+    return time
+}
+
+public func runTaskCommand(
+    options: CommonOptions,
+    task: String,
+    trigger: String
+) async throws -> ExecutionResult {
+    let wiring = RunWiring(options: options)
+    let service = RunService()
+    return try await service.run(
+        storage: wiring.storage,
+        executor: wiring.executor,
+        taskId: task,
+        trigger: trigger,
+        log: { message in options.log(message) }
+    )
+}
+
+public func listTaskEntries(options: CommonOptions) async throws -> [String] {
+    let wiring = ListWiring(options: options)
+    let service = TaskListService(loader: wiring.storage)
+    let entries = try await service.list()
+    return entries.map { "\($0.id): \($0.description)" }
+}
+
+public func validateCommand(options: CommonOptions) async throws -> Result<ValidationSummary, ValidationError> {
+    let wiring = ValidateWiring(options: options)
+    let service = ValidateService(tasksLoader: wiring.storage, schedulesLoader: wiring.storage)
+    return try await service.validate()
+}
+
+public func monitorCommand(options: CommonOptions) async throws -> [String] {
+    let wiring = MonitorWiring(options: options)
+    let service = MonitorService(monitor: wiring.monitor)
+    let result = try await service.check()
+    return result.interrupted
+}
+
+public func initCommandMessage(options: CommonOptions) async throws -> String {
+    let wiring = InitWiring(options: options)
+    let service = InitService(initializer: wiring.storage, dataDir: options.dataDir)
+    return try await service.run()
+}
+
+public func logsListEntries(options: CommonOptions, limit: Int) async throws -> [String] {
+    let wiring = LogsWiring(options: options)
+    let service = LogService(dataDir: options.dataDir, loader: wiring.storage)
+    let entries = try await service.listRuns(limit: limit)
+    return entries.map { "\($0.status) \($0.id) \($0.task) \($0.startedAt)" }
+}
+
+public func logsOutput(options: CommonOptions, id: String?, tail: Int?) async throws -> String {
+    let wiring = LogsWiring(options: options)
+    let service = LogService(dataDir: options.dataDir, loader: wiring.storage)
+    return try await service.output(runId: id, tail: tail)
+}
+
+public func apiCommandOutput(options: CommonOptions, query: String) async throws -> String {
+    let wiring = ApiWiring(options: options)
+    let service = ApiService(
+        tasksLoader: wiring.storage,
+        schedulesLoader: wiring.storage,
+        runsLoader: wiring.storage,
+        initializer: wiring.storage,
+        stateLoader: DefaultStateLoader(path: wiring.statePath)
+    )
+    return try await service.handle(query: query)
+}
+
+public struct CleanupCommandResult: Sendable {
+    public let lines: [String]
+}
+
+public func cleanupCommand(options: CommonOptions, force: Bool) async throws -> CleanupCommandResult {
+    let wiring = CleanupWiring(options: options)
+    let index = try await wiring.storage.loadRunsIndex()
+
+    let planner = CleanupPlanner()
+    let plan = try await planner.buildPlan(
+        index: index,
+        detailLoader: wiring.storage,
+        processInspector: DefaultProcessInspector()
+    )
+
+    var lines: [String] = []
+
+    if plan.staleRuns.isEmpty {
+        lines.append("No stale runs found")
+        return CleanupCommandResult(lines: lines)
+    }
+
+    lines.append("Found \(plan.staleRuns.count) stale run(s):\n")
+
+    for process in plan.processesToKill {
+        lines.append("  ⚠️  \(process.id) [\(process.task)] PID \(process.pid) - orphaned (PPID=1), started \(process.startedAt)")
+    }
+
+    for process in plan.runningProcesses {
+        lines.append("  ⋯  \(process.id) [\(process.task)] PID \(process.pid) - still running, started \(process.startedAt)")
+    }
+
+    for run in plan.runsToMark {
+        lines.append("  ✗  \(run.id) [\(run.task)] - \(run.reason)")
+    }
+
+    lines.append("")
+
+    if !force {
+        lines.append("Dry run mode. Use --force to:")
+        if !plan.processesToKill.isEmpty {
+            lines.append("  - Kill \(plan.processesToKill.count) orphaned process(es)")
+        }
+        if !plan.runsToMark.isEmpty {
+            lines.append("  - Mark \(plan.runsToMark.count) run(s) as interrupted")
+        }
+        return CleanupCommandResult(lines: lines)
+    }
+
+    // Kill orphaned processes
+    var runsToMark = plan.runsToMark
+    for proc in plan.processesToKill {
+        lines.append("Killing PID \(proc.pid)...")
+        kill(Int32(proc.pid), SIGTERM)
+        usleep(500_000) // Wait 0.5s
+        kill(Int32(proc.pid), SIGKILL)
+        runsToMark.append(CleanupRun(id: proc.id, task: proc.task, reason: "killed"))
+    }
+
+    // Mark all as interrupted
+    for run in runsToMark {
+        try await wiring.storage.markInterrupted(id: run.id)
+        lines.append("Marked \(run.id) as interrupted")
+    }
+
+    lines.append("\n✅ Cleanup complete")
+    return CleanupCommandResult(lines: lines)
+}
+
+public struct RunnerRoot: AsyncParsableCommand {
+    public static let configuration = CommandConfiguration(
+        commandName: "runner",
+        abstract: "Declarative task scheduler for macOS",
+        subcommands: [Auto.self, Run.self, List.self, Validate.self, MonitorCommand.self, Init.self, Logs.self, Api.self, Cleanup.self]
+    )
+
+    public init() {}
 }
