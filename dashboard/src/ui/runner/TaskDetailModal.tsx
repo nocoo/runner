@@ -55,7 +55,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl max-h-[90vh] overflow-auto m-4"
+        className="w-full max-w-2xl max-h-[90vh] overflow-hidden m-4"
         onClick={(e) => e.stopPropagation()}
       >
         <AsciiBox
@@ -129,7 +129,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
                 <h4 className="text-caption text-matrix-ghost uppercase mb-1">
                   Prompt
                 </h4>
-                <pre className="bg-black/50 border border-matrix-ghost p-3 text-body font-mono text-purple-300 overflow-x-auto whitespace-pre-wrap max-h-48 overflow-y-auto">
+                <pre className="bg-black/50 border border-matrix-ghost p-3 text-body font-mono text-purple-300 overflow-x-auto whitespace-pre-wrap">
                   {task.prompt}
                 </pre>
               </div>

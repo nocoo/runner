@@ -10,6 +10,15 @@ const DATA_DIR = resolve(__dirname, "../../../data");
 // Swift version has native file locking, no dependency on Linux flock command
 const RUNNER_BINARY = resolve(__dirname, "../../../runner");
 
+const ESC = String.fromCharCode(27);
+const BEL = String.fromCharCode(7);
+const ANSI_ESCAPE = new RegExp(`${ESC}[[0-?]*[ -/]*[@-~]`, "g");
+const ANSI_OSC = new RegExp(`${ESC}][^${BEL}]*(?:${BEL}|${ESC}\\\\)`, "g");
+
+function stripAnsi(input: string): string {
+  return input.replace(ANSI_OSC, "").replace(ANSI_ESCAPE, "");
+}
+
 async function readJsonFile(path: string): Promise<unknown> {
   try {
     if (!existsSync(path)) {
@@ -132,7 +141,7 @@ export function apiPlugin(): Plugin {
                 return;
               }
               const content = await readFile(outputPath, "utf-8");
-              res.end(JSON.stringify({ output: content }));
+              res.end(JSON.stringify({ output: stripAnsi(content) }));
             } catch {
               res.statusCode = 500;
               res.end(JSON.stringify({ error: "Failed to read output file" }));
