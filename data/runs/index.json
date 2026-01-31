@@ -6095,15 +6095,263 @@
       "task": "heartbeat"
     },
     {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T22:15:23Z",
       "id": "55566EDD-1F10-4D98-97B6-43A6DF851636",
-      "pid": null,
       "started_at": "2026-01-30T22:15:05Z",
       "started_at_epoch": 1769811305,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T22:20:08Z",
+      "id": "31222BE2-F373-4C22-B958-638D19260065",
+      "started_at": "2026-01-30T22:20:05Z",
+      "started_at_epoch": 1769811605,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T22:30:44Z",
+      "id": "43ED89D6-E7FC-4148-BC68-FA12538F2CF4",
+      "started_at": "2026-01-30T22:30:05Z",
+      "started_at_epoch": 1769812205,
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T22:30:25Z",
+      "id": "C383C7C8-6A68-4EE6-A771-585230FBCA32",
+      "started_at": "2026-01-30T22:30:05Z",
+      "started_at_epoch": 1769812205,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T22:40:08Z",
+      "id": "F7B9328F-B3A4-4E1E-AD47-D5F619CBFE7E",
+      "started_at": "2026-01-30T22:40:05Z",
+      "started_at_epoch": 1769812805,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T22:45:17Z",
+      "id": "EFA23FA3-71AE-424F-A150-351C814C9B68",
+      "started_at": "2026-01-30T22:45:05Z",
+      "started_at_epoch": 1769813105,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T22:50:08Z",
+      "id": "32A28FEA-9F16-4C1A-96D4-A97F0A09CCCE",
+      "started_at": "2026-01-30T22:50:05Z",
+      "started_at_epoch": 1769813405,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T23:00:19Z",
+      "id": "F241EF32-76C3-4431-8453-4A9BFC804E4F",
+      "started_at": "2026-01-30T23:00:04Z",
+      "started_at_epoch": 1769814004,
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T23:00:20Z",
+      "id": "E8187B27-B747-480C-8AE8-1DCB425EC532",
+      "started_at": "2026-01-30T23:00:04Z",
+      "started_at_epoch": 1769814004,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-30T23:20:18Z",
+      "id": "0EF58B98-9096-40C0-A84B-7CB239F22E45",
+      "started_at": "2026-01-30T23:20:04Z",
+      "started_at_epoch": 1769815204,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T23:40:31Z",
+      "id": "504F8886-B260-47CC-BE6D-7743E15A253F",
+      "started_at": "2026-01-30T23:40:13Z",
+      "started_at_epoch": 1769816413,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T23:45:51Z",
+      "id": "B9140309-BCEC-457E-BA6C-15DBE785AC47",
+      "started_at": "2026-01-30T23:45:05Z",
+      "started_at_epoch": 1769816705,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-30T23:50:08Z",
+      "id": "94AF6A14-124D-480B-83C7-928426ED97FD",
+      "started_at": "2026-01-30T23:50:05Z",
+      "started_at_epoch": 1769817005,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T00:00:30Z",
+      "id": "8C3C84E3-8D16-4268-B203-8BAED2C47859",
+      "started_at": "2026-01-31T00:00:05Z",
+      "started_at_epoch": 1769817605,
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T00:00:17Z",
+      "id": "20EFE783-3430-4696-A530-9699D4A92D22",
+      "started_at": "2026-01-31T00:00:05Z",
+      "started_at_epoch": 1769817605,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T00:00:53Z",
+      "id": "BF09CD8B-8298-480A-AC3F-7C6BFD41CA01",
+      "started_at": "2026-01-31T00:00:05Z",
+      "started_at_epoch": 1769817605,
+      "task": "xray_me"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-31T00:21:00Z",
+      "id": "E92BA6B2-0134-4FFC-9C7E-D508115B9E6F",
+      "started_at": "2026-01-31T00:20:46Z",
+      "started_at_epoch": 1769818846,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T00:37:34Z",
+      "id": "1B2E6F81-F6A4-4F58-B0F8-46D3974E55F5",
+      "started_at": "2026-01-31T00:20:46Z",
+      "started_at_epoch": 1769818846,
+      "task": "xray_watchlist"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T00:39:51Z",
+      "id": "0C225F00-A95C-4EC2-A764-E22BAECF0C0A",
+      "started_at": "2026-01-31T00:39:48Z",
+      "started_at_epoch": 1769819988,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T00:45:40Z",
+      "id": "4E07B1BB-D9D4-42D4-84C2-B3267035AF8F",
+      "started_at": "2026-01-31T00:45:05Z",
+      "started_at_epoch": 1769820305,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T00:50:08Z",
+      "id": "542DD6BD-58D4-43CC-90D3-7D53550DB585",
+      "started_at": "2026-01-31T00:50:05Z",
+      "started_at_epoch": 1769820605,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:02:34Z",
+      "id": "C34779BD-2A82-48E0-8D96-1B8033995B16",
+      "started_at": "2026-01-31T01:00:00Z",
+      "started_at_epoch": 1769821200,
+      "task": "clock"
+    },
+    {
+      "exit_code": 124,
+      "finished_at": "2026-01-31T01:12:27Z",
+      "id": "BCABFF0A-0E3F-4F53-AA39-001391990766",
+      "started_at": "2026-01-31T01:00:00Z",
+      "started_at_epoch": 1769821200,
+      "task": "news_briefing"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:00:10Z",
+      "id": "060D3D0C-61CA-415A-9AAB-74C885E6DA32",
+      "started_at": "2026-01-31T01:00:00Z",
+      "started_at_epoch": 1769821200,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:03:52Z",
+      "id": "C35C55DB-4012-438D-B9CE-25D3BC19BA8E",
+      "started_at": "2026-01-31T01:03:49Z",
+      "started_at_epoch": 1769821429,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:10:08Z",
+      "id": "69DDDF0A-E84E-4036-B11E-61EB9C34BB22",
+      "started_at": "2026-01-31T01:10:05Z",
+      "started_at_epoch": 1769821805,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:15:24Z",
+      "id": "95EB3BD5-D895-4729-81F6-9704EF1D3661",
+      "started_at": "2026-01-31T01:15:05Z",
+      "started_at_epoch": 1769822105,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:20:04Z",
+      "id": "BD777694-962B-450B-90D6-E33D7AFC0A05",
+      "started_at": "2026-01-31T01:20:01Z",
+      "started_at_epoch": 1769822401,
+      "task": "heartbeat"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:30:43Z",
+      "id": "2ACD622D-289F-44F2-8EB3-5BE364C07B39",
+      "started_at": "2026-01-31T01:30:03Z",
+      "started_at_epoch": 1769823003,
+      "task": "clock"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:30:26Z",
+      "id": "5469294A-BE8B-4050-9D2F-F07BA6D6E559",
+      "started_at": "2026-01-31T01:30:03Z",
+      "started_at_epoch": 1769823003,
+      "task": "obsidian_sync"
+    },
+    {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:40:08Z",
+      "id": "7FCFEA6E-BB1D-41BD-A7D6-E1892B81E1D5",
+      "started_at": "2026-01-31T01:40:05Z",
+      "started_at_epoch": 1769823605,
+      "task": "heartbeat"
+    },
+    {
+      "id": "3E228104-AE4F-417A-95BE-224DE33DCFEF",
+      "pid": null,
+      "started_at": "2026-01-31T01:45:02Z",
+      "started_at_epoch": 1769823902,
       "task": "obsidian_sync",
       "exit_code": 0,
-      "finished_at": "2026-01-30T22:15:23Z"
+      "finished_at": "2026-01-31T01:45:12Z"
     }
   ],
-  "total": 814,
-  "updated_at": "2026-01-30T22:15:23Z"
+  "total": 845,
+  "updated_at": "2026-01-31T01:45:12Z"
 }
