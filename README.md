@@ -1,209 +1,83 @@
-# Runner - Declarative Task Scheduler
+# Runner 文档入口 🚦
 
-Time-based automation task scheduler for macOS, executing AI tasks via `opencode`.
+macOS 上的声明式任务调度器，通过 `launchd` 触发、`opencode` 执行 AI 任务。README 负责概览与导航，细节请阅读 `docs/`。
 
 ![Runner Dashboard](https://assets.lizheng.me/wp-content/uploads/2026/01/runner.png)
 
-## Features
+## 🧭 文档树
 
-| Feature | Description |
-|---------|-------------|
-| **Crontab-style Scheduling** | Supports `*`, `N,M`, `N-M`, `*/N` expressions |
-| **Declarative Config** | JSON-defined tasks and schedules |
-| **Config Validation** | Pre-flight validation catches errors early |
-| **File-system API** | JSON data files for Web UI integration |
-| **Native macOS** | Swift binary with launchd integration |
-| **Notifications** | Via task-notifier skill |
-| **Matrix Dashboard** | React + TypeScript real-time monitoring |
+- `docs/01-overview.md`：项目概览与术语
+- `docs/02-features.md`：主要功能与能力边界
+- `docs/03-quickstart.md`：构建与运行（含 Dashboard 开发）
+- `docs/04-testing.md`：测试流程与覆盖率目标
+- `docs/05-architecture.md`：核心架构与数据流
 
-## Quick Start
+## ✨ 主要功能
 
-### 1. Build
+- 类 Cron 的调度表达式，支持 `*`、`N`、`N-M`、`N,M`、`*/N`
+- JSON 声明式任务与调度配置
+- Swift 原生二进制 + launchd 集成
+- 基于文件的 API（`data/*.json`）供 Web UI 读取
+- React + TypeScript Dashboard 实时监控
+- 任务执行输出、运行记录与状态落盘
 
-```bash
-cd runner-swift && swift build && cp .build/debug/Runner ../runner
-```
-
-### 2. Initialize
-
-```bash
-./runner init
-```
-
-### 3. Run
-
-```bash
-# List tasks
-./runner list
-
-# Run a task
-./runner run heartbeat
-
-# Dry-run (preview)
-./runner run heartbeat --dry-run
-
-# Auto mode (time-based)
-./runner auto
-```
-
-## Directory Structure
+## 📁 主要目录结构
 
 ```
 runner/
-├── runner              # Swift binary
-├── runner-swift/       # Swift source code
-├── data/               # JSON API data
-│   ├── state.json
-│   ├── tasks.json
-│   ├── schedules.json
-│   └── runs/
+├── runner              # Swift 二进制
+├── runner-swift/       # Swift 源码
+├── data/               # JSON 文件 API
 ├── dashboard/          # React + TypeScript Web UI
-├── launchd/            # launchd plist
-└── logs/
+├── launchd/            # launchd 配置
+└── logs/               # 运行日志
 ```
 
-## CLI Commands
+## ⚡ 快速运行（开发）
 
 ```bash
-# Task execution
-./runner run <task>           # Execute task
-./runner run <task> --dry-run # Preview only
-./runner auto                 # Time-based routing
+# 构建 Swift 二进制
+cd runner-swift && swift build && cp .build/debug/Runner ../runner
 
-# Management
-./runner list                 # List all tasks
-./runner validate             # Validate config
-./runner init                 # Initialize data files
+# 初始化数据文件
+./runner init
 
-# Monitoring
-./runner logs                 # Latest run output
-./runner logs <run_id>        # Specific run output
-./runner monitor              # Check stale tasks
-
-# API queries
-./runner api tasks
-./runner api schedules
-./runner api runs
-./runner api status
+# 启动调度
+./runner auto
 ```
 
-## Configuration
-
-### tasks.json
-
-```json
-[
-  {
-    "id": "heartbeat",
-    "type": "simple",
-    "description": "Play notification sound",
-    "timeout": 10,
-    "command": "afplay /System/Library/Sounds/Pop.aiff"
-  },
-  {
-    "id": "clock",
-    "type": "agent",
-    "description": "Announce time via TTS",
-    "timeout": 60,
-    "prompt": "Get current time and announce it using say command"
-  }
-]
-```
-
-### schedules.json
-
-```json
-[
-  { "task": "clock", "hour": "*", "minute": 0, "weekday": "*" },
-  { "task": "clock", "hour": "*", "minute": 30, "weekday": "*" },
-  { "task": "heartbeat", "hour": "*", "minute": 10, "weekday": "*" }
-]
-```
-
-### Crontab Expressions
-
-| Syntax | Meaning | Example |
-|--------|---------|---------|
-| `*` | Any value | `hour: "*"` every hour |
-| `N` | Exact value | `hour: 9` at 9:00 |
-| `N,M,O` | List | `minute: "0,15,30,45"` |
-| `N-M` | Range | `hour: "9-17"` 9am-5pm |
-| `*/N` | Step | `minute: "*/10"` every 10 min |
-
-## launchd Integration
-
-### Install
-
-```bash
-cp launchd/com.runner.scheduler.plist ~/Library/LaunchAgents/
-launchctl load ~/Library/LaunchAgents/com.runner.scheduler.plist
-```
-
-### Manage
-
-```bash
-launchctl list | grep runner                    # Status
-launchctl start com.runner.scheduler            # Manual trigger
-launchctl unload ~/Library/LaunchAgents/...     # Unload
-```
-
-## Dashboard
-
-Matrix-style real-time monitoring panel.
+Dashboard 开发：
 
 ```bash
 cd dashboard
 bun install
 bun run dev
-# Open http://localhost:7009
 ```
 
-### Features
+## 🧪 测试与质量要求
 
-- Real-time clock with Matrix animation
-- Task list with schedules
-- Run history with pagination
-- Activity heatmap (30 days)
-- Trend chart (24 hours)
-- Upcoming tasks countdown
+- 单元测试目标覆盖率：**90%**
+- Swift：`cd runner-swift && swift test`
+- Dashboard：`cd dashboard && bun test --bail`
+- Lint：`cd dashboard && bun run lint`
+- SwiftLint：`cd runner-swift && swiftlint --config .swiftlint.yml`
 
-### Tests
+## 📚 文档要求
 
-```bash
-cd dashboard
-bun test
-bun test --coverage
-```
+- README 只做概览与导航，细节写入 `docs/`
+- 变更代码时必须同步更新对应文档
+- `docs/` 内文件按编号递进，命名风格：`NN-<topic>.md`
+- 新文档必须从 README 链接进入
 
-## Swift Development
+## 🧩 提交规范（给 Agent 看的）
 
-```bash
-cd runner-swift
+- 原子化提交：一次提交只包含一个逻辑变更
+- Conventional Commits：`<type>: <short description>`
+- 文档与代码保持一致，改代码就改文档
 
-# Build
-swift build
+## 🤖 给 Agent 的信息
 
-# Test
-swift test
-
-# Copy to project root
-cp .build/debug/Runner ../runner
-```
-
-## File-system API
-
-Web UI reads JSON files directly:
-
-```
-data/
-├── state.json        # GET /api/status
-├── tasks.json        # GET /api/tasks
-├── schedules.json    # GET /api/schedules
-└── runs/
-    ├── index.json    # GET /api/runs
-    └── <uuid>.json   # GET /api/runs/:id
-```
-
-## License
-
-MIT
+- 主要功能：时间调度、任务执行、文件化 API、Dashboard 监控
+- 主要目录：`runner-swift/`、`data/`、`dashboard/`、`launchd/`
+- 开发流程：先构建 `runner`，再按需运行 `./runner auto` 或 Dashboard
+- 测试与覆盖率目标：UT 覆盖率 90%，按上方命令执行
