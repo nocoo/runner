@@ -36,7 +36,7 @@ struct ApiServiceTests {
     @Test("ApiService returns tasks json")
     func apiServiceTasks() async throws {
         let service = ApiService(
-            tasksLoader: StubTasksLoader(tasks: [Task(id: "t1", type: .simple, description: "Task", timeout: nil, command: "echo", prompt: nil, workdir: nil)]),
+            tasksLoader: StubTasksLoader(tasks: [Task(id: "t1", executor: .shell, description: "Task", timeout: nil, command: "echo", prompt: nil, workdir: nil)]),
             schedulesLoader: StubSchedulesLoader(schedules: []),
             runsLoader: StubRunsLoader(index: RunsIndex(runs: [], total: 0, updatedAt: "")),
             initializer: StubInitializer(),

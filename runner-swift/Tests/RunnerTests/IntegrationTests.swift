@@ -42,7 +42,7 @@ struct IntegrationTests {
         // 1. Create task
         let task = Task(
             id: "integration_test",
-            type: .simple,
+            executor: .shell,
             description: "Integration test",
             timeout: 60,
             command: "echo 'Hello from integration test' && date",
@@ -94,9 +94,9 @@ struct IntegrationTests {
         
         // Create tasks
         let tasks = [
-            Task(id: "task_9am", type: .simple, description: "9 AM task", timeout: 60, command: "echo 9am", prompt: nil, workdir: nil),
-            Task(id: "task_hourly", type: .simple, description: "Hourly task", timeout: 60, command: "echo hourly", prompt: nil, workdir: nil),
-            Task(id: "task_weekday", type: .simple, description: "Weekday task", timeout: 60, command: "echo weekday", prompt: nil, workdir: nil),
+            Task(id: "task_9am", executor: .shell, description: "9 AM task", timeout: 60, command: "echo 9am", prompt: nil, workdir: nil),
+            Task(id: "task_hourly", executor: .shell, description: "Hourly task", timeout: 60, command: "echo hourly", prompt: nil, workdir: nil),
+            Task(id: "task_weekday", executor: .shell, description: "Weekday task", timeout: 60, command: "echo weekday", prompt: nil, workdir: nil),
         ]
         
         // Create schedules
@@ -157,7 +157,7 @@ struct IntegrationTests {
         // Execute a fast task
         let task = Task(
             id: "cleanup_test",
-            type: .simple,
+            executor: .shell,
             description: "Cleanup test",
             timeout: 60,
             command: "echo done",
@@ -206,7 +206,7 @@ struct IntegrationTests {
         
         let task = Task(
             id: "failing_task",
-            type: .simple,
+            executor: .shell,
             description: "Failing task",
             timeout: 60,
             command: "echo 'about to fail' && exit 1",
@@ -234,7 +234,7 @@ struct IntegrationTests {
         
         let task = Task(
             id: "timeout_task",
-            type: .simple,
+            executor: .shell,
             description: "Timeout task",
             timeout: 2,
             command: "echo 'task_started' && sleep 10 && echo 'task_completed'",

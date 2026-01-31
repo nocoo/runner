@@ -67,6 +67,15 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
             <div className="flex items-center gap-2">
               <span
                 className={`px-2 py-1 text-caption font-bold uppercase ${
+                  task.schedules.length === 0
+                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                    : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                }`}
+              >
+                {task.schedules.length === 0 ? "manual" : "auto"}
+              </span>
+              <span
+                className={`px-2 py-1 text-caption font-bold uppercase ${
                   task.executor === "shell"
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                     : "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"

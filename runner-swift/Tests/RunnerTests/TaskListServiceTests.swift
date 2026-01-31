@@ -12,8 +12,8 @@ struct TaskListServiceTests {
     @Test("TaskListService maps tasks")
     func taskListMapsTasks() async throws {
         let tasks = [
-            Task(id: "t1", type: .simple, description: "A", timeout: 10, command: "echo", prompt: nil, workdir: nil),
-            Task(id: "t2", type: .simple, description: "B", timeout: 10, command: "echo", prompt: nil, workdir: nil)
+            Task(id: "t1", executor: .shell, description: "A", timeout: 10, command: "echo", prompt: nil, workdir: nil),
+            Task(id: "t2", executor: .shell, description: "B", timeout: 10, command: "echo", prompt: nil, workdir: nil)
         ]
         let service = TaskListService(loader: StubTasksLoader(tasks: tasks))
         let entries = try await service.list()

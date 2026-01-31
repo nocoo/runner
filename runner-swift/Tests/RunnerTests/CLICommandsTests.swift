@@ -82,7 +82,7 @@ struct CLICommandsTests {
     func runCommandPrintsOutput() async throws {
         let tempDir = try makeTempDir()
         _ = try await makeStorage(at: tempDir)
-        let task = Task(id: "t1", type: .simple, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)
+        let task = Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)
         try writeJSON([task], to: tempDir.appendingPathComponent("tasks.json"))
 
         let options = try CommonOptions.parse([
@@ -108,7 +108,7 @@ struct CLICommandsTests {
     func runCommandSetsExitCode() async throws {
         let tempDir = try makeTempDir()
         _ = try await makeStorage(at: tempDir)
-        let task = Task(id: "t1", type: .simple, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)
+        let task = Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)
         try writeJSON([task], to: tempDir.appendingPathComponent("tasks.json"))
 
         let options = try CommonOptions.parse([
@@ -124,7 +124,7 @@ struct CLICommandsTests {
     func validateCommandErrors() async throws {
         let tempDir = try makeTempDir()
         _ = try await makeStorage(at: tempDir)
-        let tasks = [Task(id: "t1", type: .simple, description: "Task", timeout: nil, command: nil, prompt: nil, workdir: nil)]
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: nil, command: nil, prompt: nil, workdir: nil)]
         let schedules = [Schedule(task: "missing", hour: AnyCodable("*"), minute: AnyCodable(0), weekday: AnyCodable("*"))]
         try writeJSON(tasks, to: tempDir.appendingPathComponent("tasks.json"))
         try writeJSON(schedules, to: tempDir.appendingPathComponent("schedules.json"))
@@ -154,7 +154,7 @@ struct CLICommandsTests {
     func validateCommandSuccess() async throws {
         let tempDir = try makeTempDir()
         _ = try await makeStorage(at: tempDir)
-        let tasks = [Task(id: "t1", type: .simple, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
         let schedules = [Schedule(task: "t1", hour: AnyCodable("*"), minute: AnyCodable(0), weekday: AnyCodable("*"))]
         try writeJSON(tasks, to: tempDir.appendingPathComponent("tasks.json"))
         try writeJSON(schedules, to: tempDir.appendingPathComponent("schedules.json"))
@@ -181,7 +181,7 @@ struct CLICommandsTests {
     func listCommandPrintsTasks() async throws {
         let tempDir = try makeTempDir()
         _ = try await makeStorage(at: tempDir)
-        let tasks = [Task(id: "t1", type: .simple, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
         try writeJSON(tasks, to: tempDir.appendingPathComponent("tasks.json"))
 
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
@@ -239,7 +239,7 @@ struct CLICommandsTests {
     func apiCommandPrintsOutput() async throws {
         let tempDir = try makeTempDir()
         _ = try await makeStorage(at: tempDir)
-        let tasks = [Task(id: "t1", type: .simple, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
         let schedules = [Schedule(task: "t1", hour: AnyCodable("*"), minute: AnyCodable(0), weekday: AnyCodable("*"))]
         try writeJSON(tasks, to: tempDir.appendingPathComponent("tasks.json"))
         try writeJSON(schedules, to: tempDir.appendingPathComponent("schedules.json"))
@@ -340,7 +340,7 @@ struct CLICommandsTests {
     func autoCommandUsesMockTime() async throws {
         let tempDir = try makeTempDir()
         _ = try await makeStorage(at: tempDir)
-        let tasks = [Task(id: "t1", type: .simple, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
         let schedules = [Schedule(task: "t1", hour: AnyCodable(9), minute: AnyCodable(0), weekday: AnyCodable("*"))]
         try writeJSON(tasks, to: tempDir.appendingPathComponent("tasks.json"))
         try writeJSON(schedules, to: tempDir.appendingPathComponent("schedules.json"))

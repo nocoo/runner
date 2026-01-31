@@ -17,7 +17,7 @@ struct ValidateServiceTests {
 
     @Test("ValidateService returns success when valid")
     func validateSuccess() async throws {
-        let tasks = [Task(id: "t1", type: .simple, description: "Task", timeout: 10, command: "echo", prompt: nil, workdir: nil)]
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: 10, command: "echo", prompt: nil, workdir: nil)]
         let schedules = [Schedule(task: "t1", hour: AnyCodable("*"), minute: AnyCodable(0), weekday: AnyCodable("*"))]
 
         let service = ValidateService(
@@ -37,7 +37,7 @@ struct ValidateServiceTests {
 
     @Test("ValidateService reports missing command and unknown schedule")
     func validateFailures() async throws {
-        let tasks = [Task(id: "t1", type: .simple, description: "Task", timeout: 10, command: nil, prompt: nil, workdir: nil)]
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: 10, command: nil, prompt: nil, workdir: nil)]
         let schedules = [Schedule(task: "missing", hour: AnyCodable("*"), minute: AnyCodable(0), weekday: AnyCodable("*"))]
 
         let service = ValidateService(

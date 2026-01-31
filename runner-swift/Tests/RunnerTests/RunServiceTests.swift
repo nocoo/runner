@@ -29,7 +29,7 @@ struct RunServiceTests {
     }
 
     func makeTask(id: String) -> Task {
-        Task(id: id, type: .simple, description: "Test", timeout: 60, command: "echo test", prompt: nil, workdir: nil)
+        Task(id: id, executor: .shell, description: "Test", timeout: 60, command: "echo test", prompt: nil, workdir: nil)
     }
 
     @Test("RunService executes requested task")

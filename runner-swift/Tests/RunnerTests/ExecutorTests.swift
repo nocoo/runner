@@ -25,7 +25,7 @@ struct ExecutorTests {
     func makeTask(id: String = "test", command: String = "echo hello", workdir: String? = nil) -> Task {
         Task(
             id: id,
-            type: .simple,
+            executor: .shell,
             description: "Test",
             timeout: 60,
             command: command,
@@ -269,7 +269,7 @@ struct ExecutorTests {
         // Task with 2 second timeout but runs for 10 seconds
         let task = Task(
             id: "timeout_test",
-            type: .simple,
+            executor: .shell,
             description: "Timeout test",
             timeout: 2,
             command: "sleep 10",
@@ -331,7 +331,7 @@ struct ExecutorTests {
         
         let task = Task(
             id: "agent_test",
-            type: .agent,
+            executor: .opencode,
             description: "Agent test",
             timeout: 60,
             command: nil,
@@ -354,7 +354,7 @@ struct ExecutorTests {
         
         let task = Task(
             id: "special_chars",
-            type: .agent,
+            executor: .opencode,
             description: "Special chars test",
             timeout: 60,
             command: nil,
@@ -379,7 +379,7 @@ struct ExecutorTests {
         
         let task = Task(
             id: "empty",
-            type: .simple,
+            executor: .shell,
             description: "Empty task",
             timeout: 60,
             command: nil,
@@ -404,7 +404,7 @@ struct ExecutorTests {
         
         let task = Task(
             id: "empty_cmd",
-            type: .simple,
+            executor: .shell,
             description: "Empty command",
             timeout: 60,
             command: "",
@@ -436,7 +436,7 @@ struct ExecutorTests {
         for i in 0..<3 {
             let task = Task(
                 id: "sequential_\(i)",
-                type: .simple,
+                executor: .shell,
                 description: "Sequential test \(i)",
                 timeout: 60,
                 command: "echo task_\(i)",
