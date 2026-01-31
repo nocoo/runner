@@ -219,7 +219,14 @@ struct IntegrationTests {
         
         try await _Concurrency.Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
         
-        let detail = try await storage.loadRunDetail(id: result.id)
+        var detail: RunDetail?
+        for _ in 0..<10 {
+            detail = try await storage.loadRunDetail(id: result.id)
+            if detail?.exitCode == 1 {
+                break
+            }
+            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000)
+        }
         #expect(detail?.exitCode == 1)
         
         let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")

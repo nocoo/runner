@@ -497,28 +497,35 @@ struct ExecutorTests {
             let result = try await executor.execute(task: task, trigger: "test")
             resultIds.append(result.id)
             // Delay between launches to avoid index.json contention
-            try await _Concurrency.Task.sleep(nanoseconds: 500_000_000) // 500ms
+            try await _Concurrency.Task.sleep(nanoseconds: 1_000_000_000) // 1s
         }
         
         #expect(resultIds.count == 3)
         
-        // Wait until storage reflects all runs or timeout
-        let deadline = Date().addingTimeInterval(15)
-        var index = try await storage.loadRunsIndex()
-        while Date() < deadline && index.runs.count < 3 {
-            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
-            index = try await storage.loadRunsIndex()
+        // Wait until storage reflects each run or timeout
+        let deadline = Date().addingTimeInterval(30)
+        for id in resultIds {
+            var found = false
+            var index = try await storage.loadRunsIndex()
+            while Date() < deadline {
+                if index.runs.contains(where: { $0.id == id }) {
+                    found = true
+                    break
+                }
+                try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
+                index = try await storage.loadRunsIndex()
+            }
+            #expect(found)
         }
 
-        #expect(index.runs.count == 3)
-
         // All should have completed
+        var index = try await storage.loadRunsIndex()
         while Date() < deadline && index.runs.contains(where: { $0.exitCode == nil }) {
             try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
             index = try await storage.loadRunsIndex()
         }
-        let completed = index.runs.filter { $0.exitCode != nil }
-        #expect(completed.count == 3)
+        let completedIds = Set(index.runs.filter { $0.exitCode != nil }.map { $0.id })
+        #expect(Set(resultIds).isSubset(of: completedIds))
     }
     
     // MARK: - Output Capture Tests

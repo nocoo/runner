@@ -120,6 +120,57 @@ struct CLICommandsTests {
         #expect(result.exitCode == 0)
     }
 
+    @Test("Run verbose skips output printing")
+    func runCommandVerboseSkipsOutput() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let task = Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)
+        try writeJSON([task], to: tempDir.appendingPathComponent("tasks.json"))
+
+        let command = try Run.parse([
+            "--data-dir",
+            tempDir.path,
+            "--dry-run",
+            "--verbose",
+            "t1"
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            _ = try await withExitCapture {
+                try await command.run()
+            }
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+
+    @Test("Run command prints output when not verbose")
+    func runCommandRunPrintsOutput() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let task = Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)
+        try writeJSON([task], to: tempDir.appendingPathComponent("tasks.json"))
+
+        let command = try Run.parse([
+            "--data-dir",
+            tempDir.path,
+            "--dry-run",
+            "t1"
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            _ = try await withExitCapture {
+                try await command.run()
+            }
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("[DRY RUN]"))
+    }
+
     @Test("Validate prints errors and exits non-zero")
     func validateCommandErrors() async throws {
         let tempDir = try makeTempDir()
@@ -144,6 +195,31 @@ struct CLICommandsTests {
         }
 
         resetExitHandler()
+
+        resetExitHandler()
+
+        #expect(stderr.contains("Error:"))
+    }
+
+    @Test("Validate command run exits with error")
+    func validateCommandRunErrors() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: nil, command: nil, prompt: nil, workdir: nil)]
+        let schedules = [Schedule(task: "missing", hour: AnyCodable("*"), minute: AnyCodable(0), weekday: AnyCodable("*"))]
+        try writeJSON(tasks, to: tempDir.appendingPathComponent("tasks.json"))
+        try writeJSON(schedules, to: tempDir.appendingPathComponent("schedules.json"))
+
+        let command = try Validate.parse([
+            "--data-dir",
+            tempDir.path
+        ])
+
+        let stderr = try await captureStderrAsync {
+            _ = try await withExitCapture {
+                try await command.run()
+            }
+        }
 
         resetExitHandler()
 
@@ -196,6 +272,27 @@ struct CLICommandsTests {
         #expect(stdout.contains("t1: Task"))
     }
 
+    @Test("List command run prints tasks")
+    func listCommandRunPrintsTasks() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
+        try writeJSON(tasks, to: tempDir.appendingPathComponent("tasks.json"))
+
+        let command = try List.parse([
+            "--data-dir",
+            tempDir.path
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            try await command.run()
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("t1: Task"))
+    }
+
     @Test("Logs list outputs entries")
     func logsCommandList() async throws {
         let tempDir = try makeTempDir()
@@ -209,6 +306,30 @@ struct CLICommandsTests {
         let stdout = try await captureStdoutAsync {
             let lines = try await logsListEntries(options: options, limit: 20)
             for line in lines { print(line) }
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("r1"))
+        #expect(stdout.contains("t1"))
+    }
+
+    @Test("Logs command list flag prints entries")
+    func logsCommandRunList() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: nil)
+        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
+        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+
+        let command = try Logs.parse([
+            "--data-dir",
+            tempDir.path,
+            "--list"
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            try await command.run()
         }
 
         resetExitHandler()
@@ -235,6 +356,32 @@ struct CLICommandsTests {
         #expect(content.contains("line2"))
     }
 
+    @Test("Logs command run outputs tail")
+    func logsCommandRunOutput() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: nil)
+        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
+        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try "line1\nline2".write(to: tempDir.appendingPathComponent("runs/r1.output"), atomically: true, encoding: .utf8)
+
+        let command = try Logs.parse([
+            "--data-dir",
+            tempDir.path,
+            "--tail",
+            "1",
+            "r1"
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            try await command.run()
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("line2"))
+    }
+
     @Test("Api prints output")
     func apiCommandPrintsOutput() async throws {
         let tempDir = try makeTempDir()
@@ -249,6 +396,28 @@ struct CLICommandsTests {
         let stdout = try await captureStdoutAsync {
             let output = try await apiCommandOutput(options: options, query: "tasks")
             print(output)
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("\"id\" : \"t1\""))
+    }
+
+    @Test("Api command run prints output")
+    func apiCommandRunPrintsOutput() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let tasks = [Task(id: "t1", executor: .shell, description: "Task", timeout: 5, command: "echo hi", prompt: nil, workdir: nil)]
+        try writeJSON(tasks, to: tempDir.appendingPathComponent("tasks.json"))
+
+        let command = try Api.parse([
+            "--data-dir",
+            tempDir.path,
+            "tasks"
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            try await command.run()
         }
 
         resetExitHandler()
@@ -297,6 +466,54 @@ struct CLICommandsTests {
         #expect(stdout.contains("Marked stale as interrupted"))
     }
 
+    @Test("Cleanup command run marks interrupted")
+    func cleanupCommandRunMarksInterrupted() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let run = RunSummary(id: "stale", task: "t1", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1769308800)
+        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
+        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+
+        let command = try Cleanup.parse([
+            "--data-dir",
+            tempDir.path,
+            "--force"
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            try await command.run()
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("Marked stale as interrupted"))
+    }
+
+    @Test("Cleanup dry run with orphans lists actions")
+    func cleanupCommandDryRunOrphans() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+        let runs = [
+            RunSummary(id: "orphan", task: "t1", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: 4242, startedAtEpoch: 1769308800),
+            RunSummary(id: "dead", task: "t2", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1769308800)
+        ]
+        let index = RunsIndex(runs: runs, total: runs.count, updatedAt: "")
+        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+
+        let options = try CommonOptions.parse(["--data-dir", tempDir.path])
+
+        let stdout = try await captureStdoutAsync {
+            let result = try await cleanupCommand(options: options, force: false)
+            for line in result.lines { print(line) }
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("Found 2 stale run(s)"))
+        #expect(stdout.contains("Dry run mode"))
+        #expect(stdout.contains("Mark 2 run(s) as interrupted"))
+    }
+
     @Test("Monitor prints no interrupted tasks")
     func monitorCommandEmpty() async throws {
         let tempDir = try makeTempDir()
@@ -319,6 +536,39 @@ struct CLICommandsTests {
         #expect(stdout.contains("No interrupted tasks found"))
     }
 
+    @Test("Monitor prints interrupted tasks")
+    func monitorCommandPrintsInterrupted() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+
+        let oldTime = Int64(Date().timeIntervalSince1970) - 200
+        let run = RunSummary(
+            id: "dead-1",
+            task: "t1",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 999999999,
+            startedAtEpoch: oldTime
+        )
+        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
+        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+
+        let command = try MonitorCommand.parse([
+            "--data-dir",
+            tempDir.path
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            try await command.run()
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("Marked 1 tasks as interrupted"))
+        #expect(stdout.contains("dead-1"))
+    }
+
     @Test("Init prints message")
     func initCommandPrintsMessage() async throws {
         let tempDir = try makeTempDir()
@@ -329,6 +579,25 @@ struct CLICommandsTests {
         let stdout = try await captureStdoutAsync {
             let message = try await initCommandMessage(options: options)
             print(message)
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("Initialized data directory"))
+    }
+
+    @Test("Init command run prints message")
+    func initCommandRunPrintsMessage() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+
+        let command = try Init.parse([
+            "--data-dir",
+            tempDir.path
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            try await command.run()
         }
 
         resetExitHandler()

@@ -89,4 +89,119 @@ struct CleanupPlannerTests {
         #expect(reasons.contains("no PID"))
         #expect(reasons.contains("process dead"))
     }
+
+    @Test("CleanupPlanner returns empty plan when no stale runs")
+    func cleanupPlannerEmptyPlan() async throws {
+        let index = RunsIndex(runs: [
+            makeRun(id: "done", pid: nil, exitCode: 0)
+        ], total: 1, updatedAt: "2026-01-25T08:00:01Z")
+
+        let loader = StubDetailLoader(details: [:])
+        let inspector = StubProcessInspector(running: [], ppidMap: [:])
+
+        let planner = CleanupPlanner()
+        let plan = try await planner.buildPlan(
+            index: index,
+            detailLoader: loader,
+            processInspector: inspector
+        )
+
+        #expect(plan.staleRuns.isEmpty)
+        #expect(plan.processesToKill.isEmpty)
+        #expect(plan.runningProcesses.isEmpty)
+        #expect(plan.runsToMark.isEmpty)
+    }
+
+    @Test("CleanupPlanner keeps running process when parent not init")
+    func cleanupPlannerKeepsRunningProcess() async throws {
+        let index = RunsIndex(runs: [
+            makeRun(id: "running", pid: 444)
+        ], total: 1, updatedAt: "2026-01-25T08:00:01Z")
+
+        let loader = StubDetailLoader(details: [:])
+        let inspector = StubProcessInspector(running: [444], ppidMap: [444: 2])
+
+        let planner = CleanupPlanner()
+        let plan = try await planner.buildPlan(
+            index: index,
+            detailLoader: loader,
+            processInspector: inspector
+        )
+
+        #expect(plan.processesToKill.isEmpty)
+        #expect(plan.runningProcesses.map { $0.id } == ["running"])
+        #expect(plan.runsToMark.isEmpty)
+    }
+
+    @Test("CleanupPlanner marks orphan when parent is init")
+    func cleanupPlannerMarksOrphanWhenParentIsInit() async throws {
+        let index = RunsIndex(runs: [
+            makeRun(id: "orphan", pid: 333)
+        ], total: 1, updatedAt: "2026-01-25T08:00:01Z")
+
+        let loader = StubDetailLoader(details: [:])
+        let inspector = StubProcessInspector(running: [333], ppidMap: [333: 1])
+
+        let planner = CleanupPlanner()
+        let plan = try await planner.buildPlan(
+            index: index,
+            detailLoader: loader,
+            processInspector: inspector
+        )
+
+        #expect(plan.processesToKill.map { $0.id } == ["orphan"])
+        #expect(plan.runningProcesses.isEmpty)
+        #expect(plan.runsToMark.isEmpty)
+    }
+
+    @Test("CleanupPlanner marks stale when process dead and no detail")
+    func cleanupPlannerMarksDeadProcessNoDetail() async throws {
+        let index = RunsIndex(runs: [
+            makeRun(id: "dead", pid: 222)
+        ], total: 1, updatedAt: "2026-01-25T08:00:01Z")
+
+        let loader = StubDetailLoader(details: [:])
+        let inspector = StubProcessInspector(running: [], ppidMap: [:])
+
+        let planner = CleanupPlanner()
+        let plan = try await planner.buildPlan(
+            index: index,
+            detailLoader: loader,
+            processInspector: inspector
+        )
+
+        #expect(plan.runsToMark.map { $0.id } == ["dead"])
+        #expect(plan.runsToMark.map { $0.reason } == ["process dead"])
+    }
+
+    @Test("CleanupPlanner marks stale when detail exit nonzero")
+    func cleanupPlannerMarksDetailNonzeroExit() async throws {
+        let index = RunsIndex(runs: [
+            makeRun(id: "detail_fail", pid: 111)
+        ], total: 1, updatedAt: "2026-01-25T08:00:01Z")
+
+        let detail = RunDetail(
+            id: "detail_fail",
+            task: "task-detail_fail",
+            trigger: "manual",
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: "2026-01-25T08:00:01Z",
+            durationSeconds: 1,
+            exitCode: 2
+        )
+
+        let loader = StubDetailLoader(details: ["detail_fail": detail])
+        let inspector = StubProcessInspector(running: [], ppidMap: [:])
+
+        let planner = CleanupPlanner()
+        let plan = try await planner.buildPlan(
+            index: index,
+            detailLoader: loader,
+            processInspector: inspector
+        )
+
+        #expect(plan.runsToMark.map { $0.id } == ["detail_fail"])
+        #expect(plan.runsToMark.map { $0.reason } == ["has detail.json (exit: 2)"])
+    }
+
 }

@@ -76,6 +76,37 @@ struct ApiServiceTests {
         #expect(output.contains("\"status\": \"ok\""))
     }
 
+    @Test("ApiService returns schedules json")
+    func apiServiceSchedules() async throws {
+        let schedules = [Schedule(task: "t1", hour: AnyCodable("*"), minute: AnyCodable(0), weekday: AnyCodable("*"))]
+        let service = ApiService(
+            tasksLoader: StubTasksLoader(tasks: []),
+            schedulesLoader: StubSchedulesLoader(schedules: schedules),
+            runsLoader: StubRunsLoader(index: RunsIndex(runs: [], total: 0, updatedAt: "")),
+            initializer: StubInitializer(),
+            stateLoader: StubStateLoader(data: Data("{}".utf8))
+        )
+
+        let output = try await service.handle(query: "schedules")
+        #expect(output.contains("\"task\" : \"t1\""))
+    }
+
+    @Test("ApiService returns runs index")
+    func apiServiceRuns() async throws {
+        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: nil)
+        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
+        let service = ApiService(
+            tasksLoader: StubTasksLoader(tasks: []),
+            schedulesLoader: StubSchedulesLoader(schedules: []),
+            runsLoader: StubRunsLoader(index: index),
+            initializer: StubInitializer(),
+            stateLoader: StubStateLoader(data: Data("{}".utf8))
+        )
+
+        let output = try await service.handle(query: "runs")
+        #expect(output.contains("\"id\" : \"r1\""))
+    }
+
     @Test("ApiService unknown query throws")
     func apiServiceUnknownQuery() async throws {
         let service = ApiService(

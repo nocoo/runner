@@ -84,6 +84,103 @@ struct MonitorTests {
 
         #expect(output.contains("[MONITOR DEBUG]"))
     }
+
+    @Test("Monitor does not log when not verbose")
+    func monitorNoLogsWhenNotVerbose() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
+        let output = await captureStderrAsync {
+            _ = try? await monitor.checkRunningTasks()
+        }
+
+        #expect(output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+    }
+
+    @Test("Monitor verbose logs branch decisions")
+    func monitorVerboseLogsBranchDecisions() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let now = Int64(Date().timeIntervalSince1970)
+
+        let graceRun = RunSummary(
+            id: "grace",
+            task: "test",
+            exitCode: nil,
+            startedAt: ISO8601DateFormatter().string(from: Date()),
+            finishedAt: nil,
+            pid: 101,
+            startedAtEpoch: now
+        )
+
+        let deadRun = RunSummary(
+            id: "dead",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 202,
+            startedAtEpoch: now - 400
+        )
+
+        let reusedRun = RunSummary(
+            id: "reused",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 303,
+            startedAtEpoch: now - 400
+        )
+
+        let runningRun = RunSummary(
+            id: "running",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 404,
+            startedAtEpoch: now - 400
+        )
+
+        try await storage.addRun(graceRun)
+        try await storage.addRun(deadRun)
+        try await storage.addRun(reusedRun)
+        try await storage.addRun(runningRun)
+
+        try await storage.writeRunDetail(createRunDetail(id: "reused", exitCode: 0))
+
+        let inspector = StubProcessInspector(
+            running: [101, 303, 404],
+            startTimes: [101: now, 303: now - 100, 404: now - 400]
+        )
+        let monitor = Monitor(storage: storage, verbose: true, processInspector: inspector)
+
+        let output = await captureStderrAsync {
+            _ = try? await monitor.checkRunningTasks()
+        }
+
+        #expect(output.contains("within grace period"))
+        #expect(output.contains("not running"))
+        #expect(output.contains("PID 303 reused"))
+        #expect(output.contains("still running"))
+        #expect(output.contains("synced from detail"))
+    }
+
+    @Test("DefaultMonitorProcessInspector resolves start time")
+    func defaultMonitorProcessInspectorStartTime() async throws {
+        let inspector = DefaultMonitorProcessInspector()
+        let pid = Int(ProcessInfo.processInfo.processIdentifier)
+
+        let startTime = inspector.startTime(pid: pid)
+        if let startTime {
+            #expect(startTime > 0)
+        } else {
+            #expect(Bool(true))
+        }
+    }
     
     // MARK: - Running Tasks Tests
     
@@ -136,6 +233,34 @@ struct MonitorTests {
         // Should be skipped due to grace period
         #expect(interrupted.isEmpty)
     }
+
+    @Test("Check running tasks with missing start epoch does not mark reused")
+    func checkRunningTasksMissingEpochNotReused() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let pid = 33333
+        let run = RunSummary(
+            id: "no-epoch",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: pid,
+            startedAtEpoch: nil
+        )
+        try await storage.addRun(run)
+
+        let inspector = StubProcessInspector(running: [pid], startTimes: [pid: Int64(1769308800)])
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: inspector)
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted.isEmpty)
+
+        let index = try await storage.loadRunsIndex()
+        let updatedRun = index.runs.first { $0.id == "no-epoch" }
+        #expect(updatedRun?.exitCode == nil)
+    }
     
     @Test("Check running tasks no PID")
     func checkRunningTasksNoPid() async throws {
@@ -160,6 +285,85 @@ struct MonitorTests {
         // Tasks without PID are not considered "running" by getRunningTasks
         #expect(interrupted.isEmpty)
     }
+
+    @Test("Check running tasks marks interrupted when detail missing")
+    func checkRunningTasksMarksInterruptedNoDetail() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let oldTime = Int64(Date().timeIntervalSince1970) - 200
+        let run = RunSummary(
+            id: "dead-no-detail",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 999999999,
+            startedAtEpoch: oldTime
+        )
+        try await storage.addRun(run)
+
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted == ["dead-no-detail"])
+    }
+
+    @Test("Check running tasks marks interrupted when pid reused and no detail")
+    func checkRunningTasksPidReusedNoDetail() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let pid = 55555
+        let recordedStart = Int64(Date().timeIntervalSince1970) - 400
+        let run = RunSummary(
+            id: "pid-reuse-no-detail",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: pid,
+            startedAtEpoch: recordedStart
+        )
+        try await storage.addRun(run)
+
+        let inspector = StubProcessInspector(running: [pid], startTimes: [pid: recordedStart + 100])
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: inspector)
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted == ["pid-reuse-no-detail"])
+    }
+
+    @Test("Check running tasks throws on invalid detail")
+    func checkRunningTasksInvalidDetailThrows() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let oldTime = Int64(Date().timeIntervalSince1970) - 200
+        let run = RunSummary(
+            id: "bad-detail",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 999999999,
+            startedAtEpoch: oldTime
+        )
+        try await storage.addRun(run)
+
+        let detailPath = tempDir.appendingPathComponent("runs/bad-detail.json")
+        try Data([0x00, 0xFF, 0x00]).write(to: detailPath)
+
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
+
+        do {
+            _ = try await monitor.checkRunningTasks()
+            #expect(Bool(false), "Expected error for invalid detail")
+        } catch {
+            #expect(Bool(true))
+        }
+    }
+
     
     @Test("Check running tasks marks dead process")
     func checkRunningTasksMarksDeadProcess() async throws {
@@ -215,6 +419,34 @@ struct MonitorTests {
         let index = try await storage.loadRunsIndex()
         let updatedRun = index.runs.first { $0.id == "no-pid-detail" }
         #expect(updatedRun?.exitCode == 0)
+        #expect(updatedRun?.finishedAt != nil)
+    }
+
+    @Test("Check running tasks syncs detail with nonzero exit")
+    func checkRunningTasksSyncsDetailNonzeroExit() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let run = RunSummary(
+            id: "detail-nonzero",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 999999999,
+            startedAtEpoch: Int64(Date().timeIntervalSince1970) - 200
+        )
+        try await storage.addRun(run)
+        try await storage.writeRunDetail(createRunDetail(id: "detail-nonzero", exitCode: 5))
+
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: StubProcessInspector(running: [], startTimes: [:]))
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted.isEmpty)
+
+        let index = try await storage.loadRunsIndex()
+        let updatedRun = index.runs.first { $0.id == "detail-nonzero" }
+        #expect(updatedRun?.exitCode == 5)
         #expect(updatedRun?.finishedAt != nil)
     }
 
@@ -303,6 +535,36 @@ struct MonitorTests {
         #expect(updatedRun?.exitCode == 7)
         #expect(updatedRun?.finishedAt != nil)
     }
+
+    @Test("Check running tasks marks reused pid without detail")
+    func checkRunningTasksMarksReusedPidNoDetail() async throws {
+        let (tempDir, storage) = try await createTempStorage()
+        defer { cleanup(tempDir) }
+
+        let pid = 4242
+        let recordedStart = Int64(Date().timeIntervalSince1970) - 400
+        let run = RunSummary(
+            id: "pid-reuse-missing",
+            task: "test",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: pid,
+            startedAtEpoch: recordedStart
+        )
+        try await storage.addRun(run)
+
+        let inspector = StubProcessInspector(running: [pid], startTimes: [pid: recordedStart + 100])
+        let monitor = Monitor(storage: storage, verbose: false, processInspector: inspector)
+        let interrupted = try await monitor.checkRunningTasks()
+
+        #expect(interrupted == ["pid-reuse-missing"])
+
+        let index = try await storage.loadRunsIndex()
+        let updatedRun = index.runs.first { $0.id == "pid-reuse-missing" }
+        #expect(updatedRun?.exitCode == -1)
+    }
+
 
     @Test("Check running tasks treats missing start time as not reused")
     func checkRunningTasksMissingStartTime() async throws {

@@ -55,4 +55,44 @@ struct LogServiceTests {
         #expect(entries[0].status == "✓")
         #expect(entries[1].status == "⋯")
     }
+
+    @Test("LogService throws when no runs and no id")
+    func logServiceNoRuns() async throws {
+        let loader = StubRunsLoader(index: RunsIndex(runs: [], total: 0, updatedAt: ""))
+        let service = LogService(dataDir: URL(fileURLWithPath: "/tmp"), loader: loader)
+
+        do {
+            _ = try await service.output(runId: nil, tail: nil)
+            #expect(Bool(false), "Expected noRunsFound error")
+        } catch let error as RunnerError {
+            switch error {
+            case .noRunsFound:
+                #expect(Bool(true))
+            default:
+                #expect(Bool(false), "Unexpected error: \(error)")
+            }
+        } catch {
+            #expect(Bool(false), "Unexpected error: \(error)")
+        }
+    }
+
+    @Test("LogService throws on invalid UTF-8")
+    func logServiceInvalidUtf8() async throws {
+        let outputPath = URL(fileURLWithPath: "/tmp/runs/abc.output")
+        let fileIO = StubFileIO(files: [outputPath.path: Data([0xFF, 0xFE])])
+        let loader = StubRunsLoader(index: RunsIndex(runs: [RunSummary(id: "abc", task: "t", exitCode: 0, startedAt: "", finishedAt: nil, pid: nil, startedAtEpoch: nil)], total: 1, updatedAt: ""))
+        let service = LogService(dataDir: URL(fileURLWithPath: "/tmp"), loader: loader, fileIO: fileIO)
+
+        do {
+            _ = try await service.output(runId: "abc", tail: nil)
+            #expect(Bool(false), "Expected invalidUTF8 error")
+        } catch let error as LogServiceError {
+            switch error {
+            case .invalidUTF8:
+                #expect(Bool(true))
+            }
+        } catch {
+            #expect(Bool(false), "Unexpected error: \(error)")
+        }
+    }
 }
