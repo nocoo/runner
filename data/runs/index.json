@@ -6343,15 +6343,23 @@
       "task": "heartbeat"
     },
     {
+      "exit_code": 0,
+      "finished_at": "2026-01-31T01:45:12Z",
       "id": "3E228104-AE4F-417A-95BE-224DE33DCFEF",
-      "pid": null,
       "started_at": "2026-01-31T01:45:02Z",
       "started_at_epoch": 1769823902,
-      "task": "obsidian_sync",
+      "task": "obsidian_sync"
+    },
+    {
+      "id": "11D0B887-2960-4F8B-B63F-866FDE45C6EF",
+      "pid": null,
+      "started_at": "2026-01-31T01:50:05Z",
+      "started_at_epoch": 1769824205,
+      "task": "heartbeat",
       "exit_code": 0,
-      "finished_at": "2026-01-31T01:45:12Z"
+      "finished_at": "2026-01-31T01:50:08Z"
     }
   ],
-  "total": 845,
-  "updated_at": "2026-01-31T01:45:12Z"
+  "total": 846,
+  "updated_at": "2026-01-31T01:50:08Z"
 }
