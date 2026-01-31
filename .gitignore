@@ -1,6 +1,5 @@
 # Runtime data
 data/
-!/data/runs/index.json
 
 # Logs
 logs/
