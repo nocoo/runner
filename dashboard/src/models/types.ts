@@ -29,15 +29,20 @@ export interface NextScheduled {
  * Task definition from data/tasks.json
  * - shell: execute command directly
  * - opencode: execute via opencode
+ * - http: send HTTP request via curl
  */
 export interface Task {
   id: string;
-  executor: "shell" | "opencode";
+  executor: "shell" | "opencode" | "http";
   description: string;
   timeout: number;
   command?: string | null;
   prompt?: string | null;
   workdir?: string | null;
+  url?: string | null;
+  method?: string | null;
+  headers?: Record<string, string> | null;
+  body?: string | null;
 }
 
 /**

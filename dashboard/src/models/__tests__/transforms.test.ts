@@ -146,6 +146,7 @@ describe("transforms", () => {
     const tasks: Task[] = [
       { id: "heartbeat", executor: "shell", description: "Heartbeat", timeout: 60, command: "afplay /System/Library/Sounds/Pop.aiff" },
       { id: "morning_briefing", executor: "opencode", description: "Morning Briefing", timeout: 300, prompt: "Generate morning briefing" },
+      { id: "webhook", executor: "http", description: "Webhook", timeout: 30, url: "https://example.com/hook", method: "POST" },
     ];
 
     const schedules: Schedule[] = [
@@ -157,7 +158,7 @@ describe("transforms", () => {
     test("combines tasks with their schedules", () => {
       const result = combineTasksWithSchedules(tasks, schedules);
       
-      expect(result.length).toBe(2);
+      expect(result.length).toBe(3);
       
       const heartbeat = result.find(t => t.id === "heartbeat");
       expect(heartbeat).toBeDefined();
@@ -166,17 +167,23 @@ describe("transforms", () => {
       const morning = result.find(t => t.id === "morning_briefing");
       expect(morning).toBeDefined();
       expect(morning!.schedules.length).toBe(1);
+
+      const webhook = result.find(t => t.id === "webhook");
+      expect(webhook).toBeDefined();
+      expect(webhook!.schedules.length).toBe(0);
     });
 
     test("handles tasks with no schedules", () => {
       const tasksWithNoSchedule: Task[] = [
         { id: "orphan", executor: "opencode", description: "Orphan Task", timeout: 60, prompt: "Orphan prompt" },
+        { id: "orphan_http", executor: "http", description: "Orphan HTTP", timeout: 30, url: "https://example.com" },
       ];
       
       const result = combineTasksWithSchedules(tasksWithNoSchedule, schedules);
       
-      expect(result.length).toBe(1);
+      expect(result.length).toBe(2);
       expect(result[0].schedules).toEqual([]);
+      expect(result[1].schedules).toEqual([]);
     });
   });
 
@@ -283,6 +290,7 @@ describe("transforms", () => {
       { id: "heartbeat", executor: "shell", description: "System heartbeat", timeout: 60, command: "echo heartbeat" },
       { id: "morning_briefing", executor: "opencode", description: "Morning briefing", timeout: 300, prompt: "Morning" },
       { id: "cleanup", executor: "shell", description: "Cleanup task", timeout: 60, command: "echo cleanup" },
+      { id: "webhook", executor: "http", description: "Webhook", timeout: 30, url: "https://example.com" },
     ];
 
     test("calculates upcoming tasks with wildcard hour/minute", () => {

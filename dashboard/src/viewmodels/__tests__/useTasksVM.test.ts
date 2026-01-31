@@ -19,9 +19,10 @@ describe("useTasksVM", () => {
   });
 
   test("loads tasks and schedules", async () => {
-    const tasks: Task[] = [
-      { id: "heartbeat", executor: "shell", description: "Heartbeat", timeout: 60, command: "echo hi" },
-    ];
+      const tasks: Task[] = [
+        { id: "heartbeat", executor: "shell", description: "Heartbeat", timeout: 60, command: "echo hi" },
+        { id: "webhook", executor: "http", description: "Webhook", timeout: 30, url: "https://example.com" },
+      ];
     const schedules: Schedule[] = [
       { task: "heartbeat", hour: 9, minute: 0, weekday: "*" },
     ];
@@ -39,7 +40,7 @@ describe("useTasksVM", () => {
 
     await waitFor(() => result.current.state === "success");
 
-    expect(result.current.tasks.length).toBe(1);
+    expect(result.current.tasks.length).toBe(2);
     expect(result.current.schedules.length).toBe(1);
   });
 

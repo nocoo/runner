@@ -114,6 +114,20 @@ const MOCK_TASKS: TaskWithSchedule[] = [
     ],
   },
   {
+    id: "webhook_ping",
+    executor: "http",
+    description: "Notify external webhook on schedule",
+    timeout: 30,
+    url: "https://hooks.example.com/runner/ping",
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Runner-Token": "demo-token",
+    },
+    body: "{\"status\":\"ok\"}",
+    schedules: [{ task: "webhook_ping", hour: 10, minute: 15, weekday: "*" }],
+  },
+  {
     id: "twitter_collect",
     executor: "opencode",
     description: "Collect and summarize Twitter feed",

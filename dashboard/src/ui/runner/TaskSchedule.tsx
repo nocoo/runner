@@ -55,10 +55,26 @@ export function TaskSchedule({
                   >
                     {task.schedules.length === 0 ? "manual" : "auto"}
                   </span>
+                  <span
+                    className={`px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                      task.executor === "shell"
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        : task.executor === "opencode"
+                          ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                          : "bg-sky-500/20 text-sky-400 border border-sky-500/30"
+                    }`}
+                  >
+                    {task.executor}
+                  </span>
                 </div>
                 <p className="text-caption text-matrix-dim mt-1">
                   {task.description}
                 </p>
+                {task.executor === "http" && task.url && (
+                  <p className="text-caption text-matrix-ghost mt-1 font-mono truncate">
+                    {task.method ?? "GET"} {task.url}
+                  </p>
+                )}
               </div>
               <MatrixButton
                 size="small"

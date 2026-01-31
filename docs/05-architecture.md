@@ -26,6 +26,7 @@ flowchart TB
     subgraph External[外部依赖]
         opencode[opencode\nAI Agent]
         shell[Shell 命令]
+        http[HTTP\nvia curl]
     end
 
     subgraph Dashboard[Web 控制台]
@@ -41,6 +42,7 @@ flowchart TB
     Executor --> Storage
     Executor -->|opencode executor| opencode
     Executor -->|shell executor| shell
+    Executor -->|http executor| http
 
     Storage <-->|读写| tasks
     Storage <-->|读写| schedules

@@ -45,6 +45,21 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
     if (task.executor === "opencode" && task.prompt) {
       config.prompt = task.prompt;
     }
+
+    if (task.executor === "http") {
+      if (task.url) {
+        config.url = task.url;
+      }
+      if (task.method) {
+        config.method = task.method;
+      }
+      if (task.headers && Object.keys(task.headers).length > 0) {
+        config.headers = task.headers;
+      }
+      if (task.body) {
+        config.body = task.body;
+      }
+    }
     
     return JSON.stringify(config, null, 2);
   };
@@ -60,7 +75,13 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
       >
         <AsciiBox
           title={task.id}
-          subtitle={task.executor === "shell" ? "Shell Task" : "Opencode Task"}
+          subtitle={
+            task.executor === "shell"
+              ? "Shell Task"
+              : task.executor === "opencode"
+                ? "Opencode Task"
+                : "HTTP Task"
+          }
         >
           <div className="space-y-4">
             {/* Type Badge */}
@@ -78,7 +99,9 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
                 className={`px-2 py-1 text-caption font-bold uppercase ${
                   task.executor === "shell"
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                    : task.executor === "opencode"
+                      ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
+                      : "bg-sky-500/20 text-sky-400 border border-sky-500/30"
                 }`}
               >
                 {task.executor}
@@ -141,6 +164,47 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
                 <pre className="bg-black/50 border border-matrix-ghost p-3 text-body font-mono text-purple-300 overflow-x-auto whitespace-pre-wrap">
                   {task.prompt}
                 </pre>
+              </div>
+            )}
+
+            {/* HTTP config (for http executor) */}
+            {task.executor === "http" && (
+              <div>
+                <h4 className="text-caption text-matrix-ghost uppercase mb-1">
+                  HTTP
+                </h4>
+                <div className="space-y-2 text-body">
+                  {task.method && (
+                    <div>
+                      <span className="text-matrix-dim">Method:</span>{" "}
+                      <span className="text-matrix-primary font-bold">
+                        {task.method}
+                      </span>
+                    </div>
+                  )}
+                  {task.url && (
+                    <div>
+                      <span className="text-matrix-dim">URL:</span>{" "}
+                      <code className="text-matrix-primary">{task.url}</code>
+                    </div>
+                  )}
+                  {task.headers && Object.keys(task.headers).length > 0 && (
+                    <div>
+                      <span className="text-matrix-dim">Headers:</span>
+                      <pre className="bg-black/50 border border-matrix-ghost p-3 text-body font-mono text-sky-300 overflow-x-auto whitespace-pre-wrap">
+                        {JSON.stringify(task.headers, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                  {task.body && (
+                    <div>
+                      <span className="text-matrix-dim">Body:</span>
+                      <pre className="bg-black/50 border border-matrix-ghost p-3 text-body font-mono text-sky-300 overflow-x-auto whitespace-pre-wrap">
+                        {task.body}
+                      </pre>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

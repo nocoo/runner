@@ -6,6 +6,7 @@
 - 任务执行方式：
   - `shell`：直接执行 shell 命令
   - `opencode`：调用 `opencode` 执行 AI prompt
+  - `http`：通过 `curl` 发送 HTTP 请求（2xx 成功）
 - 触发规则：无 schedule 的任务仅手动触发，有 schedule 的任务按时间自动触发
 
 ## 配置与验证
