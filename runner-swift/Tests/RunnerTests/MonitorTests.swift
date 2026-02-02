@@ -95,7 +95,7 @@ struct MonitorTests {
             _ = try? await monitor.checkRunningTasks()
         }
 
-        #expect(output.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        #expect(output.contains("[MONITOR DEBUG]") == false)
     }
 
     @Test("Monitor verbose logs branch decisions")

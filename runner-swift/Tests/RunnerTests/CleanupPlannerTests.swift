@@ -204,4 +204,30 @@ struct CleanupPlannerTests {
         #expect(plan.runsToMark.map { $0.reason } == ["has detail.json (exit: 2)"])
     }
 
+    @Test("DefaultProcessInspector reports running for current pid")
+    func defaultProcessInspectorRunningPid() {
+        let inspector = DefaultProcessInspector()
+        let pid = Int(ProcessInfo.processInfo.processIdentifier)
+
+        #expect(inspector.isRunning(pid: pid))
+    }
+
+    @Test("DefaultProcessInspector returns parent pid for current pid")
+    func defaultProcessInspectorParentPidForCurrentPid() {
+        let inspector = DefaultProcessInspector()
+        let pid = Int(ProcessInfo.processInfo.processIdentifier)
+
+        let parentPid = inspector.parentPid(pid: pid)
+        #expect(parentPid > 0)
+    }
+
+    @Test("DefaultProcessInspector returns -1 for missing pid")
+    func defaultProcessInspectorMissingPid() {
+        let inspector = DefaultProcessInspector()
+
+        let parentPid = inspector.parentPid(pid: 999_999)
+        #expect(parentPid == -1)
+        #expect(inspector.isRunning(pid: 999_999) == false)
+    }
+
 }
