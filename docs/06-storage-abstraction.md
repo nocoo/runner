@@ -1,105 +1,105 @@
-# 06 Storage Abstraction
+# 06 存储层抽象与 SQLite 迁移
 
-This document outlines the plan to abstract the storage layer, enabling migration from JSON files to SQLite while maintaining behavioral compatibility.
+本文档描述存储层抽象计划，目标是从 JSON 文件迁移到 SQLite，同时保持行为兼容性。
 
-## Background
+## 背景
 
-The current storage implementation uses JSON files (`data/runs/index.json`, `data/runs/*.json`, etc.) which are prone to corruption under concurrent access. To improve reliability and support growing data volumes, we plan to migrate to SQLite.
+当前存储实现使用 JSON 文件（`data/runs/index.json`、`data/runs/*.json` 等），在并发访问时容易损坏。为了提高可靠性并支持数据量增长，我们计划迁移到 SQLite。
 
-### Problem Analysis
+### 问题分析
 
-#### Current Write Flow
+#### 当前写入流程
 
 ```
-Swift (launchd trigger)              Bash (background)
-────────────────────────             ─────────────────
+Swift (launchd 触发)                 Bash (后台运行)
+────────────────────                 ─────────────────
 READ index.json (Monitor)
 WRITE index.json (addRun) ← flock
-Launch nohup bash &
-Exit ✅
-                                     Execute command...
-                                     Wait for completion...
-                                     WRITE index.json ← NO LOCK! 💥
+启动 nohup bash &
+退出 ✅
+                                     执行命令...
+                                     等待完成...
+                                     WRITE index.json ← 无锁！💥
 ```
 
-#### Why Conflict Occurs
+#### 冲突原因
 
-1. **Two writers**: Swift uses `flock`, Bash uses raw `jq`
-2. **Race condition**: Bash reads old data → Swift writes → Bash overwrites with stale data
-3. **File corruption**: Partial writes can produce invalid JSON
+1. **两个写入者**：Swift 使用 `flock`，Bash 使用原生 `jq`
+2. **竞态条件**：Bash 读取旧数据 → Swift 写入 → Bash 用旧数据覆盖
+3. **文件损坏**：部分写入可能产生无效 JSON
 
-#### Why SQLite
+#### 为什么选择 SQLite
 
-| Benefit | Description |
-|---------|-------------|
-| Atomic transactions | Single SQL statement is atomic, no manual locking |
-| Concurrent safety | WAL mode supports concurrent reads/writes |
-| Query power | Complex filtering, sorting, pagination, aggregation |
-| Native indexing | O(log n) queries by task, time, status |
-| Scalability | Handles 100k+ records easily (JSON struggles) |
-| Data integrity | Foreign keys, NOT NULL, constraints |
+| 优势 | 说明 |
+|------|------|
+| 原子事务 | 单条 SQL 语句天然原子，无需手动加锁 |
+| 并发安全 | WAL 模式支持并发读写 |
+| 查询能力 | 支持复杂过滤、排序、分页、聚合 |
+| 原生索引 | 按 task、时间、状态查询 O(log n) |
+| 扩展性 | 轻松处理 10 万+ 记录（JSON 会很慢） |
+| 数据完整性 | 外键约束、NOT NULL 等 |
 
-## Current Architecture (After Phase 1)
+## 当前架构（Phase 1 完成后）
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  CLI Commands / Services                            │
-│  (AutoService, LogService, ApiService, etc.)        │
+│  CLI 命令 / 服务层                                    │
+│  (AutoService, LogService, ApiService 等)           │
 ├─────────────────────────────────────────────────────┤
-│  Business Logic                                      │
+│  业务逻辑层                                           │
 │  (Executor, Monitor, Scheduler, CleanupPlanner)     │
 ├─────────────────────────────────────────────────────┤
-│  Protocols                                           │
-│  - RunRepository (unified run operations)           │
+│  协议层                                               │
+│  - RunRepository (统一的 run 操作)                   │
 │  - ConfigRepository (tasks, schedules)              │
 ├─────────────────────────────────────────────────────┤
-│  Storage (actor, implements protocols)              │
-│  - JSON file operations with flock                  │
+│  Storage (actor, 实现协议)                           │
+│  - JSON 文件操作 + flock                             │
 ├─────────────────────────────────────────────────────┤
 │  ScriptBuilder                                       │
-│  - Generates bash scripts with jq commands          │
-│  - Directly writes to JSON files (bypasses Storage) │ ← Problem!
+│  - 生成带 jq 命令的 bash 脚本                         │
+│  - 直接写入 JSON 文件（绕过 Storage）                 │ ← 问题所在！
 └─────────────────────────────────────────────────────┘
 ```
 
-## Target Architecture
+## 目标架构
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  CLI Commands / Services                            │
-│  (AutoService, LogService, ApiService, etc.)        │
-│  + CompleteCommand (new)                            │
+│  CLI 命令 / 服务层                                    │
+│  (AutoService, LogService, ApiService 等)           │
+│  + CompleteCommand (新增)                            │
 ├─────────────────────────────────────────────────────┤
-│  Business Logic                                      │
+│  业务逻辑层                                           │
 │  (Executor, Monitor, Scheduler, CleanupPlanner)     │
 ├─────────────────────────────────────────────────────┤
-│  Protocols                                           │
+│  协议层                                               │
 │  - RunRepository                                    │
 │  - ConfigRepository                                 │
 ├─────────────────────────────────────────────────────┤
-│  SQLiteStorage (actor, implements protocols)        │
-│  - All database operations in one place             │
+│  SQLiteStorage (actor, 实现协议)                     │
+│  - 所有数据库操作集中在这里                            │
 ├─────────────────────────────────────────────────────┤
 │  ScriptBuilder                                       │
-│  - Generates bash scripts                           │
-│  - Calls `./runner complete` instead of jq          │ ← Single write point!
+│  - 生成 bash 脚本                                    │
+│  - 调用 `./runner complete` 而非 jq                  │ ← 单一写入点！
 └─────────────────────────────────────────────────────┘
 ```
 
-### Key Design: Single Write Point
+### 核心设计：单一写入点
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ Swift (sole writer to database)                                 │
+│ Swift（唯一写入者）                                               │
 │                                                                  │
 │   ./runner auto     → INSERT INTO runs (id, task, started_at)   │
 │   ./runner complete → UPDATE runs SET exit_code, finished_at    │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
                           ▲
-                          │ callback
+                          │ 回调
 ┌─────────────────────────┴───────────────────────────────────────┐
-│ Bash (execute only, no database access)                         │
+│ Bash（只执行命令，不访问数据库）                                   │
 │                                                                  │
 │   eval '$COMMAND'                                                │
 │   EXIT_CODE=$?                                                   │
@@ -110,42 +110,42 @@ Exit ✅
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-**Benefits**:
-- All writes go through Swift → unified locking/transactions
-- Bash becomes simpler (no jq, no sqlite3)
-- Future storage changes only affect Swift code
+**优势**：
+- 所有写入都经过 Swift → 统一的锁/事务机制
+- Bash 脚本更简单（不需要 jq 或 sqlite3）
+- 未来更换存储后端只需改 Swift 代码
 
-## Refactoring Plan
+## 重构计划
 
-### Phase 1: Repository Protocol Abstraction ✅ COMPLETED
+### Phase 1: Repository 协议抽象 ✅ 已完成
 
-**Goal**: Unify all Run-related read/write operations into protocols.
+**目标**：将所有 Run 相关的读写操作统一到协议中。
 
-- [x] 1.1 Create `RunRepository` protocol
-- [x] 1.2 Create `ConfigRepository` protocol  
-- [x] 1.3 Storage implements both protocols
-- [x] 1.4 Executor depends on `RunRepository` protocol
-- [x] 1.5 Monitor depends on `RunRepository` protocol
+- [x] 1.1 创建 `RunRepository` 协议
+- [x] 1.2 创建 `ConfigRepository` 协议
+- [x] 1.3 Storage 实现这两个协议
+- [x] 1.4 Executor 依赖 `RunRepository` 协议
+- [x] 1.5 Monitor 依赖 `RunRepository` 协议
 
-### Phase 2: Complete Command & Script Refactor
+### Phase 2: Complete 命令与脚本重构
 
-**Goal**: Eliminate Bash writing to storage. All writes go through Swift.
+**目标**：消除 Bash 直接写入存储。所有写入都经过 Swift。
 
-#### 2.1 Add `runner complete` Command
+#### 2.1 添加 `runner complete` 命令
 
 ```swift
 public struct Complete: AsyncParsableCommand {
     public static let configuration = CommandConfiguration(
-        abstract: "Mark a run as completed (called by background scripts)"
+        abstract: "标记任务完成（由后台脚本调用）"
     )
     
     @Argument(help: "Run ID")
     var id: String
     
-    @Option(name: .long, help: "Exit code")
+    @Option(name: .long, help: "退出码")
     var exitCode: Int
     
-    @Option(name: .long, help: "Duration in seconds")
+    @Option(name: .long, help: "运行时长（秒）")
     var duration: Int
     
     @OptionGroup var options: CommonOptions
@@ -154,72 +154,60 @@ public struct Complete: AsyncParsableCommand {
         let storage = Storage(dataDir: options.dataDir)
         let finishedAt = ISO8601DateFormatter().string(from: Date())
         
-        // Update run in storage
-        try await storage.updateRun(id: id, exitCode: exitCode, finishedAt: finishedAt)
-        
-        // Write detail file
-        let detail = RunDetail(
-            id: id,
-            task: "", // Will be looked up or passed
-            trigger: "",
-            startedAt: "",
-            finishedAt: finishedAt,
-            durationSeconds: duration,
-            exitCode: exitCode
-        )
-        try await storage.writeRunDetail(detail)
+        // 更新存储中的 run 记录
+        try await storage.completeRun(id: id, exitCode: exitCode, duration: duration)
     }
 }
 ```
 
-#### 2.2 Modify ScriptBuilder
+#### 2.2 修改 ScriptBuilder
 
-Remove jq commands, replace with `./runner complete`:
+移除 jq 命令，替换为 `./runner complete`：
 
 ```swift
 public func build(...) -> String {
     return """
     #!/bin/bash
     
-    # ... execution logic unchanged ...
+    # ... 执行逻辑不变 ...
     
-    # Get exit code
+    # 获取退出码
     wait $CMD_PID
     EXIT_CODE=$?
     
     END_TIME=$(date +%s)
     DURATION=$((END_TIME - START_TIME))
     
-    # Callback to Swift (single write point)
+    # 回调 Swift（单一写入点）
     '\(runnerPath)' complete '\(runId)' \\
         --exit-code $EXIT_CODE \\
         --duration $DURATION \\
         --data-dir '\(dataDir.path)'
     
-    # Cleanup script
+    # 清理脚本
     rm -f "$0"
     """
 }
 ```
 
-#### 2.3 Update RunRepository Protocol
+#### 2.3 扩展 RunRepository 协议
 
-Add method to support complete command needs:
+添加支持 complete 命令的方法：
 
 ```swift
 public protocol RunRepository: Sendable {
-    // ... existing methods ...
+    // ... 现有方法 ...
     
-    /// Complete a run with full details (for complete command)
+    /// 完成一个 run（供 complete 命令使用）
     func completeRun(id: String, exitCode: Int, duration: Int) async throws
 }
 ```
 
-### Phase 3: SQLite Migration
+### Phase 3: SQLite 迁移
 
-**Goal**: Replace JSON storage with SQLite.
+**目标**：将 JSON 存储替换为 SQLite。
 
-#### 3.1 Add GRDB Dependency
+#### 3.1 添加 GRDB 依赖
 
 ```swift
 // Package.swift
@@ -228,10 +216,10 @@ dependencies: [
 ]
 ```
 
-#### 3.2 Database Schema
+#### 3.2 数据库 Schema
 
 ```sql
--- runs table (replaces index.json + detail files)
+-- runs 表（替代 index.json + detail 文件）
 CREATE TABLE runs (
     id TEXT PRIMARY KEY,
     task TEXT NOT NULL,
@@ -245,22 +233,19 @@ CREATE TABLE runs (
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Indexes for common queries
+-- 常用查询的索引
 CREATE INDEX idx_runs_task ON runs(task);
 CREATE INDEX idx_runs_started_at ON runs(started_at DESC);
 CREATE INDEX idx_runs_exit_code ON runs(exit_code);
 CREATE INDEX idx_runs_running ON runs(pid) WHERE exit_code IS NULL;
-
--- tasks table (replaces tasks.json, optional - can keep JSON for config)
--- schedules table (replaces schedules.json, optional)
 ```
 
-#### 3.3 Implement SQLiteStorage
+#### 3.3 实现 SQLiteStorage
 
 ```swift
 public actor SQLiteStorage: RunRepository, ConfigRepository {
     private let dbQueue: DatabaseQueue
-    private let configDir: URL  // Still read tasks.json, schedules.json
+    private let configDir: URL  // 仍然从 JSON 读取 tasks.json, schedules.json
     
     public init(dataDir: URL) throws {
         let dbPath = dataDir.appendingPathComponent("runner.db")
@@ -277,18 +262,23 @@ public actor SQLiteStorage: RunRepository, ConfigRepository {
         }
     }
     
-    public func updateRun(id: String, exitCode: Int?, finishedAt: String?) async throws {
+    public func completeRun(id: String, exitCode: Int, duration: Int) async throws {
+        let finishedAt = ISO8601DateFormatter().string(from: Date())
         try await dbQueue.write { db in
             try db.execute(
-                sql: "UPDATE runs SET exit_code = ?, finished_at = ?, pid = NULL WHERE id = ?",
-                arguments: [exitCode, finishedAt, id]
+                sql: """
+                    UPDATE runs 
+                    SET exit_code = ?, finished_at = ?, duration_seconds = ?, pid = NULL 
+                    WHERE id = ?
+                    """,
+                arguments: [exitCode, finishedAt, duration, id]
             )
         }
     }
     
     public func loadRunsIndex() async throws -> RunsIndex {
         try await dbQueue.read { db in
-            let runs = try RunRecord.fetchAll(db)
+            let runs = try RunRecord.order(Column("started_at").desc).fetchAll(db)
             return RunsIndex(
                 runs: runs.map { $0.toSummary() },
                 total: runs.count,
@@ -297,11 +287,11 @@ public actor SQLiteStorage: RunRepository, ConfigRepository {
         }
     }
     
-    // ... other methods
+    // ... 其他方法
 }
 ```
 
-#### 3.4 Data Migration Script
+#### 3.4 数据迁移
 
 ```swift
 public struct MigrationService {
@@ -309,114 +299,75 @@ public struct MigrationService {
         let jsonStorage = Storage(dataDir: dataDir)
         let sqliteStorage = try SQLiteStorage(dataDir: dataDir)
         
-        // Migrate runs
+        // 迁移 runs
         let index = try await jsonStorage.loadRunsIndex()
         for run in index.runs {
             try await sqliteStorage.addRun(run)
             
-            // Migrate detail if exists
+            // 如果有 detail 文件也迁移
             if let detail = try await jsonStorage.loadRunDetail(id: run.id) {
                 try await sqliteStorage.writeRunDetail(detail)
             }
         }
         
-        // Backup old files
-        let backupDir = dataDir.appendingPathComponent("backup-json")
-        try FileManager.default.createDirectory(at: backupDir, withIntermediateDirectories: true)
-        try FileManager.default.moveItem(
-            at: dataDir.appendingPathComponent("runs"),
-            to: backupDir.appendingPathComponent("runs")
-        )
+        print("迁移完成：\(index.runs.count) 条记录")
     }
 }
 ```
 
-#### 3.5 Dashboard Adaptation
+#### 3.5 Dashboard 适配
 
-Options:
-1. **Swift API**: Dashboard calls `runner api runs` (already exists)
-2. **Direct SQLite**: Dashboard reads `runner.db` with sql.js
-3. **JSON export**: `runner api runs` outputs JSON for backward compatibility
+Dashboard 继续使用 `runner api runs`，无需修改。Swift 端输出 JSON 格式不变。
 
-Recommended: Keep using `runner api runs`, no Dashboard changes needed.
+### Phase 4: 清理
 
-### Phase 4: Cleanup & Polish
+#### 4.1 Output 文件处理
 
-#### 4.1 Output File Handling
+保持 `.output` 文件在文件系统（不放入 SQLite）：
+- 大文本内容不适合存数据库
+- 便于用标准工具 tail/stream
+- SQLite 只存元数据
 
-Keep `.output` files on filesystem (not in SQLite):
-- Large text content doesn't belong in database
-- Easy to tail/stream with standard tools
-- SQLite stores only metadata
+#### 4.2 移除遗留代码
 
-#### 4.2 Configuration
+迁移完成后：
+- 删除 Storage 中的 `withFileLock`
+- 删除 ScriptBuilder 中的 jq 相关代码
+- 删除 JSON index 文件处理逻辑
 
-```swift
-public enum StorageBackend {
-    case json   // Legacy, for migration period
-    case sqlite // Default for new installations
-}
+## 任务分解
 
-public func createStorage(dataDir: URL, backend: StorageBackend) -> any RunRepository {
-    switch backend {
-    case .json:
-        return Storage(dataDir: dataDir)
-    case .sqlite:
-        return try! SQLiteStorage(dataDir: dataDir)
-    }
-}
-```
+| ID | 任务 | 状态 | 文件 |
+|----|------|------|------|
+| 1.1 | 创建 `RunRepository` 协议 | ✅ | `Repositories.swift` |
+| 1.2 | 创建 `ConfigRepository` 协议 | ✅ | `Repositories.swift` |
+| 1.3 | Storage 实现协议 | ✅ | `Storage.swift` |
+| 1.4 | Executor 依赖协议 | ✅ | `Executor.swift` |
+| 1.5 | Monitor 依赖协议 | ✅ | `Monitor.swift` |
+| 2.1 | 添加 `runner complete` 命令 | ⏳ | `CLICommands.swift` |
+| 2.2 | 修改 ScriptBuilder 使用回调 | ⏳ | `ScriptBuilder.swift` |
+| 2.3 | 添加 `completeRun` 到 RunRepository | ⏳ | `Repositories.swift` |
+| 2.4 | 更新测试 | ⏳ | `*Tests.swift` |
+| 3.1 | 添加 GRDB 依赖 | ⏳ | `Package.swift` |
+| 3.2 | 创建数据库 schema | ⏳ | `SQLiteStorage.swift` |
+| 3.3 | 实现 SQLiteStorage | ⏳ | `SQLiteStorage.swift` |
+| 3.4 | 数据迁移脚本 | ⏳ | `MigrationService.swift` |
+| 3.5 | 集成测试 | ⏳ | `SQLiteStorageTests.swift` |
+| 4.1 | 移除遗留 JSON 代码 | ⏳ | 多个文件 |
+| 4.2 | 更新文档 | ⏳ | `docs/` |
 
-#### 4.3 Remove Legacy Code
+## 验收标准
 
-After migration verified:
-- Remove `withFileLock` from Storage
-- Remove jq-related code from ScriptBuilder
-- Remove JSON index file handling
+1. ✅ 每个阶段完成后所有现有测试通过
+2. ✅ 上层行为不变（Dashboard、CLI）
+3. ⏳ 单一写入点：只有 Swift 写入存储
+4. ⏳ SQLite 迁移完成，数据无丢失
+5. ⏳ 并发访问不再导致损坏
+6. ⏳ 大数据量查询性能提升
 
-## Task Breakdown
+## 参考
 
-| ID | Task | Status | Files |
-|----|------|--------|-------|
-| 1.1 | Create `RunRepository` protocol | ✅ | `Repositories.swift` |
-| 1.2 | Create `ConfigRepository` protocol | ✅ | `Repositories.swift` |
-| 1.3 | Storage implements protocols | ✅ | `Storage.swift` |
-| 1.4 | Executor depends on protocol | ✅ | `Executor.swift` |
-| 1.5 | Monitor depends on protocol | ✅ | `Monitor.swift` |
-| 2.1 | Add `runner complete` command | ⏳ | `CLICommands.swift` |
-| 2.2 | Modify ScriptBuilder to use callback | ⏳ | `ScriptBuilder.swift` |
-| 2.3 | Add `completeRun` to RunRepository | ⏳ | `Repositories.swift` |
-| 2.4 | Update tests for new flow | ⏳ | `*Tests.swift` |
-| 3.1 | Add GRDB dependency | ⏳ | `Package.swift` |
-| 3.2 | Create database schema | ⏳ | `SQLiteStorage.swift` |
-| 3.3 | Implement SQLiteStorage | ⏳ | `SQLiteStorage.swift` |
-| 3.4 | Data migration script | ⏳ | `MigrationService.swift` |
-| 3.5 | Integration tests | ⏳ | `SQLiteStorageTests.swift` |
-| 4.1 | Configuration switch | ⏳ | `CommandWiring.swift` |
-| 4.2 | Remove legacy JSON code | ⏳ | Various |
-| 4.3 | Update documentation | ⏳ | `docs/` |
-
-## Success Criteria
-
-1. ✅ All existing tests pass after each phase
-2. ✅ No behavioral changes to upper layers (Dashboard, CLI)
-3. ⏳ Single write point: only Swift writes to storage
-4. ⏳ SQLite migration completes without data loss
-5. ⏳ Concurrent access no longer causes corruption
-6. ⏳ Query performance improved for large datasets
-
-## Rollback Plan
-
-If issues arise after SQLite migration:
-
-1. JSON backup preserved in `data/backup-json/`
-2. Set `RUNNER_STORAGE=json` environment variable
-3. Restore JSON files from backup
-4. File issue for investigation
-
-## References
-
-- Current Storage: `Sources/RunnerLib/Storage.swift`
-- Current ScriptBuilder: `Sources/RunnerLib/ScriptBuilder.swift`
-- Repository Protocols: `Sources/RunnerLib/Repositories.swift`
-- GRDB Documentation: https://github.com/groue/GRDB.swift
+- 当前 Storage: `Sources/RunnerLib/Storage.swift`
+- 当前 ScriptBuilder: `Sources/RunnerLib/ScriptBuilder.swift`
+- Repository 协议: `Sources/RunnerLib/Repositories.swift`
+- GRDB 文档: https://github.com/groue/GRDB.swift
