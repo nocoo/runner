@@ -208,6 +208,29 @@ public struct Cleanup: AsyncParsableCommand {
     }
 }
 
+public struct Complete: AsyncParsableCommand {
+    public static let configuration = CommandConfiguration(
+        abstract: "Mark a run as completed (called by background scripts)"
+    )
+
+    @Argument(help: "Run ID")
+    var id: String
+
+    @Option(name: .long, help: "Exit code of the command")
+    var exitCode: Int
+
+    @Option(name: .long, help: "Duration in seconds")
+    var duration: Int
+
+    @OptionGroup var options: CommonOptions
+
+    public init() {}
+
+    public func run() async throws {
+        try await completeCommand(options: options, id: id, exitCode: exitCode, duration: duration)
+    }
+}
+
 public func runAutoCommand(
     options: CommonOptions,
     mockHour: Int?,
@@ -379,11 +402,16 @@ public func cleanupCommand(options: CommonOptions, force: Bool) async throws -> 
     return CleanupCommandResult(lines: lines)
 }
 
+public func completeCommand(options: CommonOptions, id: String, exitCode: Int, duration: Int) async throws {
+    let storage = Storage(dataDir: options.dataDir)
+    try await storage.completeRun(id: id, exitCode: exitCode, duration: duration)
+}
+
 public struct RunnerRoot: AsyncParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "runner",
         abstract: "Declarative task scheduler for macOS",
-        subcommands: [Auto.self, Run.self, List.self, Validate.self, MonitorCommand.self, Init.self, Logs.self, Api.self, Cleanup.self]
+        subcommands: [Auto.self, Run.self, List.self, Validate.self, MonitorCommand.self, Init.self, Logs.self, Api.self, Cleanup.self, Complete.self]
     )
 
     public init() {}

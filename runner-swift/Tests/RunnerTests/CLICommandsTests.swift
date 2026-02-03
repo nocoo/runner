@@ -634,5 +634,108 @@ struct CLICommandsTests {
         #expect(stderr.contains("[DEBUG]"))
     }
 
+    @Test("Complete command updates run")
+    func completeCommandUpdatesRun() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+
+        // Create a running task
+        let run = RunSummary(
+            id: "test-run-1",
+            task: "test-task",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 12345,
+            startedAtEpoch: 1737795600
+        )
+        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
+        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+
+        let command = try Complete.parse([
+            "test-run-1",
+            "--exit-code", "0",
+            "--duration", "30",
+            "--data-dir", tempDir.path
+        ])
+
+        try await command.run()
+
+        // Verify index was updated
+        let storage = Storage(dataDir: tempDir)
+        let updatedIndex = try await storage.loadRunsIndex()
+        #expect(updatedIndex.runs[0].exitCode == 0)
+        #expect(updatedIndex.runs[0].finishedAt != nil)
+        #expect(updatedIndex.runs[0].pid == nil)
+
+        // Verify detail file was created
+        let detail = try await storage.loadRunDetail(id: "test-run-1")
+        #expect(detail != nil)
+        #expect(detail?.exitCode == 0)
+        #expect(detail?.durationSeconds == 30)
+    }
+
+    @Test("Complete command with non-zero exit code")
+    func completeCommandWithFailure() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+
+        let run = RunSummary(
+            id: "fail-run-1",
+            task: "failing-task",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 12345,
+            startedAtEpoch: 1737795600
+        )
+        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
+        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+
+        let command = try Complete.parse([
+            "fail-run-1",
+            "--exit-code", "1",
+            "--duration", "5",
+            "--data-dir", tempDir.path
+        ])
+
+        try await command.run()
+
+        let storage = Storage(dataDir: tempDir)
+        let updatedIndex = try await storage.loadRunsIndex()
+        #expect(updatedIndex.runs[0].exitCode == 1)
+    }
+
+    @Test("Complete command with timeout exit code")
+    func completeCommandWithTimeout() async throws {
+        let tempDir = try makeTempDir()
+        _ = try await makeStorage(at: tempDir)
+
+        let run = RunSummary(
+            id: "timeout-run-1",
+            task: "slow-task",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 12345,
+            startedAtEpoch: 1737795600
+        )
+        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
+        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+
+        let command = try Complete.parse([
+            "timeout-run-1",
+            "--exit-code", "124",
+            "--duration", "300",
+            "--data-dir", tempDir.path
+        ])
+
+        try await command.run()
+
+        let storage = Storage(dataDir: tempDir)
+        let detail = try await storage.loadRunDetail(id: "timeout-run-1")
+        #expect(detail?.exitCode == 124)
+        #expect(detail?.durationSeconds == 300)
+    }
 
 }

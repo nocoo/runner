@@ -7,6 +7,6 @@ struct Runner: AsyncParsableCommand {
         commandName: "runner",
         abstract: "Declarative task scheduler for macOS",
         version: "0.1.0",
-        subcommands: [Auto.self, Run.self, List.self, Validate.self, MonitorCommand.self, Init.self, Logs.self, Api.self, Cleanup.self]
+        subcommands: [Auto.self, Run.self, List.self, Validate.self, MonitorCommand.self, Init.self, Logs.self, Api.self, Cleanup.self, Complete.self]
     )
 }
