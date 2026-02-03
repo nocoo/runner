@@ -7,20 +7,23 @@ public struct Executor {
     public let dataDir: URL
     public let dryRun: Bool
     public let verbose: Bool
+    public let runnerPath: String?
     
-    public init(repository: any RunRepository, dataDir: URL, dryRun: Bool, verbose: Bool) {
+    public init(repository: any RunRepository, dataDir: URL, dryRun: Bool, verbose: Bool, runnerPath: String? = nil) {
         self.repository = repository
         self.dataDir = dataDir
         self.dryRun = dryRun
         self.verbose = verbose
+        self.runnerPath = runnerPath
     }
     
     /// Convenience initializer for backward compatibility with Storage
-    public init(storage: Storage, dryRun: Bool, verbose: Bool) {
+    public init(storage: Storage, dryRun: Bool, verbose: Bool, runnerPath: String? = nil) {
         self.repository = storage
         self.dataDir = storage.dataDir
         self.dryRun = dryRun
         self.verbose = verbose
+        self.runnerPath = runnerPath
     }
     
     public func log(_ message: String) {
@@ -108,6 +111,7 @@ public struct Executor {
         let summary = RunSummary(
             id: runId,
             task: task.id,
+            trigger: trigger,
             exitCode: nil,
             startedAt: startedAt,
             finishedAt: nil,
@@ -129,7 +133,7 @@ public struct Executor {
         startedAt: String,
         trigger: String
     ) -> String {
-        let builder = ScriptBuilder(dataDir: dataDir)
+        let builder = ScriptBuilder(dataDir: dataDir, runnerPath: runnerPath)
         return builder.build(
             task: task,
             command: command,

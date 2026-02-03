@@ -113,7 +113,7 @@ public actor Storage: RunRepository, ConfigRepository {
                 let detail = RunDetail(
                     id: id,
                     task: run.task,
-                    trigger: "auto",  // TODO: store trigger in RunSummary if needed
+                    trigger: run.trigger ?? "unknown",
                     startedAt: run.startedAt,
                     finishedAt: finishedAt,
                     durationSeconds: duration,

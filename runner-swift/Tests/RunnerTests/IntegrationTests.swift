@@ -2,8 +2,28 @@ import Testing
 import Foundation
 @testable import RunnerLib
 
+// Helper class to get test bundle path
+private class DummyClass {}
+
 @Suite("Integration Tests")
 struct IntegrationTests {
+    
+    /// Get the path to the built Runner binary for testing
+    func getRunnerPath() -> String {
+        let testBundle = Bundle(for: DummyClass.self)
+        let testPath = testBundle.bundlePath
+        let buildDir = URL(fileURLWithPath: testPath).deletingLastPathComponent()
+        return buildDir.appendingPathComponent("Runner").path
+    }
+    
+    func isRunnerAvailable() -> Bool {
+        let runnerPath = getRunnerPath()
+        return FileManager.default.isExecutableFile(atPath: runnerPath)
+    }
+    
+    func makeExecutor(storage: Storage, dryRun: Bool = false, verbose: Bool = false) -> Executor {
+        Executor(storage: storage, dryRun: dryRun, verbose: verbose, runnerPath: getRunnerPath())
+    }
     
     func createTempStorage() async throws -> (URL, Storage) {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
@@ -15,21 +35,6 @@ struct IntegrationTests {
     
     func cleanup(_ tempDir: URL) {
         try? FileManager.default.removeItem(at: tempDir)
-    }
-
-    func isJqAvailable() -> Bool {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        process.arguments = ["jq"]
-        process.standardOutput = FileHandle.nullDevice
-        process.standardError = FileHandle.nullDevice
-        do {
-            try process.run()
-            process.waitUntilExit()
-            return process.terminationStatus == 0
-        } catch {
-            return false
-        }
     }
     
     // MARK: - End-to-End Flow Tests
@@ -51,7 +56,7 @@ struct IntegrationTests {
         )
         
         // 2. Execute task
-        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let executor = makeExecutor(storage: storage)
         let result = try await executor.execute(task: task, trigger: "integration_test")
         
         #expect(result.exitCode == 0)
@@ -68,7 +73,7 @@ struct IntegrationTests {
         
         // 5. Verify completion
         let indexAfter = try await storage.loadRunsIndex()
-        if isJqAvailable() {
+        if isRunnerAvailable() {
             #expect(indexAfter.runs[0].exitCode == 0)
             #expect(indexAfter.runs[0].finishedAt != nil)
         }
@@ -80,7 +85,7 @@ struct IntegrationTests {
         
         // 7. Verify detail
         let detail = try await storage.loadRunDetail(id: result.id)
-        if isJqAvailable() {
+        if isRunnerAvailable() {
             #expect(detail != nil)
             #expect(detail?.exitCode == 0)
             #expect(detail?.trigger == "integration_test")
@@ -165,7 +170,7 @@ struct IntegrationTests {
             workdir: nil
         )
         
-        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let executor = makeExecutor(storage: storage)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Task is running
@@ -191,7 +196,7 @@ struct IntegrationTests {
         let index = try await storage.loadRunsIndex()
         let run = index.runs.first { $0.id == result.id }
         #expect(run != nil)
-        if isJqAvailable() {
+        if isRunnerAvailable() {
             let detail = try await storage.loadRunDetail(id: result.id)
             #expect(detail != nil)
         }
@@ -214,7 +219,7 @@ struct IntegrationTests {
             workdir: nil
         )
         
-        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let executor = makeExecutor(storage: storage)
         let result = try await executor.execute(task: task, trigger: "test")
         
         try await _Concurrency.Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
@@ -249,7 +254,7 @@ struct IntegrationTests {
             workdir: nil
         )
         
-        let executor = Executor(storage: storage, dryRun: false, verbose: false)
+        let executor = makeExecutor(storage: storage)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Wait for timeout + cleanup (increased for CI)

@@ -134,15 +134,17 @@ public struct Schedule: Codable, Sendable {
 public struct RunSummary: Codable, Sendable {
     public let id: String
     public let task: String
+    public let trigger: String?
     public var exitCode: Int?
     public let startedAt: String
     public var finishedAt: String?
     public var pid: Int?
     public var startedAtEpoch: Int64?
     
-    public init(id: String, task: String, exitCode: Int?, startedAt: String, finishedAt: String?, pid: Int?, startedAtEpoch: Int64?) {
+    public init(id: String, task: String, trigger: String? = nil, exitCode: Int?, startedAt: String, finishedAt: String?, pid: Int?, startedAtEpoch: Int64?) {
         self.id = id
         self.task = task
+        self.trigger = trigger
         self.exitCode = exitCode
         self.startedAt = startedAt
         self.finishedAt = finishedAt
@@ -151,7 +153,7 @@ public struct RunSummary: Codable, Sendable {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, task
+        case id, task, trigger
         case exitCode = "exit_code"
         case startedAt = "started_at"
         case finishedAt = "finished_at"
