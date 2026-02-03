@@ -708,4 +708,39 @@ struct MonitorTests {
         // Should still mark as interrupted (process doesn't exist)
         #expect(interrupted == ["no-epoch"])
     }
+    
+    // MARK: - Mock Repository Tests
+    
+    @Test("Monitor works with RunRepository protocol")
+    func monitorWorksWithMockRepository() async throws {
+        let mockRepo = MockRunRepository()
+        
+        // Add a running task
+        let run = RunSummary(
+            id: "test-1",
+            task: "task1",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 99999, // Non-existent PID
+            startedAtEpoch: Int64(Date().timeIntervalSince1970) - 300 // Started 5 min ago (past grace period)
+        )
+        try await mockRepo.addRun(run)
+        
+        // Create monitor with mock repository
+        let monitor = Monitor(
+            repository: mockRepo,
+            verbose: false,
+            processInspector: StubProcessInspector(running: [], startTimes: [:]) // PID not running
+        )
+        
+        let interrupted = try await monitor.checkRunningTasks()
+        
+        // Should mark as interrupted since process not running and no detail file
+        #expect(interrupted == ["test-1"])
+        
+        // Verify markInterrupted was called
+        let calls = await mockRepo.markInterruptedCalls
+        #expect(calls == ["test-1"])
+    }
 }

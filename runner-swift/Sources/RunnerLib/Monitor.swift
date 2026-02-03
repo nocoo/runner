@@ -50,12 +50,19 @@ public struct DefaultMonitorProcessInspector: MonitorProcessInspecting {
 
 /// Process monitor to detect stale/interrupted tasks
 public struct Monitor {
-    public let storage: Storage
+    public let repository: any RunRepository
     public let verbose: Bool
     private let processInspector: MonitorProcessInspecting
     
+    public init(repository: any RunRepository, verbose: Bool, processInspector: MonitorProcessInspecting = DefaultMonitorProcessInspector()) {
+        self.repository = repository
+        self.verbose = verbose
+        self.processInspector = processInspector
+    }
+    
+    /// Convenience initializer for backward compatibility with Storage
     public init(storage: Storage, verbose: Bool, processInspector: MonitorProcessInspecting = DefaultMonitorProcessInspector()) {
-        self.storage = storage
+        self.repository = storage
         self.verbose = verbose
         self.processInspector = processInspector
     }
@@ -70,7 +77,7 @@ public struct Monitor {
     public func checkRunningTasks() async throws -> [String] {
         log("Checking running tasks...")
         
-        let running = try await storage.getRunningTasks()
+        let running = try await repository.getRunningTasks()
         var interrupted: [String] = []
         let now = Int64(Date().timeIntervalSince1970)
         
@@ -84,7 +91,7 @@ public struct Monitor {
                     log("Task \(run.id) synced from detail file")
                 } else {
                     log("Task \(run.id) has no detail, marking as interrupted")
-                    try await storage.markInterrupted(id: run.id)
+                    try await repository.markInterrupted(id: run.id)
                     interrupted.append(run.id)
                 }
                 continue
@@ -107,7 +114,7 @@ public struct Monitor {
                     log("Task \(run.id) synced from detail file")
                 } else {
                     log("Task \(run.id) has no detail, marking as interrupted")
-                    try await storage.markInterrupted(id: run.id)
+                    try await repository.markInterrupted(id: run.id)
                     interrupted.append(run.id)
                 }
             } else if isPidReused(pid: pid, recordedStart: run.startedAtEpoch) {
@@ -116,7 +123,7 @@ public struct Monitor {
                     log("Task \(run.id) synced from detail file")
                 } else {
                     log("Task \(run.id) has no detail, marking as interrupted")
-                    try await storage.markInterrupted(id: run.id)
+                    try await repository.markInterrupted(id: run.id)
                     interrupted.append(run.id)
                 }
             } else {
@@ -129,9 +136,9 @@ public struct Monitor {
     
     /// Try to sync index from detail file (returns true if synced)
     private func syncFromDetail(id: String) async throws -> Bool {
-        if let detail = try await storage.loadRunDetail(id: id) {
+        if let detail = try await repository.loadRunDetail(id: id) {
             // Detail exists with exit_code, sync to index
-            try await storage.updateRun(id: id, exitCode: detail.exitCode, finishedAt: detail.finishedAt)
+            try await repository.updateRun(id: id, exitCode: detail.exitCode, finishedAt: detail.finishedAt)
             return true
         }
         return false
