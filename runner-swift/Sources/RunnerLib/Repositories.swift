@@ -19,6 +19,9 @@ public protocol RunRepository: Sendable {
     /// Mark a run as interrupted (exit_code = -1)
     func markInterrupted(id: String) async throws
     
+    /// Complete a run with exit code and duration (called by complete command)
+    func completeRun(id: String, exitCode: Int, duration: Int) async throws
+    
     /// Get all currently running tasks (exitCode == nil && pid != nil)
     func getRunningTasks() async throws -> [RunSummary]
     

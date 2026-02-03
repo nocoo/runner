@@ -14,6 +14,7 @@ actor MockRunRepository: RunRepository {
     var addRunCalls: [RunSummary] = []
     var updateRunCalls: [(id: String, exitCode: Int?, finishedAt: String?)] = []
     var markInterruptedCalls: [String] = []
+    var completeRunCalls: [(id: String, exitCode: Int, duration: Int)] = []
     
     init(runsIndex: RunsIndex = RunsIndex(runs: [], total: 0, updatedAt: "")) {
         self.runsIndex = runsIndex
@@ -45,6 +46,26 @@ actor MockRunRepository: RunRepository {
     func markInterrupted(id: String) async throws {
         markInterruptedCalls.append(id)
         try await updateRun(id: id, exitCode: -1, finishedAt: ISO8601DateFormatter().string(from: Date()))
+    }
+    
+    func completeRun(id: String, exitCode: Int, duration: Int) async throws {
+        completeRunCalls.append((id: id, exitCode: exitCode, duration: duration))
+        let finishedAt = ISO8601DateFormatter().string(from: Date())
+        try await updateRun(id: id, exitCode: exitCode, finishedAt: finishedAt)
+        
+        // Get the run info to create detail
+        if let run = runsIndex.runs.first(where: { $0.id == id }) {
+            let detail = RunDetail(
+                id: id,
+                task: run.task,
+                trigger: "auto",
+                startedAt: run.startedAt,
+                finishedAt: finishedAt,
+                durationSeconds: duration,
+                exitCode: exitCode
+            )
+            try await writeRunDetail(detail)
+        }
     }
     
     func getRunningTasks() async throws -> [RunSummary] {
@@ -272,6 +293,82 @@ struct RunRepositoryTests {
         
         let output = await mock.outputs["test-1"]
         #expect(output == "First line\n")
+    }
+    
+    @Test("completeRun updates run with exit code, duration and finished time")
+    func completeRunUpdatesAll() async throws {
+        let mock = MockRunRepository()
+        
+        // Add a running task
+        let run = RunSummary(
+            id: "test-1",
+            task: "heartbeat",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 12345,
+            startedAtEpoch: 1737795600
+        )
+        try await mock.addRun(run)
+        
+        // Complete it
+        try await mock.completeRun(id: "test-1", exitCode: 0, duration: 30)
+        
+        let index = try await mock.loadRunsIndex()
+        #expect(index.runs[0].exitCode == 0)
+        #expect(index.runs[0].finishedAt != nil)
+        #expect(index.runs[0].pid == nil)
+        
+        // Check detail was written
+        let detail = try await mock.loadRunDetail(id: "test-1")
+        #expect(detail != nil)
+        #expect(detail?.exitCode == 0)
+        #expect(detail?.durationSeconds == 30)
+    }
+    
+    @Test("completeRun with non-zero exit code")
+    func completeRunWithFailure() async throws {
+        let mock = MockRunRepository()
+        
+        let run = RunSummary(
+            id: "test-1",
+            task: "failing-task",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 12345,
+            startedAtEpoch: 1737795600
+        )
+        try await mock.addRun(run)
+        
+        try await mock.completeRun(id: "test-1", exitCode: 1, duration: 5)
+        
+        let index = try await mock.loadRunsIndex()
+        #expect(index.runs[0].exitCode == 1)
+    }
+    
+    @Test("completeRun with timeout exit code 124")
+    func completeRunWithTimeout() async throws {
+        let mock = MockRunRepository()
+        
+        let run = RunSummary(
+            id: "test-1",
+            task: "slow-task",
+            exitCode: nil,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: nil,
+            pid: 12345,
+            startedAtEpoch: 1737795600
+        )
+        try await mock.addRun(run)
+        
+        try await mock.completeRun(id: "test-1", exitCode: 124, duration: 300)
+        
+        let index = try await mock.loadRunsIndex()
+        #expect(index.runs[0].exitCode == 124)
+        
+        let detail = try await mock.loadRunDetail(id: "test-1")
+        #expect(detail?.durationSeconds == 300)
     }
 }
 

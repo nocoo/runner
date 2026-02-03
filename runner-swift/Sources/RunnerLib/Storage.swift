@@ -92,6 +92,38 @@ public actor Storage: RunRepository, ConfigRepository {
         try updateRun(id: id, exitCode: -1, finishedAt: timestamp())
     }
     
+    public func completeRun(id: String, exitCode: Int, duration: Int) throws {
+        let finishedAt = timestamp()
+        
+        // Update index
+        try withFileLock(name: "index") {
+            var index = try loadRunsIndex()
+            
+            if let idx = index.runs.firstIndex(where: { $0.id == id }) {
+                let run = index.runs[idx]
+                index.runs[idx].exitCode = exitCode
+                index.runs[idx].finishedAt = finishedAt
+                index.runs[idx].pid = nil
+                index.updatedAt = finishedAt
+                
+                let path = dataDir.appendingPathComponent("runs/index.json")
+                try writeJSON(index, to: path)
+                
+                // Write detail file
+                let detail = RunDetail(
+                    id: id,
+                    task: run.task,
+                    trigger: "auto",  // TODO: store trigger in RunSummary if needed
+                    startedAt: run.startedAt,
+                    finishedAt: finishedAt,
+                    durationSeconds: duration,
+                    exitCode: exitCode
+                )
+                try writeRunDetail(detail)
+            }
+        }
+    }
+    
     public func getRunningTasks() throws -> [RunSummary] {
         let index = try loadRunsIndex()
         return index.runs.filter { $0.exitCode == nil && $0.pid != nil }
