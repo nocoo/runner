@@ -605,4 +605,28 @@ struct ExecutorTests {
         #expect((detail?.durationSeconds ?? 0) >= 1)
         #expect((detail?.durationSeconds ?? 100) < 5)
     }
+    
+    // MARK: - Mock Repository Tests
+    
+    @Test("Executor works with RunRepository protocol")
+    func executorWorksWithMockRepository() async throws {
+        let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: tempDir.appendingPathComponent("runs"), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        
+        let mockRepo = MockRunRepository()
+        let task = makeTask(command: "echo hello")
+        
+        // Using protocol-based init
+        let executor = Executor(repository: mockRepo, dataDir: tempDir, dryRun: true, verbose: false)
+        let result = try await executor.execute(task: task, trigger: "test")
+        
+        #expect(result.exitCode == 0)
+        #expect(result.output.contains("DRY RUN"))
+        
+        // In dry run, nothing is added to repository
+        let calls = await mockRepo.addRunCalls
+        #expect(calls.isEmpty) // Dry run doesn't add runs
+    }
 }

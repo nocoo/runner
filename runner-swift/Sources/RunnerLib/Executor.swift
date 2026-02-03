@@ -3,12 +3,22 @@ import Darwin
 
 /// Task executor - just runs shell commands
 public struct Executor {
-    public let storage: Storage
+    public let repository: any RunRepository
+    public let dataDir: URL
     public let dryRun: Bool
     public let verbose: Bool
     
+    public init(repository: any RunRepository, dataDir: URL, dryRun: Bool, verbose: Bool) {
+        self.repository = repository
+        self.dataDir = dataDir
+        self.dryRun = dryRun
+        self.verbose = verbose
+    }
+    
+    /// Convenience initializer for backward compatibility with Storage
     public init(storage: Storage, dryRun: Bool, verbose: Bool) {
-        self.storage = storage
+        self.repository = storage
+        self.dataDir = storage.dataDir
         self.dryRun = dryRun
         self.verbose = verbose
     }
@@ -104,7 +114,7 @@ public struct Executor {
             pid: Int(pid),
             startedAtEpoch: startEpoch
         )
-        try await storage.addRun(summary)
+        try await repository.addRun(summary)
         
         log("Background PID: \(pid)")
         
@@ -119,7 +129,7 @@ public struct Executor {
         startedAt: String,
         trigger: String
     ) -> String {
-        let builder = ScriptBuilder(dataDir: storage.dataDir)
+        let builder = ScriptBuilder(dataDir: dataDir)
         return builder.build(
             task: task,
             command: command,
@@ -144,7 +154,7 @@ public struct Executor {
         \(String(repeating: "=", count: 50))
         
         """
-        try await storage.writeOutput(id: runId, content: header)
+        try await repository.writeOutput(id: runId, content: header)
 
         let scriptContent = createScript(
             task: task,
@@ -154,7 +164,7 @@ public struct Executor {
             trigger: trigger
         )
 
-        let scriptPath = storage.dataDir.appendingPathComponent("runs/.\(runId).sh")
+        let scriptPath = dataDir.appendingPathComponent("runs/.\(runId).sh")
         try scriptContent.write(to: scriptPath, atomically: true, encoding: .utf8)
         try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: scriptPath.path)
 
