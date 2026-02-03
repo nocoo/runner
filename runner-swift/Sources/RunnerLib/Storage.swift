@@ -1,7 +1,7 @@
 import Foundation
 
 /// Thread-safe JSON storage with file locking
-public actor Storage {
+public actor Storage: RunRepository, ConfigRepository {
     public let dataDir: URL
     private let fileIO: FileIO
     private let encoder: JSONEncoder
