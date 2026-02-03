@@ -11,6 +11,7 @@ macOS 上的声明式任务调度器，通过 `launchd` 触发、`opencode` 执�
 - `docs/03-quickstart.md`：构建与运行（含 Dashboard 开发）
 - `docs/04-testing.md`：测试流程与覆盖率目标
 - `docs/05-architecture.md`：核心架构与数据流
+- `docs/06-storage-abstraction.md`：存储层抽象与 SQLite 迁移计划
 
 ## ✨ 主要功能
 
