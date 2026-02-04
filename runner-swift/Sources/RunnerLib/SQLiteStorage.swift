@@ -71,6 +71,141 @@ struct RunRecord: Codable, FetchableRecord, PersistableRecord {
     }
 }
 
+// MARK: - TaskRecord
+
+/// Database record for tasks table
+struct TaskRecord: Codable, FetchableRecord, PersistableRecord {
+    static let databaseTableName = "tasks"
+    
+    var id: String
+    var executor: String
+    var description: String
+    var timeout: Int?
+    var command: String?
+    var prompt: String?
+    var workdir: String?
+    var url: String?
+    var method: String?
+    var headers: String?  // JSON encoded
+    var body: String?
+    var enabled: Bool
+    var createdAt: String?
+    var updatedAt: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, executor, description, timeout, command, prompt, workdir, url, method, headers, body, enabled
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+    
+    init(from task: Task, enabled: Bool = true) {
+        self.id = task.id
+        self.executor = task.executor.rawValue
+        self.description = task.description
+        self.timeout = task.timeout
+        self.command = task.command
+        self.prompt = task.prompt
+        self.workdir = task.workdir
+        self.url = task.url
+        self.method = task.method
+        self.body = task.body
+        self.enabled = enabled
+        self.createdAt = nil
+        self.updatedAt = nil
+        
+        // Encode headers as JSON
+        if let headers = task.headers {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .sortedKeys
+            if let data = try? encoder.encode(headers) {
+                self.headers = String(data: data, encoding: .utf8)
+            } else {
+                self.headers = nil
+            }
+        } else {
+            self.headers = nil
+        }
+    }
+    
+    func toModel() -> Task {
+        var decodedHeaders: [String: String]?
+        if let headersJson = headers, let data = headersJson.data(using: .utf8) {
+            decodedHeaders = try? JSONDecoder().decode([String: String].self, from: data)
+        }
+        
+        return Task(
+            id: id,
+            executor: TaskExecutor(rawValue: executor) ?? .shell,
+            description: description,
+            timeout: timeout,
+            command: command,
+            prompt: prompt,
+            workdir: workdir,
+            url: url,
+            method: method,
+            headers: decodedHeaders,
+            body: body
+        )
+    }
+}
+
+// MARK: - ScheduleRecord
+
+/// Database record for schedules table
+struct ScheduleRecord: Codable, FetchableRecord, PersistableRecord {
+    static let databaseTableName = "schedules"
+    
+    var id: Int64?
+    var task: String
+    var hour: String
+    var minute: String
+    var weekday: String
+    var enabled: Bool
+    var createdAt: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, task, hour, minute, weekday, enabled
+        case createdAt = "created_at"
+    }
+    
+    init(from schedule: Schedule, enabled: Bool = true) {
+        self.id = nil
+        self.task = schedule.task
+        self.hour = Self.encodeValue(schedule.hour)
+        self.minute = Self.encodeValue(schedule.minute)
+        self.weekday = Self.encodeValue(schedule.weekday)
+        self.enabled = enabled
+        self.createdAt = nil
+    }
+    
+    private static func encodeValue(_ value: AnyCodable) -> String {
+        if let intValue = value.value as? Int {
+            return String(intValue)
+        } else if let strValue = value.value as? String {
+            return strValue
+        }
+        return "*"
+    }
+    
+    func toModel() -> Schedule {
+        Schedule(
+            task: task,
+            hour: Self.decodeValue(hour),
+            minute: Self.decodeValue(minute),
+            weekday: Self.decodeValue(weekday)
+        )
+    }
+    
+    private static func decodeValue(_ str: String) -> AnyCodable {
+        if str == "*" {
+            return AnyCodable("*")
+        } else if let intValue = Int(str) {
+            return AnyCodable(intValue)
+        }
+        return AnyCodable(str)
+    }
+}
+
 // MARK: - Database Migrator
 
 extension DatabaseMigrator {
@@ -97,6 +232,38 @@ extension DatabaseMigrator {
             try db.create(index: "idx_runs_task", on: "runs", columns: ["task"])
             try db.create(index: "idx_runs_started_at", on: "runs", columns: ["started_at"])
             try db.create(index: "idx_runs_exit_code", on: "runs", columns: ["exit_code"])
+        }
+        
+        // Version 2: Tasks and schedules tables
+        migrator.registerMigration("v2_create_tasks_schedules") { db in
+            try db.create(table: "tasks") { t in
+                t.column("id", .text).primaryKey()
+                t.column("executor", .text).notNull()
+                t.column("description", .text).notNull()
+                t.column("timeout", .integer)
+                t.column("command", .text)
+                t.column("prompt", .text)
+                t.column("workdir", .text)
+                t.column("url", .text)
+                t.column("method", .text)
+                t.column("headers", .text)
+                t.column("body", .text)
+                t.column("enabled", .boolean).notNull().defaults(to: true)
+                t.column("created_at", .text).defaults(sql: "CURRENT_TIMESTAMP")
+                t.column("updated_at", .text).defaults(sql: "CURRENT_TIMESTAMP")
+            }
+            
+            try db.create(table: "schedules") { t in
+                t.autoIncrementedPrimaryKey("id")
+                t.column("task", .text).notNull()
+                t.column("hour", .text).notNull()
+                t.column("minute", .text).notNull()
+                t.column("weekday", .text).notNull()
+                t.column("enabled", .boolean).notNull().defaults(to: true)
+                t.column("created_at", .text).defaults(sql: "CURRENT_TIMESTAMP")
+            }
+            
+            try db.create(index: "idx_schedules_task", on: "schedules", columns: ["task"])
         }
         
         return migrator
@@ -292,6 +459,13 @@ extension SQLiteStorage: ConfigRepository {
     }
     
     public func loadTasks() async throws -> [Task] {
+        // First try SQLite
+        let sqliteTasks = try await loadTasksFromSQLite()
+        if !sqliteTasks.isEmpty {
+            return sqliteTasks
+        }
+        
+        // Fall back to JSON file
         let path = dataDir.appendingPathComponent("tasks.json")
         guard FileManager.default.fileExists(atPath: path.path) else {
             return []
@@ -301,12 +475,109 @@ extension SQLiteStorage: ConfigRepository {
     }
     
     public func loadSchedules() async throws -> [Schedule] {
+        // First try SQLite
+        let sqliteSchedules = try await loadSchedulesFromSQLite()
+        if !sqliteSchedules.isEmpty {
+            return sqliteSchedules
+        }
+        
+        // Fall back to JSON file
         let path = dataDir.appendingPathComponent("schedules.json")
         guard FileManager.default.fileExists(atPath: path.path) else {
             return []
         }
         let data = try Data(contentsOf: path)
         return try JSONDecoder().decode([Schedule].self, from: data)
+    }
+}
+
+// MARK: - Tasks SQLite Operations
+
+extension SQLiteStorage {
+    
+    /// Load all enabled tasks from SQLite
+    func loadTasksFromSQLite() async throws -> [Task] {
+        try await dbQueue.read { db in
+            let records = try TaskRecord
+                .filter(Column("enabled") == true)
+                .order(Column("id"))
+                .fetchAll(db)
+            return records.map { $0.toModel() }
+        }
+    }
+    
+    /// Save a task (insert or update)
+    public func saveTask(_ task: Task) async throws {
+        let record = TaskRecord(from: task)
+        try await dbQueue.write { db in
+            try record.save(db)
+        }
+    }
+    
+    /// Load a single task by ID
+    public func loadTask(id: String) async throws -> Task? {
+        try await dbQueue.read { db in
+            guard let record = try TaskRecord.fetchOne(db, key: id) else {
+                return nil
+            }
+            return record.toModel()
+        }
+    }
+    
+    /// Delete a task by ID
+    public func deleteTask(id: String) async throws {
+        try await dbQueue.write { db in
+            try TaskRecord.deleteOne(db, key: id)
+        }
+    }
+    
+    /// Check if tasks are stored in SQLite
+    public func hasTasksInSQLite() async throws -> Bool {
+        try await dbQueue.read { db in
+            let count = try TaskRecord.fetchCount(db)
+            return count > 0
+        }
+    }
+}
+
+// MARK: - Schedules SQLite Operations
+
+extension SQLiteStorage {
+    
+    /// Load all enabled schedules from SQLite
+    func loadSchedulesFromSQLite() async throws -> [Schedule] {
+        try await dbQueue.read { db in
+            let records = try ScheduleRecord
+                .filter(Column("enabled") == true)
+                .order(Column("task"), Column("hour"), Column("minute"))
+                .fetchAll(db)
+            return records.map { $0.toModel() }
+        }
+    }
+    
+    /// Add a schedule
+    public func addSchedule(_ schedule: Schedule) async throws {
+        let record = ScheduleRecord(from: schedule)
+        try await dbQueue.write { db in
+            try record.insert(db)
+        }
+    }
+    
+    /// Delete all schedules for a task
+    public func deleteSchedulesForTask(id: String) async throws {
+        try await dbQueue.write { db in
+            try ScheduleRecord
+                .filter(Column("task") == id)
+                .deleteAll(db)
+        }
+    }
+    
+    /// Check if schedules are stored in SQLite
+    public func hasSchedulesInSQLite() async throws -> Bool {
+        try await dbQueue.read { db in
+            let count = try ScheduleRecord.fetchCount(db)
+            return count > 0
+        }
     }
 }
 

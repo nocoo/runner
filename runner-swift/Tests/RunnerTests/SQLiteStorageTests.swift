@@ -348,3 +348,205 @@ struct SQLiteStorageConfigTests {
         #expect(schedules.isEmpty)
     }
 }
+
+// MARK: - SQLiteStorage Tasks & Schedules Tests (Phase 5)
+
+@Suite("SQLiteStorage Tasks Tests")
+struct SQLiteStorageTasksTests {
+    
+    @Test("saveTask inserts new task")
+    func saveTaskInsertsNew() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        let task = Task(
+            id: "heartbeat",
+            executor: .shell,
+            description: "Play sound",
+            timeout: 10,
+            command: "afplay /System/Library/Sounds/Pop.aiff"
+        )
+        
+        try await storage.saveTask(task)
+        
+        let tasks = try await storage.loadTasks()
+        #expect(tasks.count == 1)
+        #expect(tasks[0].id == "heartbeat")
+        #expect(tasks[0].executor == .shell)
+        #expect(tasks[0].description == "Play sound")
+        #expect(tasks[0].timeout == 10)
+        #expect(tasks[0].command == "afplay /System/Library/Sounds/Pop.aiff")
+    }
+    
+    @Test("saveTask updates existing task")
+    func saveTaskUpdatesExisting() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        let task1 = Task(id: "t1", executor: .shell, description: "v1", command: "echo 1")
+        try await storage.saveTask(task1)
+        
+        let task2 = Task(id: "t1", executor: .shell, description: "v2", command: "echo 2")
+        try await storage.saveTask(task2)
+        
+        let tasks = try await storage.loadTasks()
+        #expect(tasks.count == 1)
+        #expect(tasks[0].description == "v2")
+        #expect(tasks[0].command == "echo 2")
+    }
+    
+    @Test("saveTask with opencode executor")
+    func saveTaskOpencode() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        let task = Task(
+            id: "clock",
+            executor: .opencode,
+            description: "Report time",
+            timeout: 60,
+            prompt: "Get current time and say it",
+            workdir: "/tmp"
+        )
+        
+        try await storage.saveTask(task)
+        
+        let tasks = try await storage.loadTasks()
+        #expect(tasks[0].executor == .opencode)
+        #expect(tasks[0].prompt == "Get current time and say it")
+        #expect(tasks[0].workdir == "/tmp")
+    }
+    
+    @Test("saveTask with http executor")
+    func saveTaskHttp() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        let task = Task(
+            id: "ping",
+            executor: .http,
+            description: "Ping website",
+            timeout: 30,
+            url: "https://example.com",
+            method: "GET",
+            headers: ["Authorization": "Bearer token"],
+            body: nil
+        )
+        
+        try await storage.saveTask(task)
+        
+        let tasks = try await storage.loadTasks()
+        #expect(tasks[0].executor == .http)
+        #expect(tasks[0].url == "https://example.com")
+        #expect(tasks[0].method == "GET")
+        #expect(tasks[0].headers?["Authorization"] == "Bearer token")
+    }
+    
+    @Test("deleteTask removes task")
+    func deleteTaskRemoves() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        let task = Task(id: "t1", executor: .shell, description: "test", command: "echo")
+        try await storage.saveTask(task)
+        
+        try await storage.deleteTask(id: "t1")
+        
+        let tasks = try await storage.loadTasks()
+        #expect(tasks.isEmpty)
+    }
+    
+    @Test("loadTask returns single task by id")
+    func loadTaskById() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        try await storage.saveTask(Task(id: "t1", executor: .shell, description: "first", command: "echo 1"))
+        try await storage.saveTask(Task(id: "t2", executor: .shell, description: "second", command: "echo 2"))
+        
+        let task = try await storage.loadTask(id: "t2")
+        #expect(task?.id == "t2")
+        #expect(task?.description == "second")
+    }
+    
+    @Test("loadTask returns nil for missing")
+    func loadTaskMissing() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        let task = try await storage.loadTask(id: "nonexistent")
+        #expect(task == nil)
+    }
+}
+
+@Suite("SQLiteStorage Schedules Tests")
+struct SQLiteStorageSchedulesTests {
+    
+    @Test("addSchedule inserts new schedule")
+    func addScheduleInserts() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        // First add a task (schedules reference tasks)
+        try await storage.saveTask(Task(id: "heartbeat", executor: .shell, description: "test", command: "echo"))
+        
+        let schedule = Schedule(
+            task: "heartbeat",
+            hour: AnyCodable(10),
+            minute: AnyCodable(30),
+            weekday: AnyCodable("*")
+        )
+        
+        try await storage.addSchedule(schedule)
+        
+        let schedules = try await storage.loadSchedules()
+        #expect(schedules.count == 1)
+        #expect(schedules[0].task == "heartbeat")
+    }
+    
+    @Test("addSchedule with wildcard hour")
+    func addScheduleWildcardHour() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        try await storage.saveTask(Task(id: "t1", executor: .shell, description: "test", command: "echo"))
+        
+        let schedule = Schedule(
+            task: "t1",
+            hour: AnyCodable("*"),
+            minute: AnyCodable(0),
+            weekday: AnyCodable("*")
+        )
+        
+        try await storage.addSchedule(schedule)
+        
+        let schedules = try await storage.loadSchedules()
+        #expect(schedules.count == 1)
+        // Hour should be stored as "*"
+        if let hourInt = schedules[0].hour.value as? Int {
+            #expect(Bool(false), "Hour should be string, not int: \(hourInt)")
+        }
+    }
+    
+    @Test("multiple schedules for same task")
+    func multipleSchedulesSameTask() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        try await storage.saveTask(Task(id: "t1", executor: .shell, description: "test", command: "echo"))
+        
+        try await storage.addSchedule(Schedule(task: "t1", hour: AnyCodable(9), minute: AnyCodable(0), weekday: AnyCodable("*")))
+        try await storage.addSchedule(Schedule(task: "t1", hour: AnyCodable(17), minute: AnyCodable(0), weekday: AnyCodable("*")))
+        
+        let schedules = try await storage.loadSchedules()
+        #expect(schedules.count == 2)
+    }
+    
+    @Test("deleteSchedulesForTask removes all schedules")
+    func deleteSchedulesForTask() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        try await storage.saveTask(Task(id: "t1", executor: .shell, description: "test", command: "echo"))
+        try await storage.saveTask(Task(id: "t2", executor: .shell, description: "test2", command: "echo2"))
+        
+        try await storage.addSchedule(Schedule(task: "t1", hour: AnyCodable(9), minute: AnyCodable(0), weekday: AnyCodable("*")))
+        try await storage.addSchedule(Schedule(task: "t1", hour: AnyCodable(17), minute: AnyCodable(0), weekday: AnyCodable("*")))
+        try await storage.addSchedule(Schedule(task: "t2", hour: AnyCodable(12), minute: AnyCodable(0), weekday: AnyCodable("*")))
+        
+        try await storage.deleteSchedulesForTask(id: "t1")
+        
+        let schedules = try await storage.loadSchedules()
+        #expect(schedules.count == 1)
+        #expect(schedules[0].task == "t2")
+    }
+}
