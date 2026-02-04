@@ -82,17 +82,27 @@ export function apiPlugin(): Plugin {
             return;
           }
 
-          // GET /api/tasks - read from JSON (will migrate to SQLite in Phase 5)
+          // GET /api/tasks - read from SQLite via runner CLI
           if (url === "/api/tasks" && req.method === "GET") {
-            const data = await readJsonFile(resolve(DATA_DIR, "tasks.json"));
-            res.end(JSON.stringify(data ?? []));
+            try {
+              const output = await runnerApi("tasks");
+              res.end(output);
+            } catch (err) {
+              console.error("[runner-api] Failed to get tasks:", err);
+              res.end(JSON.stringify([]));
+            }
             return;
           }
 
-          // GET /api/schedules - read from JSON (will migrate to SQLite in Phase 5)
+          // GET /api/schedules - read from SQLite via runner CLI
           if (url === "/api/schedules" && req.method === "GET") {
-            const data = await readJsonFile(resolve(DATA_DIR, "schedules.json"));
-            res.end(JSON.stringify(data ?? []));
+            try {
+              const output = await runnerApi("schedules");
+              res.end(output);
+            } catch (err) {
+              console.error("[runner-api] Failed to get schedules:", err);
+              res.end(JSON.stringify([]));
+            }
             return;
           }
 
