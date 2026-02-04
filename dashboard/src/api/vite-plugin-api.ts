@@ -1,9 +1,12 @@
 import type { Plugin, ViteDevServer } from "vite";
 import { resolve } from "path";
-import { spawn } from "child_process";
+import { spawn, exec } from "child_process";
 import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 import { watch } from "chokidar";
+import { promisify } from "util";
+
+const execPromise = promisify(exec);
 
 const DATA_DIR = resolve(__dirname, "../../../data");
 // Use Swift binary (runner) instead of Bash script (runner.sh)
@@ -29,6 +32,14 @@ async function readJsonFile(path: string): Promise<unknown> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Execute runner CLI command and return stdout
+ */
+async function runnerApi(query: string): Promise<string> {
+  const { stdout } = await execPromise(`"${RUNNER_BINARY}" api --data-dir "${DATA_DIR}" ${query}`);
+  return stdout;
 }
 
 export function apiPlugin(): Plugin {
@@ -64,72 +75,62 @@ export function apiPlugin(): Plugin {
         res.setHeader("Content-Type", "application/json");
 
         try {
-          // GET /api/status
+          // GET /api/status - read from SQLite via runner CLI
           if (url === "/api/status" && req.method === "GET") {
             const data = await readJsonFile(resolve(DATA_DIR, "state.json"));
             res.end(JSON.stringify(data ?? { error: "Not found" }));
             return;
           }
 
-          // GET /api/tasks
+          // GET /api/tasks - read from JSON (will migrate to SQLite in Phase 5)
           if (url === "/api/tasks" && req.method === "GET") {
             const data = await readJsonFile(resolve(DATA_DIR, "tasks.json"));
             res.end(JSON.stringify(data ?? []));
             return;
           }
 
-          // GET /api/schedules
+          // GET /api/schedules - read from JSON (will migrate to SQLite in Phase 5)
           if (url === "/api/schedules" && req.method === "GET") {
             const data = await readJsonFile(resolve(DATA_DIR, "schedules.json"));
             res.end(JSON.stringify(data ?? []));
             return;
           }
 
-          // GET /api/runs
+          // GET /api/runs - read from SQLite via runner CLI
           if (url === "/api/runs" && req.method === "GET") {
-            const data = await readJsonFile(resolve(DATA_DIR, "runs/index.json"));
-            res.end(JSON.stringify(data ?? { runs: [], total: 0 }));
+            try {
+              const output = await runnerApi("runs");
+              res.end(output);
+            } catch (err) {
+              console.error("[runner-api] Failed to get runs:", err);
+              res.end(JSON.stringify({ runs: [], total: 0 }));
+            }
             return;
           }
 
-          // GET /api/runs/:id
+          // GET /api/runs/:id - read from SQLite via runner CLI
           const runMatch = url.match(/^\/api\/runs\/([a-fA-F0-9-]{36})$/i);
           if (runMatch && req.method === "GET") {
             const id = runMatch[1];
-            // Try to read individual .json file first
-            const data = await readJsonFile(resolve(DATA_DIR, `runs/${id}.json`));
-            if (data) {
-              res.end(JSON.stringify(data));
-              return;
-            }
-            // Fall back to index.json for basic info (e.g., interrupted tasks without .json)
-            const indexData = await readJsonFile(resolve(DATA_DIR, "runs/index.json")) as { runs?: Array<{ id: string; task: string; exit_code: number | null; started_at?: string; finished_at?: string | null }> } | null;
-            if (indexData?.runs) {
-              const runFromIndex = indexData.runs.find(r => r.id === id);
-              if (runFromIndex) {
-                // Calculate duration if both timestamps exist
-                let duration_seconds: number | undefined;
-                if (runFromIndex.started_at && runFromIndex.finished_at) {
-                  duration_seconds = Math.round((new Date(runFromIndex.finished_at).getTime() - new Date(runFromIndex.started_at).getTime()) / 1000);
-                }
-                res.end(JSON.stringify({
-                  id: runFromIndex.id,
-                  task: runFromIndex.task,
-                  trigger: "auto",
-                  started_at: runFromIndex.started_at || "",
-                  finished_at: runFromIndex.finished_at || undefined,
-                  duration_seconds,
-                  exit_code: runFromIndex.exit_code,  // Keep null for running tasks
-                }));
+            try {
+              const output = await runnerApi(`run ${id}`);
+              // Check if result is null (run not found or not completed)
+              const parsed = JSON.parse(output);
+              if (parsed === null) {
+                res.statusCode = 404;
+                res.end(JSON.stringify({ error: "Run not found" }));
                 return;
               }
+              res.end(output);
+            } catch (err) {
+              console.error("[runner-api] Failed to get run detail:", err);
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: "Failed to get run detail" }));
             }
-            res.statusCode = 404;
-            res.end(JSON.stringify({ error: "Run not found" }));
             return;
           }
 
-          // GET /api/runs/:id/output - get full task output
+          // GET /api/runs/:id/output - get full task output from file system
           const outputMatch = url.match(/^\/api\/runs\/([a-fA-F0-9-]{36})\/output$/i);
           if (outputMatch && req.method === "GET") {
             const id = outputMatch[1];
