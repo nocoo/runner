@@ -66,11 +66,11 @@ public struct LogsWiring {
 
 public struct ApiWiring {
     public let storage: SQLiteStorage
-    public let statePath: URL
+    public let stateLoader: StateLoading
 
     public init(options: CommonOptions) throws {
         self.storage = try SQLiteStorage(dataDir: options.dataDir)
-        self.statePath = options.dataDir.appendingPathComponent("state.json")
+        self.stateLoader = SQLiteStateLoader(storage: storage)
     }
 }
 

@@ -244,11 +244,14 @@ public struct Migrate: AsyncParsableCommand {
     
     @Flag(name: .long, help: "Migrate tasks.json and schedules.json to SQLite")
     var config: Bool = false
+    
+    @Flag(name: .long, help: "Migrate state.json to SQLite")
+    var state: Bool = false
 
     public init() {}
 
     public func run() async throws {
-        let result = try await migrateCommand(options: options, force: force, config: config)
+        let result = try await migrateCommand(options: options, force: force, config: config, state: state)
         for line in result.lines {
             print(line)
         }
@@ -260,13 +263,18 @@ public struct MigrateResult: Sendable {
     public let success: Bool
 }
 
-public func migrateCommand(options: CommonOptions, force: Bool, config: Bool = false) async throws -> MigrateResult {
+public func migrateCommand(options: CommonOptions, force: Bool, config: Bool = false, state: Bool = false) async throws -> MigrateResult {
     let dataDir = options.dataDir
     var lines: [String] = []
     
     // Config migration mode
     if config {
         return try await migrateConfigCommand(dataDir: dataDir, force: force)
+    }
+    
+    // State migration mode
+    if state {
+        return try await migrateStateCommand(dataDir: dataDir, force: force)
     }
     
     // Check if JSON index exists
@@ -351,6 +359,42 @@ private func migrateConfigCommand(dataDir: URL, force: Bool) async throws -> Mig
         lines.append("Config migration completed successfully!")
     } else {
         lines.append("Config migration completed with errors")
+    }
+    
+    return MigrateResult(lines: lines, success: result.success)
+}
+
+/// Migrate state.json to SQLite
+private func migrateStateCommand(dataDir: URL, force: Bool) async throws -> MigrateResult {
+    var lines: [String] = []
+    
+    // Check if state.json exists
+    if !MigrationService.stateJsonExists(in: dataDir) {
+        lines.append("No state.json found to migrate")
+        return MigrateResult(lines: lines, success: true)
+    }
+    
+    // Check if SQLite already has state
+    let sqliteStorage = try SQLiteStorage(dataDir: dataDir)
+    let hasStateInDb = try await sqliteStorage.hasStateInSQLite()
+    
+    if hasStateInDb && !force {
+        lines.append("SQLite database already contains state")
+        lines.append("Use --force to overwrite")
+        return MigrateResult(lines: lines, success: false)
+    }
+    
+    // Perform migration
+    lines.append("Migrating state from JSON to SQLite...")
+    
+    let result = try await MigrationService.migrateStateToSQLite(from: dataDir, to: sqliteStorage)
+    
+    if result.migrated {
+        lines.append("State migrated successfully!")
+    } else {
+        for error in result.errors {
+            lines.append("Error: \(error)")
+        }
     }
     
     return MigrateResult(lines: lines, success: result.success)
@@ -453,7 +497,7 @@ public func apiCommandOutput(options: CommonOptions, query: String) async throws
         schedulesLoader: wiring.storage,
         runsLoader: wiring.storage,
         initializer: wiring.storage,
-        stateLoader: DefaultStateLoader(path: wiring.statePath),
+        stateLoader: wiring.stateLoader,
         runDetailLoader: wiring.storage
     )
     return try await service.handle(query: query)

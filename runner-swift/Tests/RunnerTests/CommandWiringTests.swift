@@ -71,12 +71,12 @@ struct CommandWiringTests {
         #expect(await wiring.storage.dataDir == options.dataDir)
     }
 
-    @Test("ApiWiring builds state path")
-    func apiWiringBuildsStatePath() throws {
+    @Test("ApiWiring builds state loader")
+    func apiWiringBuildsStateLoader() throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
         let wiring = try ApiWiring(options: options)
-        #expect(wiring.statePath.lastPathComponent == "state.json")
+        #expect(wiring.stateLoader is SQLiteStateLoader)
     }
 
     @Test("CleanupWiring builds storage")

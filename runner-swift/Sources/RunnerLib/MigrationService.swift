@@ -142,4 +142,56 @@ public struct MigrationService: Sendable {
         let schedulesPath = configDir.appendingPathComponent("schedules.json")
         return FileManager.default.fileExists(atPath: schedulesPath.path)
     }
+    
+    /// State migration result
+    public struct StateMigrationResult: Sendable {
+        public let migrated: Bool
+        public let errors: [String]
+        
+        public var success: Bool {
+            errors.isEmpty
+        }
+    }
+    
+    /// Migrate state.json to SQLite
+    /// - Parameters:
+    ///   - dataDir: Directory containing state.json
+    ///   - sqliteStorage: Target SQLite storage
+    /// - Returns: Migration result
+    public static func migrateStateToSQLite(
+        from dataDir: URL,
+        to sqliteStorage: SQLiteStorage
+    ) async throws -> StateMigrationResult {
+        var errors: [String] = []
+        
+        let statePath = dataDir.appendingPathComponent("state.json")
+        guard FileManager.default.fileExists(atPath: statePath.path) else {
+            return StateMigrationResult(migrated: false, errors: ["state.json not found"])
+        }
+        
+        // Read and parse state.json
+        let data: Data
+        let state: SystemState
+        do {
+            data = try Data(contentsOf: statePath)
+            state = try JSONDecoder().decode(SystemState.self, from: data)
+        } catch {
+            return StateMigrationResult(migrated: false, errors: ["Failed to read state.json: \(error.localizedDescription)"])
+        }
+        
+        // Save to SQLite
+        do {
+            try await sqliteStorage.saveState(state)
+        } catch {
+            errors.append("Failed to save state to SQLite: \(error.localizedDescription)")
+        }
+        
+        return StateMigrationResult(migrated: errors.isEmpty, errors: errors)
+    }
+    
+    /// Check if state.json exists
+    public static func stateJsonExists(in dataDir: URL) -> Bool {
+        let statePath = dataDir.appendingPathComponent("state.json")
+        return FileManager.default.fileExists(atPath: statePath.path)
+    }
 }

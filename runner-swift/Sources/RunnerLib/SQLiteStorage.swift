@@ -206,6 +206,22 @@ struct ScheduleRecord: Codable, FetchableRecord, PersistableRecord {
     }
 }
 
+// MARK: - StateRecord
+
+/// Database record for state table (key-value store)
+struct StateRecord: Codable, FetchableRecord, PersistableRecord {
+    static let databaseTableName = "state"
+    
+    var key: String
+    var value: String
+    var updatedAt: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case key, value
+        case updatedAt = "updated_at"
+    }
+}
+
 // MARK: - Database Migrator
 
 extension DatabaseMigrator {
@@ -264,6 +280,15 @@ extension DatabaseMigrator {
             }
             
             try db.create(index: "idx_schedules_task", on: "schedules", columns: ["task"])
+        }
+        
+        // Version 3: State table (key-value store)
+        migrator.registerMigration("v3_create_state") { db in
+            try db.create(table: "state") { t in
+                t.column("key", .text).primaryKey()
+                t.column("value", .text).notNull()
+                t.column("updated_at", .text).defaults(sql: "CURRENT_TIMESTAMP")
+            }
         }
         
         return migrator
@@ -581,6 +606,89 @@ extension SQLiteStorage {
     }
 }
 
+// MARK: - State SQLite Operations
+
+extension SQLiteStorage {
+    
+    /// State keys used in the key-value store
+    public enum StateKey: String, Sendable {
+        case version = "version"
+        case lastRunId = "last_run_id"
+        case lastRunTask = "last_run_task"
+        case lastRunExitCode = "last_run_exit_code"
+        case lastRunFinishedAt = "last_run_finished_at"
+        case totalRunsToday = "total_runs_today"
+        case successRateToday = "success_rate_today"
+    }
+    
+    /// Get a state value by key
+    public func getStateValue(key: StateKey) async throws -> String? {
+        let keyString = key.rawValue
+        return try await dbQueue.read { db in
+            try StateRecord.fetchOne(db, key: keyString)?.value
+        }
+    }
+    
+    /// Set a state value
+    public func setStateValue(key: StateKey, value: String) async throws {
+        let keyString = key.rawValue
+        try await dbQueue.write { db in
+            let record = StateRecord(key: keyString, value: value, updatedAt: nil)
+            try record.save(db)
+        }
+    }
+    
+    /// Load SystemState from SQLite
+    public func loadState() async throws -> SystemState {
+        try await dbQueue.read { db in
+            let version = try StateRecord.fetchOne(db, key: StateKey.version.rawValue)?.value ?? "1.0.0"
+            let totalRunsToday = try StateRecord.fetchOne(db, key: StateKey.totalRunsToday.rawValue)?.value ?? "0"
+            let successRateToday = try StateRecord.fetchOne(db, key: StateKey.successRateToday.rawValue)?.value ?? "0.0"
+            
+            // Reconstruct LastRun if all parts exist
+            var lastRun: LastRun? = nil
+            if let lastRunId = try StateRecord.fetchOne(db, key: StateKey.lastRunId.rawValue)?.value,
+               let lastRunTask = try StateRecord.fetchOne(db, key: StateKey.lastRunTask.rawValue)?.value,
+               let lastRunExitCode = try StateRecord.fetchOne(db, key: StateKey.lastRunExitCode.rawValue)?.value,
+               let lastRunFinishedAt = try StateRecord.fetchOne(db, key: StateKey.lastRunFinishedAt.rawValue)?.value,
+               let exitCode = Int(lastRunExitCode) {
+                lastRun = LastRun(id: lastRunId, task: lastRunTask, exitCode: exitCode, finishedAt: lastRunFinishedAt)
+            }
+            
+            return SystemState(
+                version: version,
+                lastRun: lastRun,
+                totalRunsToday: Int(totalRunsToday) ?? 0,
+                successRateToday: Double(successRateToday) ?? 0.0
+            )
+        }
+    }
+    
+    /// Save SystemState to SQLite
+    public func saveState(_ state: SystemState) async throws {
+        try await dbQueue.write { db in
+            try StateRecord(key: StateKey.version.rawValue, value: state.version, updatedAt: nil).save(db)
+            try StateRecord(key: StateKey.totalRunsToday.rawValue, value: String(state.totalRunsToday), updatedAt: nil).save(db)
+            try StateRecord(key: StateKey.successRateToday.rawValue, value: String(state.successRateToday), updatedAt: nil).save(db)
+            
+            if let lastRun = state.lastRun {
+                try StateRecord(key: StateKey.lastRunId.rawValue, value: lastRun.id, updatedAt: nil).save(db)
+                try StateRecord(key: StateKey.lastRunTask.rawValue, value: lastRun.task, updatedAt: nil).save(db)
+                try StateRecord(key: StateKey.lastRunExitCode.rawValue, value: String(lastRun.exitCode), updatedAt: nil).save(db)
+                try StateRecord(key: StateKey.lastRunFinishedAt.rawValue, value: lastRun.finishedAt, updatedAt: nil).save(db)
+            }
+        }
+    }
+    
+    /// Check if state is stored in SQLite
+    public func hasStateInSQLite() async throws -> Bool {
+        try await dbQueue.read { db in
+            let count = try StateRecord.fetchCount(db)
+            return count > 0
+        }
+    }
+}
+
 // MARK: - Additional Protocol Conformances
 
 // SQLiteStorage already has loadTasks() and loadSchedules() from ConfigRepository,
@@ -591,3 +699,24 @@ extension SQLiteStorage: SchedulesLoading {}
 extension SQLiteStorage: Initializing {}
 extension SQLiteStorage: RunsIndexLoading {}
 extension SQLiteStorage: RunDetailLoading {}
+
+// MARK: - SQLiteStateLoader
+
+/// StateLoading implementation that reads from SQLite
+public struct SQLiteStateLoader: StateLoading {
+    private let storage: SQLiteStorage
+    private let encoder: JSONEncoder
+    
+    public init(storage: SQLiteStorage) {
+        self.storage = storage
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        self.encoder = encoder
+    }
+    
+    /// Read state data from SQLite and return as JSON Data
+    public func readStateData() async throws -> Data {
+        let state = try await storage.loadState()
+        return try encoder.encode(state)
+    }
+}

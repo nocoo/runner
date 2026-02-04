@@ -46,8 +46,8 @@ public protocol SchedulesLoading {
     func loadSchedules() async throws -> [Schedule]
 }
 
-public protocol StateLoading {
-    func readStateData() throws -> Data
+public protocol StateLoading: Sendable {
+    func readStateData() async throws -> Data
 }
 
 public protocol Initializing {
@@ -60,15 +60,13 @@ extension Storage: Initializing {}
 
 public struct DefaultStateLoader: StateLoading {
     private let path: URL
-    private let fileIO: FileIO
 
     public init(path: URL, fileIO: FileIO = DefaultFileIO()) {
         self.path = path
-        self.fileIO = fileIO
     }
 
-    public func readStateData() throws -> Data {
-        try fileIO.readData(from: path)
+    public func readStateData() async throws -> Data {
+        try Data(contentsOf: path)
     }
 }
 
@@ -118,7 +116,7 @@ public struct ApiService {
             let detail = try await runDetailLoader.loadRunDetail(id: id)
             return try encodeString(detail)
         case .status, .state:
-            let data = try stateLoader.readStateData()
+            let data = try await stateLoader.readStateData()
             guard let content = String(data: data, encoding: .utf8) else {
                 throw ApiServiceError.invalidUTF8
             }
