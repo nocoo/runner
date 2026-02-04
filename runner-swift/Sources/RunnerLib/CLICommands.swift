@@ -232,6 +232,40 @@ public struct Complete: AsyncParsableCommand {
     }
 }
 
+public struct TaskSave: AsyncParsableCommand {
+    public static let configuration = CommandConfiguration(
+        commandName: "task-save",
+        abstract: "Save a task from JSON input"
+    )
+
+    @OptionGroup var options: CommonOptions
+
+    public init() {}
+
+    public func run() async throws {
+        // Read JSON from stdin
+        var input = ""
+        while let line = readLine() {
+            input += line
+        }
+        
+        let result = try await taskSaveCommand(options: options, json: input)
+        print(result)
+    }
+}
+
+public func taskSaveCommand(options: CommonOptions, json: String) async throws -> String {
+    guard let data = json.data(using: .utf8) else {
+        throw RunnerError.invalidInput("Invalid UTF-8 input")
+    }
+    
+    let task = try JSONDecoder().decode(Task.self, from: data)
+    let storage = try SQLiteStorage(dataDir: options.dataDir)
+    try await storage.saveTask(task)
+    
+    return "{\"success\": true, \"id\": \"\(task.id)\"}"
+}
+
 public struct Migrate: AsyncParsableCommand {
     public static let configuration = CommandConfiguration(
         abstract: "Migrate data from JSON storage to SQLite"

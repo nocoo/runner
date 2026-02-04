@@ -28,12 +28,14 @@ public enum RunnerError: Error, CustomStringConvertible {
     case taskNotFound(String)
     case noRunsFound
     case unknownQuery(String)
+    case invalidInput(String)
     
     public var description: String {
         switch self {
         case .taskNotFound(let id): return "Task not found: \(id)"
         case .noRunsFound: return "No runs found"
         case .unknownQuery(let q): return "Unknown query: \(q)"
+        case .invalidInput(let msg): return "Invalid input: \(msg)"
         }
     }
 }
