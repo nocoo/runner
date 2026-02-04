@@ -241,11 +241,14 @@ public struct Migrate: AsyncParsableCommand {
 
     @Flag(name: .shortAndLong, help: "Force migration even if SQLite database exists")
     var force: Bool = false
+    
+    @Flag(name: .long, help: "Migrate tasks.json and schedules.json to SQLite")
+    var config: Bool = false
 
     public init() {}
 
     public func run() async throws {
-        let result = try await migrateCommand(options: options, force: force)
+        let result = try await migrateCommand(options: options, force: force, config: config)
         for line in result.lines {
             print(line)
         }
@@ -257,9 +260,14 @@ public struct MigrateResult: Sendable {
     public let success: Bool
 }
 
-public func migrateCommand(options: CommonOptions, force: Bool) async throws -> MigrateResult {
+public func migrateCommand(options: CommonOptions, force: Bool, config: Bool = false) async throws -> MigrateResult {
     let dataDir = options.dataDir
     var lines: [String] = []
+    
+    // Config migration mode
+    if config {
+        return try await migrateConfigCommand(dataDir: dataDir, force: force)
+    }
     
     // Check if JSON index exists
     if !MigrationService.jsonIndexExists(in: dataDir) {
@@ -295,6 +303,54 @@ public func migrateCommand(options: CommonOptions, force: Bool) async throws -> 
         lines.append("Migration completed successfully!")
     } else {
         lines.append("Migration completed with errors")
+    }
+    
+    return MigrateResult(lines: lines, success: result.success)
+}
+
+/// Migrate tasks.json and schedules.json to SQLite
+private func migrateConfigCommand(dataDir: URL, force: Bool) async throws -> MigrateResult {
+    var lines: [String] = []
+    
+    // Check if tasks.json or schedules.json exists
+    let hasTasksJson = MigrationService.tasksJsonExists(in: dataDir)
+    let hasSchedulesJson = MigrationService.schedulesJsonExists(in: dataDir)
+    
+    if !hasTasksJson && !hasSchedulesJson {
+        lines.append("No config files found to migrate (tasks.json and schedules.json do not exist)")
+        return MigrateResult(lines: lines, success: true)
+    }
+    
+    // Check if SQLite already has tasks
+    let sqliteStorage = try SQLiteStorage(dataDir: dataDir)
+    let hasTasksInDb = try await sqliteStorage.hasTasksInSQLite()
+    
+    if hasTasksInDb && !force {
+        lines.append("SQLite database already contains tasks")
+        lines.append("Use --force to overwrite")
+        return MigrateResult(lines: lines, success: false)
+    }
+    
+    // Perform migration
+    lines.append("Migrating config from JSON to SQLite...")
+    
+    let jsonStorage = Storage(dataDir: dataDir)
+    let result = try await MigrationService.migrateConfigToSQLite(from: jsonStorage, to: sqliteStorage)
+    
+    lines.append("Migrated \(result.tasksCount) tasks")
+    lines.append("Migrated \(result.schedulesCount) schedules")
+    
+    if !result.errors.isEmpty {
+        lines.append("Errors:")
+        for error in result.errors {
+            lines.append("  - \(error)")
+        }
+    }
+    
+    if result.success {
+        lines.append("Config migration completed successfully!")
+    } else {
+        lines.append("Config migration completed with errors")
     }
     
     return MigrateResult(lines: lines, success: result.success)

@@ -226,6 +226,48 @@ struct MigrateCommandTests {
         #expect(result.lines.contains { $0.contains("Migrated 1 runs") })
         #expect(result.lines.contains { $0.contains("successfully") })
     }
+    
+    @Test("Migrate --config reports no data when config files missing")
+    func migrateConfigNoData() async throws {
+        let tempDir = try createTempDir()
+        defer { cleanup(tempDir) }
+        
+        var options = CommonOptions()
+        options.dataDir = tempDir
+        
+        let result = try await migrateCommand(options: options, force: false, config: true)
+        
+        #expect(result.success)
+        #expect(result.lines.contains { $0.contains("No config files found") })
+    }
+    
+    @Test("Migrate --config succeeds with data")
+    func migrateConfigSucceeds() async throws {
+        let tempDir = try createTempDir()
+        defer { cleanup(tempDir) }
+        
+        // Write tasks.json
+        let tasks = [
+            Task(
+                id: "test-task",
+                executor: .shell,
+                description: "Test task",
+                command: "echo test"
+            )
+        ]
+        let encoder = JSONEncoder()
+        let tasksData = try encoder.encode(tasks)
+        try tasksData.write(to: tempDir.appendingPathComponent("tasks.json"))
+        
+        var options = CommonOptions()
+        options.dataDir = tempDir
+        
+        let result = try await migrateCommand(options: options, force: false, config: true)
+        
+        #expect(result.success)
+        #expect(result.lines.contains { $0.contains("Migrated 1 tasks") })
+        #expect(result.lines.contains { $0.contains("successfully") })
+    }
 }
 
 // MARK: - Config Migration Tests
