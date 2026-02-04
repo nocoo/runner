@@ -18,6 +18,17 @@ struct RunRecord: Codable, FetchableRecord, PersistableRecord {
     var startedAtEpoch: Int64
     var createdAt: String?
     
+    // Map Swift property names to database column names (snake_case)
+    enum CodingKeys: String, CodingKey {
+        case id, task, trigger, pid
+        case startedAt = "started_at"
+        case finishedAt = "finished_at"
+        case durationSeconds = "duration_seconds"
+        case exitCode = "exit_code"
+        case startedAtEpoch = "started_at_epoch"
+        case createdAt = "created_at"
+    }
+    
     // Convert from RunSummary
     init(from summary: RunSummary) {
         self.id = summary.id
