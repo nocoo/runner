@@ -76,3 +76,19 @@ export async function triggerTask(taskId: string): Promise<TriggerResponse> {
     method: "POST",
   });
 }
+
+/**
+ * Create or update a task
+ */
+export interface CreateTaskResponse {
+  success: boolean;
+  id: string;
+}
+
+export async function createTask(task: Task): Promise<CreateTaskResponse> {
+  return apiFetch<CreateTaskResponse>("/api/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(task),
+  });
+}

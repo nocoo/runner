@@ -94,6 +94,30 @@ export function apiPlugin(): Plugin {
             return;
           }
 
+          // POST /api/tasks - save task via runner CLI
+          if (url === "/api/tasks" && req.method === "POST") {
+            let body = "";
+            req.on("data", (chunk: Buffer) => {
+              body += chunk.toString();
+            });
+            req.on("end", async () => {
+              try {
+                const { stdout, stderr } = await execPromise(
+                  `echo '${body.replace(/'/g, "'\\''")}' | "${RUNNER_BINARY}" task-save --data-dir "${DATA_DIR}"`
+                );
+                if (stderr) {
+                  console.error("[runner-api] task-save stderr:", stderr);
+                }
+                res.end(stdout);
+              } catch (err) {
+                console.error("[runner-api] Failed to save task:", err);
+                res.statusCode = 400;
+                res.end(JSON.stringify({ error: String(err) }));
+              }
+            });
+            return;
+          }
+
           // GET /api/schedules - read from SQLite via runner CLI
           if (url === "/api/schedules" && req.method === "GET") {
             try {
