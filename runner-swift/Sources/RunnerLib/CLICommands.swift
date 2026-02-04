@@ -305,7 +305,7 @@ public func runAutoCommand(
     mockMinute: Int?,
     mockWeekday: Int?
 ) async throws -> AutoTime {
-    let wiring = AutoWiring(options: options)
+    let wiring = try AutoWiring(options: options)
 
     // Get current time (UTC+8)
     let now = Date()
@@ -339,7 +339,7 @@ public func runTaskCommand(
     task: String,
     trigger: String
 ) async throws -> ExecutionResult {
-    let wiring = RunWiring(options: options)
+    let wiring = try RunWiring(options: options)
     let service = RunService()
     return try await service.run(
         storage: wiring.storage,
@@ -351,46 +351,46 @@ public func runTaskCommand(
 }
 
 public func listTaskEntries(options: CommonOptions) async throws -> [String] {
-    let wiring = ListWiring(options: options)
+    let wiring = try ListWiring(options: options)
     let service = TaskListService(loader: wiring.storage)
     let entries = try await service.list()
     return entries.map { "\($0.id): \($0.description)" }
 }
 
 public func validateCommand(options: CommonOptions) async throws -> Result<ValidationSummary, ValidationError> {
-    let wiring = ValidateWiring(options: options)
+    let wiring = try ValidateWiring(options: options)
     let service = ValidateService(tasksLoader: wiring.storage, schedulesLoader: wiring.storage)
     return try await service.validate()
 }
 
 public func monitorCommand(options: CommonOptions) async throws -> [String] {
-    let wiring = MonitorWiring(options: options)
+    let wiring = try MonitorWiring(options: options)
     let service = MonitorService(monitor: wiring.monitor)
     let result = try await service.check()
     return result.interrupted
 }
 
 public func initCommandMessage(options: CommonOptions) async throws -> String {
-    let wiring = InitWiring(options: options)
+    let wiring = try InitWiring(options: options)
     let service = InitService(initializer: wiring.storage, dataDir: options.dataDir)
     return try await service.run()
 }
 
 public func logsListEntries(options: CommonOptions, limit: Int) async throws -> [String] {
-    let wiring = LogsWiring(options: options)
+    let wiring = try LogsWiring(options: options)
     let service = LogService(dataDir: options.dataDir, loader: wiring.storage)
     let entries = try await service.listRuns(limit: limit)
     return entries.map { "\($0.status) \($0.id) \($0.task) \($0.startedAt)" }
 }
 
 public func logsOutput(options: CommonOptions, id: String?, tail: Int?) async throws -> String {
-    let wiring = LogsWiring(options: options)
+    let wiring = try LogsWiring(options: options)
     let service = LogService(dataDir: options.dataDir, loader: wiring.storage)
     return try await service.output(runId: id, tail: tail)
 }
 
 public func apiCommandOutput(options: CommonOptions, query: String) async throws -> String {
-    let wiring = ApiWiring(options: options)
+    let wiring = try ApiWiring(options: options)
     let service = ApiService(
         tasksLoader: wiring.storage,
         schedulesLoader: wiring.storage,
@@ -406,7 +406,7 @@ public struct CleanupCommandResult: Sendable {
 }
 
 public func cleanupCommand(options: CommonOptions, force: Bool) async throws -> CleanupCommandResult {
-    let wiring = CleanupWiring(options: options)
+    let wiring = try CleanupWiring(options: options)
     let index = try await wiring.storage.loadRunsIndex()
 
     let planner = CleanupPlanner()
@@ -471,7 +471,7 @@ public func cleanupCommand(options: CommonOptions, force: Bool) async throws -> 
 }
 
 public func completeCommand(options: CommonOptions, id: String, exitCode: Int, duration: Int) async throws {
-    let storage = Storage(dataDir: options.dataDir)
+    let storage = try SQLiteStorage(dataDir: options.dataDir)
     try await storage.completeRun(id: id, exitCode: exitCode, duration: duration)
 }
 

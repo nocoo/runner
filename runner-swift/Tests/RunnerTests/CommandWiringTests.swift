@@ -1,6 +1,5 @@
 import Testing
 import Foundation
-import Testing
 @testable import RunnerLib
 
 @Suite("CommandWiring Tests")
@@ -15,7 +14,7 @@ struct CommandWiringTests {
     func autoWiringBuildsDependencies() async throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path, "--dry-run", "--verbose"])
-        let wiring = AutoWiring(options: options)
+        let wiring = try AutoWiring(options: options)
         #expect(await wiring.storage.dataDir == options.dataDir)
         #expect(wiring.monitor.verbose == true)
         #expect(wiring.executor.dryRun == true)
@@ -26,7 +25,7 @@ struct CommandWiringTests {
     func runWiringBuildsExecutor() async throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path, "--dry-run"])
-        let wiring = RunWiring(options: options)
+        let wiring = try RunWiring(options: options)
         #expect(await wiring.storage.dataDir == options.dataDir)
         #expect(wiring.executor.dryRun == true)
     }
@@ -35,7 +34,7 @@ struct CommandWiringTests {
     func listWiringBuildsStorage() async throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
-        let wiring = ListWiring(options: options)
+        let wiring = try ListWiring(options: options)
         #expect(await wiring.storage.dataDir == options.dataDir)
     }
 
@@ -43,7 +42,7 @@ struct CommandWiringTests {
     func validateWiringBuildsStorage() async throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
-        let wiring = ValidateWiring(options: options)
+        let wiring = try ValidateWiring(options: options)
         #expect(await wiring.storage.dataDir == options.dataDir)
     }
 
@@ -51,7 +50,7 @@ struct CommandWiringTests {
     func monitorWiringBuildsMonitor() async throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path, "--verbose"])
-        let wiring = MonitorWiring(options: options)
+        let wiring = try MonitorWiring(options: options)
         #expect(await wiring.storage.dataDir == options.dataDir)
         #expect(wiring.monitor.verbose == true)
     }
@@ -60,7 +59,7 @@ struct CommandWiringTests {
     func initWiringBuildsStorage() async throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
-        let wiring = InitWiring(options: options)
+        let wiring = try InitWiring(options: options)
         #expect(await wiring.storage.dataDir == options.dataDir)
     }
 
@@ -68,14 +67,15 @@ struct CommandWiringTests {
     func logsWiringBuildsStorage() async throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
-        let wiring = LogsWiring(options: options)
+        let wiring = try LogsWiring(options: options)
         #expect(await wiring.storage.dataDir == options.dataDir)
     }
 
     @Test("ApiWiring builds state path")
     func apiWiringBuildsStatePath() throws {
-        let options = try CommonOptions.parse([])
-        let wiring = ApiWiring(options: options)
+        let tempDir = try makeTempDir()
+        let options = try CommonOptions.parse(["--data-dir", tempDir.path])
+        let wiring = try ApiWiring(options: options)
         #expect(wiring.statePath.lastPathComponent == "state.json")
     }
 
@@ -83,7 +83,7 @@ struct CommandWiringTests {
     func cleanupWiringBuildsStorage() async throws {
         let tempDir = try makeTempDir()
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
-        let wiring = CleanupWiring(options: options)
+        let wiring = try CleanupWiring(options: options)
         #expect(await wiring.storage.dataDir == options.dataDir)
     }
 

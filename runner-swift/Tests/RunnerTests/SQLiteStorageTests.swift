@@ -228,8 +228,33 @@ struct SQLiteStorageTests {
     func loadRunDetailReturnsRun() async throws {
         let storage = try SQLiteStorage(inMemory: true)
         
+        // Create a completed run (exitCode is set)
         let run = RunSummary(
             id: "test-1",
+            task: "heartbeat",
+            trigger: "manual",
+            exitCode: 0,
+            startedAt: "2026-01-25T08:00:00Z",
+            finishedAt: "2026-01-25T08:01:00Z",
+            pid: nil,
+            startedAtEpoch: 1737795600
+        )
+        try await storage.addRun(run)
+        
+        let detail = try await storage.loadRunDetail(id: "test-1")
+        #expect(detail != nil)
+        #expect(detail?.id == "test-1")
+        #expect(detail?.task == "heartbeat")
+        #expect(detail?.trigger == "manual")
+    }
+    
+    @Test("loadRunDetail returns nil for running task")
+    func loadRunDetailNilForRunning() async throws {
+        let storage = try SQLiteStorage(inMemory: true)
+        
+        // Create a running task (no exitCode)
+        let run = RunSummary(
+            id: "running-1",
             task: "heartbeat",
             trigger: "manual",
             exitCode: nil,
@@ -240,11 +265,8 @@ struct SQLiteStorageTests {
         )
         try await storage.addRun(run)
         
-        let detail = try await storage.loadRunDetail(id: "test-1")
-        #expect(detail != nil)
-        #expect(detail?.id == "test-1")
-        #expect(detail?.task == "heartbeat")
-        #expect(detail?.trigger == "manual")
+        let detail = try await storage.loadRunDetail(id: "running-1")
+        #expect(detail == nil)
     }
     
     @Test("runs are ordered by started_at_epoch descending")

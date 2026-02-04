@@ -23,6 +23,18 @@ struct CLICommandsTests {
         return storage
     }
 
+    func makeSQLiteStorage(at url: URL) throws -> SQLiteStorage {
+        return try SQLiteStorage(dataDir: url)
+    }
+
+    // Helper to add test runs to SQLite storage
+    func addTestRuns(_ runs: [RunSummary], to dataDir: URL) async throws {
+        let storage = try SQLiteStorage(dataDir: dataDir)
+        for run in runs {
+            try await storage.addRun(run)
+        }
+    }
+
     func resetExitHandler() {
         ExitHandler.handle = { code in
             Darwin.exit(code)
@@ -296,10 +308,8 @@ struct CLICommandsTests {
     @Test("Logs list outputs entries")
     func logsCommandList() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
-        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: nil)
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1737795600)
+        try await addTestRuns([run], to: tempDir)
 
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
 
@@ -317,10 +327,8 @@ struct CLICommandsTests {
     @Test("Logs command list flag prints entries")
     func logsCommandRunList() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
-        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: nil)
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1737795600)
+        try await addTestRuns([run], to: tempDir)
 
         let command = try Logs.parse([
             "--data-dir",
@@ -341,10 +349,8 @@ struct CLICommandsTests {
     @Test("Logs output prints last run")
     func logsCommandOutput() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
-        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: nil)
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1737795600)
+        try await addTestRuns([run], to: tempDir)
         try "line1\nline2".write(to: tempDir.appendingPathComponent("runs/r1.output"), atomically: true, encoding: .utf8)
 
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
@@ -359,10 +365,8 @@ struct CLICommandsTests {
     @Test("Logs command run outputs tail")
     func logsCommandRunOutput() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
-        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: nil)
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        let run = RunSummary(id: "r1", task: "t1", exitCode: 0, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1737795600)
+        try await addTestRuns([run], to: tempDir)
         try "line1\nline2".write(to: tempDir.appendingPathComponent("runs/r1.output"), atomically: true, encoding: .utf8)
 
         let command = try Logs.parse([
@@ -428,10 +432,8 @@ struct CLICommandsTests {
     @Test("Cleanup prints dry run summary")
     func cleanupCommandDryRun() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
         let run = RunSummary(id: "stale", task: "t1", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1769308800)
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try await addTestRuns([run], to: tempDir)
 
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
 
@@ -449,10 +451,8 @@ struct CLICommandsTests {
     @Test("Cleanup marks interrupted when forced")
     func cleanupCommandForceMarksInterrupted() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
         let run = RunSummary(id: "stale", task: "t1", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1769308800)
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try await addTestRuns([run], to: tempDir)
 
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
 
@@ -469,10 +469,8 @@ struct CLICommandsTests {
     @Test("Cleanup command run marks interrupted")
     func cleanupCommandRunMarksInterrupted() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
         let run = RunSummary(id: "stale", task: "t1", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1769308800)
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try await addTestRuns([run], to: tempDir)
 
         let command = try Cleanup.parse([
             "--data-dir",
@@ -492,13 +490,11 @@ struct CLICommandsTests {
     @Test("Cleanup dry run with orphans lists actions")
     func cleanupCommandDryRunOrphans() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
         let runs = [
             RunSummary(id: "orphan", task: "t1", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: 4242, startedAtEpoch: 1769308800),
             RunSummary(id: "dead", task: "t2", exitCode: nil, startedAt: "2026-01-25T08:00:00Z", finishedAt: nil, pid: nil, startedAtEpoch: 1769308800)
         ]
-        let index = RunsIndex(runs: runs, total: runs.count, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try await addTestRuns(runs, to: tempDir)
 
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
 
@@ -517,7 +513,7 @@ struct CLICommandsTests {
     @Test("Monitor prints no interrupted tasks")
     func monitorCommandEmpty() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
+        _ = try SQLiteStorage(dataDir: tempDir)
 
         let options = try CommonOptions.parse(["--data-dir", tempDir.path])
 
@@ -539,7 +535,6 @@ struct CLICommandsTests {
     @Test("Monitor prints interrupted tasks")
     func monitorCommandPrintsInterrupted() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
 
         let oldTime = Int64(Date().timeIntervalSince1970) - 200
         let run = RunSummary(
@@ -551,8 +546,7 @@ struct CLICommandsTests {
             pid: 999999999,
             startedAtEpoch: oldTime
         )
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try await addTestRuns([run], to: tempDir)
 
         let command = try MonitorCommand.parse([
             "--data-dir",
@@ -637,7 +631,7 @@ struct CLICommandsTests {
     @Test("Complete command updates run")
     func completeCommandUpdatesRun() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
+        let storage = try makeSQLiteStorage(at: tempDir)
 
         // Create a running task
         let run = RunSummary(
@@ -649,8 +643,7 @@ struct CLICommandsTests {
             pid: 12345,
             startedAtEpoch: 1737795600
         )
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try await storage.addRun(run)
 
         let command = try Complete.parse([
             "test-run-1",
@@ -662,7 +655,6 @@ struct CLICommandsTests {
         try await command.run()
 
         // Verify index was updated
-        let storage = Storage(dataDir: tempDir)
         let updatedIndex = try await storage.loadRunsIndex()
         #expect(updatedIndex.runs[0].exitCode == 0)
         #expect(updatedIndex.runs[0].finishedAt != nil)
@@ -678,7 +670,7 @@ struct CLICommandsTests {
     @Test("Complete command with non-zero exit code")
     func completeCommandWithFailure() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
+        let storage = try makeSQLiteStorage(at: tempDir)
 
         let run = RunSummary(
             id: "fail-run-1",
@@ -689,8 +681,7 @@ struct CLICommandsTests {
             pid: 12345,
             startedAtEpoch: 1737795600
         )
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try await storage.addRun(run)
 
         let command = try Complete.parse([
             "fail-run-1",
@@ -701,7 +692,6 @@ struct CLICommandsTests {
 
         try await command.run()
 
-        let storage = Storage(dataDir: tempDir)
         let updatedIndex = try await storage.loadRunsIndex()
         #expect(updatedIndex.runs[0].exitCode == 1)
     }
@@ -709,7 +699,7 @@ struct CLICommandsTests {
     @Test("Complete command with timeout exit code")
     func completeCommandWithTimeout() async throws {
         let tempDir = try makeTempDir()
-        _ = try await makeStorage(at: tempDir)
+        let storage = try makeSQLiteStorage(at: tempDir)
 
         let run = RunSummary(
             id: "timeout-run-1",
@@ -720,8 +710,7 @@ struct CLICommandsTests {
             pid: 12345,
             startedAtEpoch: 1737795600
         )
-        let index = RunsIndex(runs: [run], total: 1, updatedAt: "")
-        try writeJSON(index, to: tempDir.appendingPathComponent("runs/index.json"))
+        try await storage.addRun(run)
 
         let command = try Complete.parse([
             "timeout-run-1",
@@ -732,7 +721,6 @@ struct CLICommandsTests {
 
         try await command.run()
 
-        let storage = Storage(dataDir: tempDir)
         let detail = try await storage.loadRunDetail(id: "timeout-run-1")
         #expect(detail?.exitCode == 124)
         #expect(detail?.durationSeconds == 300)

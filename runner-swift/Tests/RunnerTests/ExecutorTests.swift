@@ -27,8 +27,8 @@ struct ExecutorTests {
         ScriptBuilder(dataDir: dataDir, runnerPath: getRunnerPath())
     }
     
-    func makeExecutor(storage: Storage, dryRun: Bool = false, verbose: Bool = false) -> Executor {
-        Executor(storage: storage, dryRun: dryRun, verbose: verbose, runnerPath: getRunnerPath())
+    func makeExecutor(storage: SQLiteStorage, tempDir: URL, dryRun: Bool = false, verbose: Bool = false) -> Executor {
+        Executor(repository: storage, dataDir: tempDir, dryRun: dryRun, verbose: verbose, runnerPath: getRunnerPath())
     }
     
     func makeTask(id: String = "test", command: String = "echo hello", workdir: String? = nil) -> Task {
@@ -43,11 +43,10 @@ struct ExecutorTests {
         )
     }
     
-    func createTempStorage() async throws -> (URL, Storage) {
+    func createTempStorage() async throws -> (URL, SQLiteStorage) {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        let storage = Storage(dataDir: tempDir)
-        try await storage.initialize()
+        let storage = try SQLiteStorage(dataDir: tempDir)
         return (tempDir, storage)
     }
     
@@ -108,7 +107,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "rm -rf /") // Dangerous but won't run
         
-        let executor = makeExecutor(storage: storage, dryRun: true)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir, dryRun: true)
         let result = try await executor.execute(task: task, trigger: "test")
         
         #expect(result.exitCode == 0)
@@ -124,7 +123,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "echo hello")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // The task starts in background, so exit code 0 means it launched successfully
@@ -147,7 +146,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "echo hello")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "manual")
         
         let outputPath = tempDir.appendingPathComponent("runs/\(result.id).output")
@@ -169,7 +168,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "pwd", workdir: "/tmp")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         #expect(result.exitCode == 0)
@@ -203,7 +202,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "echo 'done'")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Wait for background task to complete (increased for CI)
@@ -227,7 +226,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "exit 42")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Wait for background task to complete (increased for CI)
@@ -244,7 +243,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "echo done")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         _ = try await executor.execute(task: task, trigger: "test")
         
         // Initially running
@@ -287,7 +286,7 @@ struct ExecutorTests {
             workdir: nil
         )
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Wait for timeout + cleanup (increased for CI)
@@ -310,7 +309,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "echo done")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Script should exist initially
@@ -350,7 +349,7 @@ struct ExecutorTests {
         )
         
         // Use dry run to see the command without executing
-        let executor = makeExecutor(storage: storage, dryRun: true)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir, dryRun: true)
         let result = try await executor.execute(task: task, trigger: "test")
         
         #expect(result.output.contains("opencode"))
@@ -372,7 +371,7 @@ struct ExecutorTests {
             workdir: nil
         )
         
-        let executor = makeExecutor(storage: storage, dryRun: true)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir, dryRun: true)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Should not crash and should contain escaped prompt
@@ -398,7 +397,7 @@ struct ExecutorTests {
             body: "{\"hello\":\"world\"}"
         )
 
-        let executor = makeExecutor(storage: storage, dryRun: true)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir, dryRun: true)
         let result = try await executor.execute(task: task, trigger: "test")
 
         #expect(result.output.contains("curl"))
@@ -424,7 +423,7 @@ struct ExecutorTests {
             method: "GET"
         )
 
-        let executor = makeExecutor(storage: storage, dryRun: true)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir, dryRun: true)
         let result = try await executor.execute(task: task, trigger: "test")
 
         #expect(result.output.contains("-X GET"))
@@ -448,7 +447,7 @@ struct ExecutorTests {
             workdir: nil
         )
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         
         do {
             _ = try await executor.execute(task: task, trigger: "test")
@@ -473,7 +472,7 @@ struct ExecutorTests {
             workdir: nil
         )
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         
         do {
             _ = try await executor.execute(task: task, trigger: "test")
@@ -490,7 +489,7 @@ struct ExecutorTests {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         
         // Launch 3 tasks with delays to avoid file lock contention
         var resultIds: [String] = []
@@ -547,7 +546,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "echo 'hello world'")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         try await _Concurrency.Task.sleep(nanoseconds: 1_000_000_000) // 1s
@@ -565,7 +564,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "echo 'error message' >&2")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         try await _Concurrency.Task.sleep(nanoseconds: 1_000_000_000) // 1s
@@ -583,7 +582,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "echo 'line1' && echo 'line2' && echo 'line3'")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         try await _Concurrency.Task.sleep(nanoseconds: 1_000_000_000) // 1s
@@ -605,7 +604,7 @@ struct ExecutorTests {
         
         let task = makeTask(command: "sleep 1")
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         try await _Concurrency.Task.sleep(nanoseconds: 3_000_000_000) // 3s

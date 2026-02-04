@@ -21,15 +21,14 @@ struct IntegrationTests {
         return FileManager.default.isExecutableFile(atPath: runnerPath)
     }
     
-    func makeExecutor(storage: Storage, dryRun: Bool = false, verbose: Bool = false) -> Executor {
-        Executor(storage: storage, dryRun: dryRun, verbose: verbose, runnerPath: getRunnerPath())
+    func makeExecutor(storage: SQLiteStorage, tempDir: URL, dryRun: Bool = false, verbose: Bool = false) -> Executor {
+        Executor(repository: storage, dataDir: tempDir, dryRun: dryRun, verbose: verbose, runnerPath: getRunnerPath())
     }
     
-    func createTempStorage() async throws -> (URL, Storage) {
+    func createTempStorage() async throws -> (URL, SQLiteStorage) {
         let tempDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
-        let storage = Storage(dataDir: tempDir)
-        try await storage.initialize()
+        let storage = try SQLiteStorage(dataDir: tempDir)
         return (tempDir, storage)
     }
     
@@ -56,7 +55,7 @@ struct IntegrationTests {
         )
         
         // 2. Execute task
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "integration_test")
         
         #expect(result.exitCode == 0)
@@ -170,7 +169,7 @@ struct IntegrationTests {
             workdir: nil
         )
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Task is running
@@ -188,7 +187,7 @@ struct IntegrationTests {
         
         // Task completed, but still has PID in index (until jq updates it)
         // Run monitor to check
-        let monitor = Monitor(storage: storage, verbose: false)
+        let monitor = Monitor(repository: storage, verbose: false)
         _ = try await monitor.checkRunningTasks()
         
         // Should be empty or the task should be properly handled
@@ -219,7 +218,7 @@ struct IntegrationTests {
             workdir: nil
         )
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         try await _Concurrency.Task.sleep(nanoseconds: 1_500_000_000) // 1.5s
@@ -254,7 +253,7 @@ struct IntegrationTests {
             workdir: nil
         )
         
-        let executor = makeExecutor(storage: storage)
+        let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Wait for timeout + cleanup (increased for CI)

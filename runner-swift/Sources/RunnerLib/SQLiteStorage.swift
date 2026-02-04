@@ -108,7 +108,7 @@ extension DatabaseMigrator {
 /// SQLite-based storage implementation
 public actor SQLiteStorage {
     private let dbQueue: DatabaseQueue
-    private let dataDir: URL
+    public let dataDir: URL
     
     /// Initialize SQLite storage
     /// - Parameter dataDir: Directory for data files (database + output files)
@@ -229,6 +229,10 @@ extension SQLiteStorage: RunRepository {
             guard let record = try RunRecord.fetchOne(db, key: id) else {
                 return nil
             }
+            // Only return detail if the run has completed (exitCode is set)
+            guard record.exitCode != nil else {
+                return nil
+            }
             return record.toDetail()
         }
     }
@@ -305,3 +309,14 @@ extension SQLiteStorage: ConfigRepository {
         return try JSONDecoder().decode([Schedule].self, from: data)
     }
 }
+
+// MARK: - Additional Protocol Conformances
+
+// SQLiteStorage already has loadTasks() and loadSchedules() from ConfigRepository,
+// so we just declare conformance to the service-specific protocols
+extension SQLiteStorage: TaskLoading {}
+extension SQLiteStorage: TasksLoading {}
+extension SQLiteStorage: SchedulesLoading {}
+extension SQLiteStorage: Initializing {}
+extension SQLiteStorage: RunsIndexLoading {}
+extension SQLiteStorage: RunDetailLoading {}
