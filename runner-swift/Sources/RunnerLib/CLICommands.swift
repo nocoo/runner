@@ -231,6 +231,74 @@ public struct Complete: AsyncParsableCommand {
     }
 }
 
+public struct Migrate: AsyncParsableCommand {
+    public static let configuration = CommandConfiguration(
+        abstract: "Migrate data from JSON storage to SQLite"
+    )
+
+    @OptionGroup var options: CommonOptions
+
+    @Flag(name: .shortAndLong, help: "Force migration even if SQLite database exists")
+    var force: Bool = false
+
+    public init() {}
+
+    public func run() async throws {
+        let result = try await migrateCommand(options: options, force: force)
+        for line in result.lines {
+            print(line)
+        }
+    }
+}
+
+public struct MigrateResult: Sendable {
+    public let lines: [String]
+    public let success: Bool
+}
+
+public func migrateCommand(options: CommonOptions, force: Bool) async throws -> MigrateResult {
+    let dataDir = options.dataDir
+    var lines: [String] = []
+    
+    // Check if JSON index exists
+    if !MigrationService.jsonIndexExists(in: dataDir) {
+        lines.append("No JSON data found to migrate (runs/index.json does not exist)")
+        return MigrateResult(lines: lines, success: true)
+    }
+    
+    // Check if SQLite already exists
+    if MigrationService.sqliteExists(in: dataDir) && !force {
+        lines.append("SQLite database already exists: runner.db")
+        lines.append("Use --force to overwrite")
+        return MigrateResult(lines: lines, success: false)
+    }
+    
+    // Perform migration
+    lines.append("Migrating from JSON to SQLite...")
+    
+    let jsonStorage = Storage(dataDir: dataDir)
+    let sqliteStorage = try SQLiteStorage(dataDir: dataDir)
+    
+    let result = try await MigrationService.migrate(from: jsonStorage, to: sqliteStorage)
+    
+    lines.append("Migrated \(result.runsCount) runs")
+    
+    if !result.errors.isEmpty {
+        lines.append("Errors:")
+        for error in result.errors {
+            lines.append("  - \(error)")
+        }
+    }
+    
+    if result.success {
+        lines.append("Migration completed successfully!")
+    } else {
+        lines.append("Migration completed with errors")
+    }
+    
+    return MigrateResult(lines: lines, success: result.success)
+}
+
 public func runAutoCommand(
     options: CommonOptions,
     mockHour: Int?,
