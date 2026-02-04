@@ -7,6 +7,7 @@ import {
   fetchRunDetail,
   fetchRunOutput,
   triggerTask,
+  createTask,
 } from "../api";
 
 describe("api", () => {
@@ -152,6 +153,49 @@ describe("api", () => {
       expect(calledUrl).toBe("/api/trigger/heartbeat");
       expect(calledOptions?.method).toBe("POST");
       expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe("createTask", () => {
+    test("calls correct endpoint with POST method and JSON body", async () => {
+      const mockResponse = { success: true, id: "my_task" };
+      const task = {
+        id: "my_task",
+        executor: "shell" as const,
+        description: "Test task",
+        timeout: 60,
+        command: "echo hello",
+      };
+      let calledUrl = "";
+      let calledOptions: RequestInit | undefined;
+      globalThis.fetch = (async (url: string, options?: RequestInit) => {
+        calledUrl = url;
+        calledOptions = options;
+        return new Response(JSON.stringify(mockResponse));
+      }) as unknown as typeof fetch;
+
+      const result = await createTask(task);
+      
+      expect(calledUrl).toBe("/api/tasks");
+      expect(calledOptions?.method).toBe("POST");
+      expect(calledOptions?.headers).toEqual({ "Content-Type": "application/json" });
+      expect(calledOptions?.body).toBe(JSON.stringify(task));
+      expect(result).toEqual(mockResponse);
+    });
+
+    test("throws on error response", async () => {
+      const task = {
+        id: "my_task",
+        executor: "shell" as const,
+        description: "Test task",
+        timeout: 60,
+        command: "echo hello",
+      };
+      globalThis.fetch = (async () => {
+        return new Response("Task already exists", { status: 409 });
+      }) as unknown as typeof fetch;
+
+      await expect(createTask(task)).rejects.toThrow("API Error");
     });
   });
 });
