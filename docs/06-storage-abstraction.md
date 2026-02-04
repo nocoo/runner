@@ -344,26 +344,27 @@ Dashboard 继续使用 `runner api runs`，无需修改。Swift 端输出 JSON �
 | 1.3 | Storage 实现协议 | ✅ | `Storage.swift` |
 | 1.4 | Executor 依赖协议 | ✅ | `Executor.swift` |
 | 1.5 | Monitor 依赖协议 | ✅ | `Monitor.swift` |
-| 2.1 | 添加 `runner complete` 命令 | ⏳ | `CLICommands.swift` |
-| 2.2 | 修改 ScriptBuilder 使用回调 | ⏳ | `ScriptBuilder.swift` |
-| 2.3 | 添加 `completeRun` 到 RunRepository | ⏳ | `Repositories.swift` |
-| 2.4 | 更新测试 | ⏳ | `*Tests.swift` |
-| 3.1 | 添加 GRDB 依赖 | ⏳ | `Package.swift` |
-| 3.2 | 创建数据库 schema | ⏳ | `SQLiteStorage.swift` |
-| 3.3 | 实现 SQLiteStorage | ⏳ | `SQLiteStorage.swift` |
-| 3.4 | 数据迁移脚本 | ⏳ | `MigrationService.swift` |
-| 3.5 | 集成测试 | ⏳ | `SQLiteStorageTests.swift` |
-| 4.1 | 移除遗留 JSON 代码 | ⏳ | 多个文件 |
-| 4.2 | 更新文档 | ⏳ | `docs/` |
+| 2.1 | 添加 `runner complete` 命令 | ✅ | `CLICommands.swift` |
+| 2.2 | 修改 ScriptBuilder 使用回调 | ✅ | `ScriptBuilder.swift` |
+| 2.3 | 添加 `completeRun` 到 RunRepository | ✅ | `Repositories.swift` |
+| 2.4 | 更新测试 | ✅ | `*Tests.swift` |
+| 3.1 | 添加 GRDB 依赖 | ✅ | `Package.swift` |
+| 3.2 | 创建数据库 schema | ✅ | `SQLiteStorage.swift` |
+| 3.3 | 实现 SQLiteStorage | ✅ | `SQLiteStorage.swift` |
+| 3.4 | 数据迁移脚本 | ✅ | `MigrationService.swift` |
+| 3.5 | 集成测试 | ✅ | `SQLiteStorageTests.swift` |
+| 4.1 | 切换系统到 SQLiteStorage | ✅ | `CommandWiring.swift` |
+| 4.2 | 移除遗留 JSON 代码 | ⏳ | 多个文件 (可选) |
+| 4.3 | 更新文档 | ✅ | `docs/` |
 
 ## 验收标准
 
 1. ✅ 每个阶段完成后所有现有测试通过
 2. ✅ 上层行为不变（Dashboard、CLI）
-3. ⏳ 单一写入点：只有 Swift 写入存储
-4. ⏳ SQLite 迁移完成，数据无丢失
-5. ⏳ 并发访问不再导致损坏
-6. ⏳ 大数据量查询性能提升
+3. ✅ 单一写入点：只有 Swift 写入存储
+4. ✅ SQLite 迁移完成，数据无丢失
+5. ✅ 并发访问不再导致损坏
+6. ✅ 大数据量查询性能提升
 
 ## 参考
 
