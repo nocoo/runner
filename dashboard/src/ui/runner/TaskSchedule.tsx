@@ -30,13 +30,13 @@ export function TaskSchedule({
       subtitle={`${tasks.length} tasks`}
       headerRight={
         onAddTask && (
-          <button
+          <MatrixButton
+            size="small"
+            primary
             onClick={onAddTask}
-            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.1em] inline-flex items-center gap-1 hover:text-matrix-primary transition-colors"
-            title="Add Task"
           >
-            <Plus size={14} /> Add
-          </button>
+            <Plus size={12} className="mr-1" /> Add
+          </MatrixButton>
         )
       }
     >

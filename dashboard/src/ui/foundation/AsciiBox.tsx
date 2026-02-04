@@ -46,7 +46,7 @@ export function AsciiBox({
           {ASCII_CHARS.HORIZONTAL.repeat(100)}
         </span>
         {headerRight && (
-          <span className="shrink-0 mx-2">{headerRight}</span>
+          <span className="shrink-0 ml-2 mr-3 flex items-center">{headerRight}</span>
         )}
         <span className="shrink-0 text-matrix-dim">{ASCII_CHARS.TOP_RIGHT}</span>
       </div>
