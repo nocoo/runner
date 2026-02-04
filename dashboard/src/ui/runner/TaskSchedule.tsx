@@ -2,6 +2,7 @@
 // Task Schedule Panel
 // ============================================
 
+import { Plus } from "lucide-react";
 import type { TaskWithSchedule } from "@/models/types";
 import { AsciiBox, MatrixButton } from "@/ui/foundation";
 import { formatScheduleTime, getWeekday } from "@/lib/date";
@@ -12,6 +13,7 @@ interface TaskScheduleProps {
   onTrigger: (taskId: string) => void;
   triggerLoading: boolean;
   onSelectTask?: (task: TaskWithSchedule) => void;
+  onAddTask?: () => void;
 }
 
 export function TaskSchedule({
@@ -20,9 +22,24 @@ export function TaskSchedule({
   onTrigger,
   triggerLoading,
   onSelectTask,
+  onAddTask,
 }: TaskScheduleProps) {
   return (
-    <AsciiBox title="Tasks" subtitle={`${tasks.length} tasks`}>
+    <AsciiBox
+      title="Tasks"
+      subtitle={`${tasks.length} tasks`}
+      headerRight={
+        onAddTask && (
+          <button
+            onClick={onAddTask}
+            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.1em] inline-flex items-center gap-1 hover:text-matrix-primary transition-colors"
+            title="Add Task"
+          >
+            <Plus size={14} /> Add
+          </button>
+        )
+      }
+    >
       <div className="space-y-4">
         {/* Loading state */}
         {loading && tasks.length === 0 && (

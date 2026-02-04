@@ -11,6 +11,7 @@ import {
   RunHistory,
   TaskSchedule,
   TaskDetailModal,
+  AddTaskModal,
   RunHeatmap,
   TrendChart,
   RunDetailModal,
@@ -24,6 +25,7 @@ export function DashboardPage() {
   const runsVM = useRunsVM(24);
   const tasksVM = useTasksVM();
   const [selectedTask, setSelectedTask] = useState<TaskWithSchedule | null>(null);
+  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
 
 
   const handleRefreshAll = () => {
@@ -121,6 +123,7 @@ export function DashboardPage() {
             onTrigger={tasksVM.trigger}
             triggerLoading={tasksVM.triggerState === "loading"}
             onSelectTask={setSelectedTask}
+            onAddTask={() => setShowAddTaskModal(true)}
           />
 
           {/* Run History */}
@@ -149,6 +152,15 @@ export function DashboardPage() {
       <TaskDetailModal
         task={selectedTask}
         onClose={() => setSelectedTask(null)}
+      />
+
+      {/* Add Task Modal */}
+      <AddTaskModal
+        open={showAddTaskModal}
+        onClose={() => setShowAddTaskModal(false)}
+        onSuccess={() => {
+          tasksVM.refresh();
+        }}
       />
 
       {/* Trigger Result Toast */}

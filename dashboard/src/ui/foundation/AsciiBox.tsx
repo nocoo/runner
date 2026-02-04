@@ -16,6 +16,7 @@ const ASCII_CHARS = {
 interface AsciiBoxProps {
   title: ReactNode;
   subtitle?: string;
+  headerRight?: ReactNode;
   children: ReactNode;
   className?: string;
   bodyClassName?: string;
@@ -24,6 +25,7 @@ interface AsciiBoxProps {
 export function AsciiBox({
   title,
   subtitle,
+  headerRight,
   children,
   className = "",
   bodyClassName = "",
@@ -43,6 +45,9 @@ export function AsciiBox({
         <span className="flex-1 overflow-hidden whitespace-nowrap text-matrix-ghost">
           {ASCII_CHARS.HORIZONTAL.repeat(100)}
         </span>
+        {headerRight && (
+          <span className="shrink-0 mx-2">{headerRight}</span>
+        )}
         <span className="shrink-0 text-matrix-dim">{ASCII_CHARS.TOP_RIGHT}</span>
       </div>
 
