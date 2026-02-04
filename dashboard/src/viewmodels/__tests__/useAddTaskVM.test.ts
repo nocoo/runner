@@ -117,6 +117,25 @@ describe("useAddTaskVM", () => {
     expect(result.current.errors.url).toBe("Invalid URL format");
   });
 
+  test("validate requires URL for http executor (empty URL)", () => {
+    const { result } = renderHook(() => useAddTaskVM());
+
+    act(() => {
+      result.current.updateField("id", "my_task");
+      result.current.updateField("description", "Test task");
+      result.current.updateField("executor", "http");
+      // Don't set URL - leave it empty
+    });
+
+    let isValid = false;
+    act(() => {
+      isValid = result.current.validate();
+    });
+
+    expect(isValid).toBe(false);
+    expect(result.current.errors.url).toBe("URL is required for http executor");
+  });
+
   test("validate checks headers JSON format", () => {
     const { result } = renderHook(() => useAddTaskVM());
 
@@ -156,7 +175,7 @@ describe("useAddTaskVM", () => {
   });
 
   test("submit calls createTask and onSuccess on success", async () => {
-    const mockCreateTask = mock(async () => ({ success: true, task_id: "my_task" }));
+    const mockCreateTask = mock(async () => ({ success: true, id: "my_task" }));
     const mockOnSuccess = mock(() => {});
 
     const { result } = renderHook(() =>
@@ -212,7 +231,7 @@ describe("useAddTaskVM", () => {
   });
 
   test("submit returns false without calling API when validation fails", async () => {
-    const mockCreateTask = mock(async () => ({ success: true, task_id: "x" }));
+    const mockCreateTask = mock(async () => ({ success: true, id: "x" }));
 
     const { result } = renderHook(() =>
       useAddTaskVM({
@@ -264,7 +283,7 @@ describe("useAddTaskVM", () => {
     let capturedTask: unknown = null;
     const mockCreateTask = mock(async (task: unknown) => {
       capturedTask = task;
-      return { success: true, task_id: "http_task" };
+      return { success: true, id: "http_task" };
     });
 
     const { result } = renderHook(() =>
@@ -293,6 +312,38 @@ describe("useAddTaskVM", () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: '{"key": "value"}',
+    });
+  });
+
+  test("submit builds correct task object for opencode executor", async () => {
+    let capturedTask: unknown = null;
+    const mockCreateTask = mock(async (task: unknown) => {
+      capturedTask = task;
+      return { success: true, id: "opencode_task" };
+    });
+
+    const { result } = renderHook(() =>
+      useAddTaskVM({ createTask: mockCreateTask })
+    );
+
+    act(() => {
+      result.current.updateField("id", "opencode_task");
+      result.current.updateField("description", "Opencode task");
+      result.current.updateField("executor", "opencode");
+      result.current.updateField("prompt", "Analyze the code");
+      result.current.updateField("workdir", "/path/to/project");
+    });
+
+    await act(async () => {
+      await result.current.submit();
+    });
+
+    expect(capturedTask).toMatchObject({
+      id: "opencode_task",
+      executor: "opencode",
+      description: "Opencode task",
+      prompt: "Analyze the code",
+      workdir: "/path/to/project",
     });
   });
 });

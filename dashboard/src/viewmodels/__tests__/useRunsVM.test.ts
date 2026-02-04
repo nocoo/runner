@@ -17,8 +17,8 @@ describe("useRunsVM", () => {
   test("loads runs and sorts newest first", async () => {
     const runsIndex: RunsIndex = {
       runs: [
-        { id: "1", task: "task", exit_code: 0, finished_at: "2026-01-28T10:00:00Z" },
-        { id: "2", task: "task", exit_code: 0, finished_at: "2026-01-29T10:00:00Z" },
+        { id: "1", task: "task", exit_code: 0, started_at: "2026-01-28T09:55:00Z", finished_at: "2026-01-28T10:00:00Z" },
+        { id: "2", task: "task", exit_code: 0, started_at: "2026-01-29T09:55:00Z", finished_at: "2026-01-29T10:00:00Z" },
       ],
       total: 2,
       updated_at: "2026-01-30T00:00:00Z",
@@ -56,7 +56,7 @@ describe("useRunsVM", () => {
 
   test("selectRun loads detail and output", async () => {
     const runsIndex: RunsIndex = {
-      runs: [{ id: "1", task: "task", exit_code: 0, finished_at: "2026-01-29T10:00:00Z" }],
+      runs: [{ id: "1", task: "task", exit_code: 0, started_at: "2026-01-29T09:55:00Z", finished_at: "2026-01-29T10:00:00Z" }],
       total: 1,
       updated_at: "2026-01-30T00:00:00Z",
     };
@@ -94,7 +94,7 @@ describe("useRunsVM", () => {
 
   test("selectRun error sets selectedRunError", async () => {
     const runsIndex: RunsIndex = {
-      runs: [{ id: "1", task: "task", exit_code: 0, finished_at: "2026-01-29T10:00:00Z" }],
+      runs: [{ id: "1", task: "task", exit_code: 0, started_at: "2026-01-29T09:55:00Z", finished_at: "2026-01-29T10:00:00Z" }],
       total: 1,
       updated_at: "2026-01-30T00:00:00Z",
     };
@@ -122,7 +122,7 @@ describe("useRunsVM", () => {
 
   test("output error sets selectedRunOutputError", async () => {
     const runsIndex: RunsIndex = {
-      runs: [{ id: "1", task: "task", exit_code: 0, finished_at: "2026-01-29T10:00:00Z" }],
+      runs: [{ id: "1", task: "task", exit_code: 0, started_at: "2026-01-29T09:55:00Z", finished_at: "2026-01-29T10:00:00Z" }],
       total: 1,
       updated_at: "2026-01-30T00:00:00Z",
     };
@@ -159,7 +159,7 @@ describe("useRunsVM", () => {
 
   test("selectRun null resets selection", async () => {
     const runsIndex: RunsIndex = {
-      runs: [{ id: "1", task: "task", exit_code: 0, finished_at: "2026-01-29T10:00:00Z" }],
+      runs: [{ id: "1", task: "task", exit_code: 0, started_at: "2026-01-29T09:55:00Z", finished_at: "2026-01-29T10:00:00Z" }],
       total: 1,
       updated_at: "2026-01-30T00:00:00Z",
     };

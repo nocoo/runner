@@ -1170,6 +1170,9 @@ export function LibraryPage() {
       <RunDetailModal
         run={selectedRun}
         loading={false}
+        output={selectedRun ? "Sample output for demo purposes" : null}
+        outputLoading={false}
+        outputError={null}
         onClose={() => setSelectedRun(null)}
       />
 

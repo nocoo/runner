@@ -5,6 +5,9 @@ GlobalRegistrator.register();
 
 // Mark as React act environment to suppress act() warnings
 // This is a known compatibility issue with happy-dom + React Testing Library
+declare global {
+  var IS_REACT_ACT_ENVIRONMENT: boolean;
+}
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 // Suppress console.error for act() warnings in test environment
