@@ -429,6 +429,94 @@ struct CLICommandsTests {
         #expect(stdout.contains("\"id\" : \"t1\""))
     }
 
+    @Test("Api command with run <id> returns run detail")
+    func apiCommandRunDetail() async throws {
+        let tempDir = try makeTempDir()
+        let storage = try makeSQLiteStorage(at: tempDir)
+
+        // Add a completed run
+        let run = RunSummary(
+            id: "test-run-uuid",
+            task: "heartbeat",
+            trigger: "manual",
+            exitCode: 0,
+            startedAt: "2026-02-04T10:00:00Z",
+            finishedAt: "2026-02-04T10:00:05Z",
+            pid: nil,
+            startedAtEpoch: 1769155200
+        )
+        try await storage.addRun(run)
+
+        // Complete the run to make it return detail
+        try await storage.completeRun(id: "test-run-uuid", exitCode: 0, duration: 5)
+
+        let options = try CommonOptions.parse(["--data-dir", tempDir.path])
+
+        let stdout = try await captureStdoutAsync {
+            let output = try await apiCommandOutput(options: options, query: "run test-run-uuid")
+            print(output)
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("\"id\" : \"test-run-uuid\""))
+        #expect(stdout.contains("\"task\" : \"heartbeat\""))
+        #expect(stdout.contains("\"exit_code\" : 0"))
+    }
+
+    @Test("Api command with run <id> returns null for missing run")
+    func apiCommandRunDetailNotFound() async throws {
+        let tempDir = try makeTempDir()
+        _ = try makeSQLiteStorage(at: tempDir)
+
+        let options = try CommonOptions.parse(["--data-dir", tempDir.path])
+
+        let stdout = try await captureStdoutAsync {
+            let output = try await apiCommandOutput(options: options, query: "run nonexistent-id")
+            print(output)
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("null"))
+    }
+
+    @Test("Api command parses run with multiple arguments")
+    func apiCommandParseRunArgs() async throws {
+        let tempDir = try makeTempDir()
+        let storage = try makeSQLiteStorage(at: tempDir)
+
+        let run = RunSummary(
+            id: "abc-123",
+            task: "test",
+            trigger: "auto",
+            exitCode: 1,
+            startedAt: "2026-02-04T10:00:00Z",
+            finishedAt: "2026-02-04T10:00:10Z",
+            pid: nil,
+            startedAtEpoch: 1769155200
+        )
+        try await storage.addRun(run)
+        try await storage.completeRun(id: "abc-123", exitCode: 1, duration: 10)
+
+        // Test parsing with Api command (simulating `runner api run abc-123`)
+        let command = try Api.parse([
+            "--data-dir",
+            tempDir.path,
+            "run",
+            "abc-123"
+        ])
+
+        let stdout = try await captureStdoutAsync {
+            try await command.run()
+        }
+
+        resetExitHandler()
+
+        #expect(stdout.contains("\"id\" : \"abc-123\""))
+        #expect(stdout.contains("\"exit_code\" : 1"))
+    }
+
     @Test("Cleanup prints dry run summary")
     func cleanupCommandDryRun() async throws {
         let tempDir = try makeTempDir()

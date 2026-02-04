@@ -179,12 +179,13 @@ public struct Api: AsyncParsableCommand {
 
     @OptionGroup var options: CommonOptions
 
-    @Argument(help: "Query: tasks, schedules, runs, status, init")
-    var query: String
+    @Argument(parsing: .remaining, help: "Query: tasks, schedules, runs, run <id>, status, init")
+    var queryArgs: [String]
 
     public init() {}
 
     public func run() async throws {
+        let query = queryArgs.joined(separator: " ")
         let output = try await apiCommandOutput(options: options, query: query)
         print(output)
     }
