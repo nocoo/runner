@@ -1,17 +1,41 @@
 import Foundation
 
-public enum ApiQuery: String, Sendable {
+public enum ApiQuery: Sendable, Equatable {
     case tasks
     case schedules
     case runs
+    case run(id: String)
     case status
     case state
-    case initialize = "init"
+    case initialize
+    
+    /// Parse query string like "tasks", "runs", "run abc-123"
+    public init?(rawValue: String) {
+        switch rawValue {
+        case "tasks": self = .tasks
+        case "schedules": self = .schedules
+        case "runs": self = .runs
+        case "status": self = .status
+        case "state": self = .state
+        case "init": self = .initialize
+        default:
+            // Check for "run <id>" pattern
+            if rawValue.hasPrefix("run ") {
+                let id = String(rawValue.dropFirst(4))
+                if !id.isEmpty {
+                    self = .run(id: id)
+                    return
+                }
+            }
+            return nil
+        }
+    }
 }
 
 public enum ApiServiceError: Error {
     case unknownQuery(String)
     case invalidUTF8
+    case missingRunId
 }
 
 public protocol TasksLoading {
@@ -54,6 +78,7 @@ public struct ApiService {
     private let runsLoader: RunsIndexLoading
     private let initializer: Initializing
     private let stateLoader: StateLoading
+    private let runDetailLoader: RunDetailLoading
     private let encoder: JSONEncoder
 
     public init(
@@ -61,13 +86,15 @@ public struct ApiService {
         schedulesLoader: SchedulesLoading,
         runsLoader: RunsIndexLoading,
         initializer: Initializing,
-        stateLoader: StateLoading
+        stateLoader: StateLoading,
+        runDetailLoader: RunDetailLoading
     ) {
         self.tasksLoader = tasksLoader
         self.schedulesLoader = schedulesLoader
         self.runsLoader = runsLoader
         self.initializer = initializer
         self.stateLoader = stateLoader
+        self.runDetailLoader = runDetailLoader
         self.encoder = JSONEncoder()
         self.encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
     }
@@ -87,6 +114,9 @@ public struct ApiService {
             return try encodeString(await schedulesLoader.loadSchedules())
         case .runs:
             return try encodeString(await runsLoader.loadRunsIndex())
+        case .run(let id):
+            let detail = try await runDetailLoader.loadRunDetail(id: id)
+            return try encodeString(detail)
         case .status, .state:
             let data = try stateLoader.readStateData()
             guard let content = String(data: data, encoding: .utf8) else {

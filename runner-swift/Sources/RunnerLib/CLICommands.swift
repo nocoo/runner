@@ -396,7 +396,8 @@ public func apiCommandOutput(options: CommonOptions, query: String) async throws
         schedulesLoader: wiring.storage,
         runsLoader: wiring.storage,
         initializer: wiring.storage,
-        stateLoader: DefaultStateLoader(path: wiring.statePath)
+        stateLoader: DefaultStateLoader(path: wiring.statePath),
+        runDetailLoader: wiring.storage
     )
     return try await service.handle(query: query)
 }
