@@ -32,9 +32,20 @@ public struct ScriptBuilder {
         START_TIME=$(date +%s)
         TIMEOUT=\(timeout)
 
-        # Execute command with timeout using background process monitoring
+        # Execute command in background
         eval '\(escapedCommand)' >> '\(outputPath)' 2>&1 &
         CMD_PID=$!
+
+        # Function to kill process and all its descendants
+        kill_tree() {
+            local pid=$1
+            local sig=${2:-TERM}
+            # Get all child PIDs recursively
+            for child in $(pgrep -P $pid 2>/dev/null); do
+                kill_tree $child $sig
+            done
+            kill -$sig $pid 2>/dev/null
+        }
 
         # Monitor for timeout
         ELAPSED=0
@@ -43,10 +54,12 @@ public struct ScriptBuilder {
             ELAPSED=$((ELAPSED + 1))
             if [ $ELAPSED -ge $TIMEOUT ]; then
                 echo "" >> '\(outputPath)'
-                echo "=== TIMEOUT: Task exceeded ${TIMEOUT}s limit, killing process ===" >> '\(outputPath)'
-                kill -TERM $CMD_PID 2>/dev/null
+                echo "=== TIMEOUT: Task exceeded ${TIMEOUT}s limit, killing process tree ===" >> '\(outputPath)'
+                # Kill entire process tree
+                kill_tree $CMD_PID TERM
                 sleep 2
-                kill -9 $CMD_PID 2>/dev/null
+                # Force kill if still alive
+                kill_tree $CMD_PID 9
                 wait $CMD_PID 2>/dev/null
                 EXIT_CODE=124  # Standard timeout exit code
                 break
