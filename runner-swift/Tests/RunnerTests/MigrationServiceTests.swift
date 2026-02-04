@@ -227,3 +227,158 @@ struct MigrateCommandTests {
         #expect(result.lines.contains { $0.contains("successfully") })
     }
 }
+
+// MARK: - Config Migration Tests
+
+@Suite("Config Migration Tests")
+struct ConfigMigrationTests {
+    
+    private func createTempDir() throws -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("runner-config-migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: tempDir, withIntermediateDirectories: true)
+        return tempDir
+    }
+    
+    private func cleanup(_ dir: URL) {
+        try? FileManager.default.removeItem(at: dir)
+    }
+    
+    @Test("Config migration from empty storage succeeds")
+    func migrateEmptyConfig() async throws {
+        let tempDir = try createTempDir()
+        defer { cleanup(tempDir) }
+        
+        let jsonStorage = Storage(dataDir: tempDir)
+        try await jsonStorage.initialize()
+        
+        let sqliteStorage = try SQLiteStorage(dataDir: tempDir)
+        
+        let result = try await MigrationService.migrateConfigToSQLite(from: jsonStorage, to: sqliteStorage)
+        
+        #expect(result.success)
+        #expect(result.tasksCount == 0)
+        #expect(result.schedulesCount == 0)
+        #expect(result.errors.isEmpty)
+    }
+    
+    @Test("Config migration preserves task data")
+    func migratePreservesTaskData() async throws {
+        let tempDir = try createTempDir()
+        defer { cleanup(tempDir) }
+        
+        // Setup JSON storage with tasks by writing JSON file directly
+        let jsonStorage = Storage(dataDir: tempDir)
+        try await jsonStorage.initialize()
+        
+        let tasks = [
+            Task(
+                id: "heartbeat",
+                executor: .shell,
+                description: "Heartbeat check",
+                timeout: 30,
+                command: "echo 'alive'"
+            ),
+            Task(
+                id: "backup",
+                executor: .opencode,
+                description: "Run backup",
+                prompt: "Backup the database"
+            )
+        ]
+        
+        // Write tasks.json directly
+        let tasksPath = tempDir.appendingPathComponent("tasks.json")
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let tasksData = try encoder.encode(tasks)
+        try tasksData.write(to: tasksPath)
+        
+        // Perform migration
+        let sqliteStorage = try SQLiteStorage(dataDir: tempDir)
+        let result = try await MigrationService.migrateConfigToSQLite(from: jsonStorage, to: sqliteStorage)
+        
+        #expect(result.success)
+        #expect(result.tasksCount == 2)
+        
+        // Verify data in SQLite
+        let migratedTask1 = try await sqliteStorage.loadTask(id: "heartbeat")
+        #expect(migratedTask1 != nil)
+        #expect(migratedTask1?.executor == .shell)
+        #expect(migratedTask1?.description == "Heartbeat check")
+        #expect(migratedTask1?.command == "echo 'alive'")
+        
+        let migratedTask2 = try await sqliteStorage.loadTask(id: "backup")
+        #expect(migratedTask2 != nil)
+        #expect(migratedTask2?.executor == .opencode)
+        #expect(migratedTask2?.prompt == "Backup the database")
+    }
+    
+    @Test("Config migration preserves schedule data")
+    func migratePreservesScheduleData() async throws {
+        let tempDir = try createTempDir()
+        defer { cleanup(tempDir) }
+        
+        // Setup JSON storage
+        let jsonStorage = Storage(dataDir: tempDir)
+        try await jsonStorage.initialize()
+        
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        
+        // Write tasks.json directly
+        let tasks = [
+            Task(
+                id: "heartbeat",
+                executor: .shell,
+                description: "Heartbeat check",
+                command: "echo 'alive'"
+            )
+        ]
+        let tasksPath = tempDir.appendingPathComponent("tasks.json")
+        let tasksData = try encoder.encode(tasks)
+        try tasksData.write(to: tasksPath)
+        
+        // Write schedules.json directly
+        let schedules = [
+            Schedule(task: "heartbeat", hour: AnyCodable("*"), minute: AnyCodable("0"), weekday: AnyCodable("*")),
+            Schedule(task: "heartbeat", hour: AnyCodable("9"), minute: AnyCodable("30"), weekday: AnyCodable("1"))
+        ]
+        let schedulesPath = tempDir.appendingPathComponent("schedules.json")
+        let schedulesData = try encoder.encode(schedules)
+        try schedulesData.write(to: schedulesPath)
+        
+        // Perform migration
+        let sqliteStorage = try SQLiteStorage(dataDir: tempDir)
+        let result = try await MigrationService.migrateConfigToSQLite(from: jsonStorage, to: sqliteStorage)
+        
+        #expect(result.success)
+        #expect(result.tasksCount == 1)
+        #expect(result.schedulesCount == 2)
+        
+        // Verify schedules in SQLite
+        let migratedSchedules = try await sqliteStorage.loadSchedulesFromSQLite()
+        #expect(migratedSchedules.count == 2)
+        
+        // Check that we have both schedules (hour values)
+        let hourValues = migratedSchedules.map { "\($0.hour.value)" }
+        #expect(hourValues.contains("*"))
+        #expect(hourValues.contains("9"))
+    }
+    
+    @Test("tasksJsonExists returns false for missing file")
+    func tasksJsonExistsFalse() {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("nonexistent-\(UUID().uuidString)")
+        
+        #expect(!MigrationService.tasksJsonExists(in: tempDir))
+    }
+    
+    @Test("schedulesJsonExists returns false for missing file")
+    func schedulesJsonExistsFalse() {
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("nonexistent-\(UUID().uuidString)")
+        
+        #expect(!MigrationService.schedulesJsonExists(in: tempDir))
+    }
+}
