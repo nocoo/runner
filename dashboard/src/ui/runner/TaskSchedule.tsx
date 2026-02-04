@@ -28,19 +28,21 @@ export function TaskSchedule({
     <AsciiBox
       title="Tasks"
       subtitle={`${tasks.length} tasks`}
-      headerRight={
-        onAddTask && (
-          <MatrixButton
-            size="small"
-            primary
-            onClick={onAddTask}
-          >
-            <Plus size={12} className="mr-1" /> Add
-          </MatrixButton>
-        )
-      }
     >
       <div className="space-y-4">
+        {/* Add Task button - aligned with task card right edge */}
+        {onAddTask && (
+          <div className="flex justify-end">
+            <MatrixButton
+              size="small"
+              primary
+              onClick={onAddTask}
+            >
+              <Plus size={12} className="mr-1" /> Add
+            </MatrixButton>
+          </div>
+        )}
+
         {/* Loading state */}
         {loading && tasks.length === 0 && (
           <div className="py-8 text-center text-matrix-dim animate-pulse">
