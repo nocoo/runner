@@ -18,7 +18,7 @@ function renderLayout(initialPath = "/") {
       <Routes>
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<div data-testid="dashboard-page">Dashboard Content</div>} />
-          <Route path="/help" element={<div data-testid="help-page">Help Content</div>} />
+          <Route path="/history" element={<div data-testid="history-page">History Content</div>} />
           <Route path="/settings" element={<div data-testid="settings-page">Settings Content</div>} />
         </Route>
       </Routes>
@@ -42,8 +42,14 @@ describe("DashboardLayout", () => {
     const { container } = renderLayout();
     const nav = container.querySelector("nav")!;
     expect(nav.textContent).toContain("Dashboard");
-    expect(nav.textContent).toContain("Help");
+    expect(nav.textContent).toContain("History");
     expect(nav.textContent).toContain("Settings");
+  });
+
+  test("does not render Help nav item", () => {
+    const { container } = renderLayout();
+    const nav = container.querySelector("nav")!;
+    expect(nav.textContent).not.toContain("Help");
   });
 
   test("renders outlet content for root path", () => {
@@ -51,9 +57,14 @@ describe("DashboardLayout", () => {
     expect(getByTestId("dashboard-page")).toBeTruthy();
   });
 
-  test("renders outlet content for help path", () => {
-    const { getByTestId } = renderLayout("/help");
-    expect(getByTestId("help-page")).toBeTruthy();
+  test("renders outlet content for history path", () => {
+    const { getByTestId } = renderLayout("/history");
+    expect(getByTestId("history-page")).toBeTruthy();
+  });
+
+  test("renders outlet content for settings path", () => {
+    const { getByTestId } = renderLayout("/settings");
+    expect(getByTestId("settings-page")).toBeTruthy();
   });
 
   test("shows correct page title for root", () => {
@@ -62,10 +73,16 @@ describe("DashboardLayout", () => {
     expect(heading.textContent).toBe("Dashboard");
   });
 
-  test("shows correct page title for help", () => {
-    const { getByRole } = renderLayout("/help");
+  test("shows correct page title for history", () => {
+    const { getByRole } = renderLayout("/history");
     const heading = getByRole("heading", { level: 1 });
-    expect(heading.textContent).toBe("Help");
+    expect(heading.textContent).toBe("History");
+  });
+
+  test("shows correct page title for settings", () => {
+    const { getByRole } = renderLayout("/settings");
+    const heading = getByRole("heading", { level: 1 });
+    expect(heading.textContent).toBe("Settings");
   });
 
   test("renders skip-to-content link", () => {
@@ -112,24 +129,24 @@ describe("DashboardLayout", () => {
   test("search dialog shows all pages when no query", () => {
     const { getByText, container } = renderLayout();
     fireEvent.click(getByText("search..."));
-    // The dialog should list all 3 nav items
+    // The dialog should list all nav items
     const dialog = container.querySelector(".fixed.inset-x-4");
     expect(dialog).toBeTruthy();
     expect(dialog!.textContent).toContain("Dashboard");
-    expect(dialog!.textContent).toContain("Help");
+    expect(dialog!.textContent).toContain("History");
     expect(dialog!.textContent).toContain("Settings");
   });
 
   test("navigates when clicking nav item", () => {
     const { getAllByText, getByTestId } = renderLayout("/");
-    // Click Help nav item
-    const helpButtons = getAllByText("Help");
-    const navHelp = helpButtons.find(
+    // Click History nav item
+    const historyButtons = getAllByText("History");
+    const navHistory = historyButtons.find(
       (el) => el.closest("nav") !== null
     );
-    expect(navHelp).toBeTruthy();
-    fireEvent.click(navHelp!);
-    expect(getByTestId("help-page")).toBeTruthy();
+    expect(navHistory).toBeTruthy();
+    fireEvent.click(navHistory!);
+    expect(getByTestId("history-page")).toBeTruthy();
   });
 
   test("renders mobile menu button", () => {

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router";
 import {
   LayoutDashboard,
-  HelpCircle,
+  History,
   Settings,
   Search,
   ChevronRight,
@@ -35,13 +35,13 @@ const NAV_GROUPS: NavGroup[] = [
     defaultOpen: true,
     items: [
       { title: "Dashboard", icon: LayoutDashboard, path: "/" },
+      { title: "History", icon: History, path: "/history" },
     ],
   },
   {
     label: "SYSTEM",
     defaultOpen: true,
     items: [
-      { title: "Help", icon: HelpCircle, path: "/help" },
       { title: "Settings", icon: Settings, path: "/settings" },
     ],
   },
@@ -50,7 +50,7 @@ const NAV_GROUPS: NavGroup[] = [
 // Map route paths to page titles
 const PAGE_TITLES: Record<string, string> = {
   "/": "Dashboard",
-  "/help": "Help",
+  "/history": "History",
   "/settings": "Settings",
 };
 

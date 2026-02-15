@@ -5,15 +5,11 @@
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Toast } from "@/ui/feedback";
-import { useStatusVM, useRunsVM, useTasksVM } from "@/viewmodels";
+import { useStatusVM, useTasksVM } from "@/viewmodels";
 import {
-  RunHistory,
   TaskSchedule,
   TaskDetailModal,
   AddTaskModal,
-  RunHeatmap,
-  TrendChart,
-  RunDetailModal,
   MatrixClock,
   UpcomingTasks,
 } from "@/ui/runner";
@@ -21,14 +17,12 @@ import type { TaskWithSchedule } from "@/models/types";
 
 export function DashboardPage() {
   const statusVM = useStatusVM();
-  const runsVM = useRunsVM(24);
   const tasksVM = useTasksVM();
   const [selectedTask, setSelectedTask] = useState<TaskWithSchedule | null>(null);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
 
   const handleRefreshAll = () => {
     statusVM.refresh();
-    runsVM.refresh();
     tasksVM.refresh();
   };
 
@@ -89,12 +83,6 @@ export function DashboardPage() {
             <MatrixClock label="北京时间" />
           </div>
 
-          {/* Activity Heatmap */}
-          <RunHeatmap data={runsVM.heatmapData} />
-
-          {/* Trend Chart */}
-          <TrendChart data={runsVM.trendData} />
-
           {/* Upcoming Tasks */}
           <UpcomingTasks items={tasksVM.upcomingTasks} count={8} />
         </div>
@@ -110,28 +98,8 @@ export function DashboardPage() {
             onSelectTask={setSelectedTask}
             onAddTask={() => setShowAddTaskModal(true)}
           />
-
-          {/* Run History */}
-          <RunHistory
-            runs={runsVM.pagedRuns}
-            loading={runsVM.state === "loading"}
-            page={runsVM.page}
-            totalPages={runsVM.totalPages}
-            onPageChange={runsVM.setPage}
-            onSelectRun={runsVM.selectRun}
-          />
         </div>
       </div>
-
-      {/* Run Detail Modal */}
-      <RunDetailModal
-        run={runsVM.selectedRun}
-        loading={runsVM.selectedRunLoading}
-        output={runsVM.selectedRunOutput}
-        outputLoading={runsVM.selectedRunOutputLoading}
-        outputError={runsVM.selectedRunOutputError}
-        onClose={() => runsVM.selectRun(null)}
-      />
 
       {/* Task Detail Modal */}
       <TaskDetailModal
