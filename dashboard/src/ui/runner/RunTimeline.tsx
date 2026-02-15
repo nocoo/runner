@@ -5,7 +5,6 @@
 import { useMemo } from "react";
 import { AsciiBox } from "@/ui/foundation";
 import type { RunSummary } from "@/models/types";
-import { getRunsLastNDays } from "@/models/transforms";
 
 interface RunTimelineProps {
   runs: RunSummary[];
@@ -32,10 +31,16 @@ function exitCodeToColor(exitCode: number | null): string {
 
 export function RunTimeline({ runs }: RunTimelineProps) {
   const { entries, rowCount } = useMemo(() => {
-    const recent = getRunsLastNDays(runs, 1);
     const now = Date.now();
     const windowStart = now - HOURS_WINDOW * 60 * 60 * 1000;
     const windowMs = HOURS_WINDOW * 60 * 60 * 1000;
+
+    // Include runs that started within the window, or are still running
+    const recent = runs.filter((run) => {
+      const start = new Date(run.started_at).getTime();
+      const end = run.finished_at ? new Date(run.finished_at).getTime() : now;
+      return end >= windowStart && start <= now;
+    });
 
     // Build raw entries
     const raw: Omit<TimelineEntry, "row">[] = [];
