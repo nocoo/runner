@@ -11,7 +11,8 @@ describe("cn", () => {
   });
 
   test("handles conditional classes", () => {
-    expect(cn("px-2", false && "hidden", "py-1")).toBe("px-2 py-1");
+    const isHidden = false;
+    expect(cn("px-2", isHidden && "hidden", "py-1")).toBe("px-2 py-1");
   });
 
   test("handles undefined and null", () => {
