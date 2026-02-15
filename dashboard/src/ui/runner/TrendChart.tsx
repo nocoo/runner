@@ -259,7 +259,7 @@ export function TrendChart({ data }: TrendChartProps) {
 
             {/* Tooltip */}
             <div
-              className="absolute z-30 px-3 py-2 text-caption bg-matrix-panelStrong border border-matrix-ghost text-matrix-bright pointer-events-none"
+              className="absolute z-30 px-3 py-2 text-caption bg-matrix-panel-strong border border-matrix-ghost text-matrix-bright pointer-events-none"
               style={{
                 left: Math.min(hover.x + 10, plotRef.current?.clientWidth ? plotRef.current.clientWidth - 100 : hover.x),
                 top: Math.max(hover.y - 24, 6),

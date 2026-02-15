@@ -328,7 +328,7 @@ export function TrendMonitor({
 
         <div
           ref={axisRef}
-          className="absolute right-0 top-0 bottom-0 flex flex-col justify-between py-1 px-1 text-caption text-matrix-muted pointer-events-none bg-matrix-panelStrong border-l border-matrix-ghost w-10 text-right"
+          className="absolute right-0 top-0 bottom-0 flex flex-col justify-between py-1 px-1 text-caption text-matrix-muted pointer-events-none bg-matrix-panel-strong border-l border-matrix-ghost w-10 text-right"
         >
           <span>{formatCompact(max)}</span>
           <span>{formatCompact(max * 0.75)}</span>
@@ -360,7 +360,7 @@ export function TrendMonitor({
               />
             </div>
             <div
-              className="absolute z-30 px-3 py-2 text-caption bg-matrix-panelStrong border border-matrix-ghost text-matrix-bright pointer-events-none"
+              className="absolute z-30 px-3 py-2 text-caption bg-matrix-panel-strong border border-matrix-ghost text-matrix-bright pointer-events-none"
               style={{
                 left: Math.min(hover.x + 10, hover.rectWidth - hover.axisWidthPx - 120),
                 top: Math.max(hover.y - 24, 6),

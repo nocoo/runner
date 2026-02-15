@@ -48,7 +48,7 @@ export function MatrixButton({
       ? "text-matrix-primary"
       : primary
         ? "bg-matrix-primary text-black border-matrix-primary hover:bg-white hover:border-white"
-        : "bg-matrix-panel text-matrix-primary border-matrix-ghost hover:bg-matrix-panelStrong hover:border-matrix-dim";
+        : "bg-matrix-panel text-matrix-primary border-matrix-ghost hover:bg-matrix-panel-strong hover:border-matrix-dim";
 
   const disabledStyle =
     "disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-matrix-panel";

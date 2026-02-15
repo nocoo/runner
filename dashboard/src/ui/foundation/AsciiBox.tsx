@@ -34,7 +34,7 @@ export function AsciiBox({
     <div className={`relative flex flex-col matrix-panel ${className}`}>
       <div className="flex items-center leading-none">
         <span className="shrink-0 text-matrix-dim">{ASCII_CHARS.TOP_LEFT}</span>
-        <span className="mx-3 shrink-0 text-heading uppercase text-matrix-primary px-2 py-1 bg-matrix-panelStrong border border-matrix-ghost">
+        <span className="mx-3 shrink-0 text-heading uppercase text-matrix-primary px-2 py-1 bg-matrix-panel-strong border border-matrix-ghost">
           {title}
         </span>
         {subtitle ? (

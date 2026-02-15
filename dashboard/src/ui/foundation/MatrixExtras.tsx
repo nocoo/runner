@@ -65,7 +65,7 @@ export function MatrixAvatar({
       className={`relative p-1 transition-transform duration-300 hover:scale-105 ${
         isTheOne
           ? "bg-yellow-900/20 border border-yellow-500/50"
-          : "bg-matrix-panelStrong border border-matrix-dim"
+          : "bg-matrix-panel-strong border border-matrix-dim"
       } ${className}`}
     >
       {isTheOne && (
@@ -253,7 +253,7 @@ export function SignalBox({ title = "SIGNAL", children, className = "" }: Signal
   return (
     <div className={`relative flex flex-col matrix-panel ${className}`}>
       <div className="flex items-center text-matrix-primary leading-none text-heading p-2 border-b border-matrix-ghost">
-        <span className="font-black uppercase bg-matrix-panelStrong px-2 py-1 border border-matrix-ghost mr-2">
+        <span className="font-black uppercase bg-matrix-panel-strong px-2 py-1 border border-matrix-ghost mr-2">
           <DecodingText text={title} />
         </span>
         <span className="flex-1 text-matrix-ghost truncate">
@@ -452,7 +452,7 @@ export function LeaderboardRow({
   isTheOne,
   className = "",
 }: LeaderboardRowProps) {
-  const highlight = isSelf ? "bg-matrix-panelStrong border-l-2 border-l-matrix-primary" : "";
+  const highlight = isSelf ? "bg-matrix-panel-strong border-l-2 border-l-matrix-primary" : "";
   const rankValue = Number(rank);
   const showGold = Boolean(isTheOne ?? rankValue === 1);
   const formattedRank = String(Math.max(0, rankValue)).padStart(2, "0");
@@ -717,7 +717,7 @@ export function BootScreen({ onSkip }: BootScreenProps) {
       <div className="animate-pulse tracking-[0.3em] text-caption font-bold mb-4 uppercase">
         INITIALIZING NEURAL INTERFACE...
       </div>
-      <div className="w-64 h-1 bg-matrix-panelStrong relative overflow-hidden">
+      <div className="w-64 h-1 bg-matrix-panel-strong relative overflow-hidden">
         <div className="absolute inset-0 bg-matrix-primary animate-[loader_2s_linear_infinite]" />
       </div>
       {canSkip && <p className="mt-6 text-caption text-matrix-muted uppercase">Click to skip</p>}
