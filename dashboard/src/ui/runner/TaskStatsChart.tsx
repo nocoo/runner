@@ -56,7 +56,7 @@ export function TaskStatsChart({ runs }: TaskStatsChartProps) {
 
   return (
     <AsciiBox title="Per-Task Stats" subtitle="runs">
-      <div className="space-y-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
         {stats.map((stat) => {
           const successPct = (stat.success / maxTotal) * 100;
           const failedPct = (stat.failed / maxTotal) * 100;

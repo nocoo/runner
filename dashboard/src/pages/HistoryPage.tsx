@@ -29,22 +29,22 @@ export function HistoryPage() {
         </div>
       </div>
 
-      {/* Visualizations row */}
+      {/* Visualizations row: Donut + Duration + Timeline */}
       <div className="grid grid-cols-12 gap-4 mb-4">
-        <div className="col-span-12 lg:col-span-4">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3">
           <SuccessRateDonut runs={runsVM.runs} />
         </div>
-        <div className="col-span-12 lg:col-span-4">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3">
           <DurationDistribution runs={runsVM.runs} />
         </div>
-        <div className="col-span-12 lg:col-span-4">
-          <TaskStatsChart runs={runsVM.runs} />
+        <div className="col-span-12 lg:col-span-6">
+          <RunTimeline runs={runsVM.runs} />
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Per-Task Stats — full width */}
       <div className="mb-4">
-        <RunTimeline runs={runsVM.runs} />
+        <TaskStatsChart runs={runsVM.runs} />
       </div>
 
       {/* Run History table */}
