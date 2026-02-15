@@ -4,6 +4,7 @@
 
 import type { ReactNode } from "react";
 
+/** Box-drawing characters used internally. */
 const ASCII_CHARS = {
   TOP_LEFT: "┌",
   TOP_RIGHT: "┐",
