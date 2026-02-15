@@ -3,8 +3,7 @@
 // ============================================
 
 import { useState } from "react";
-import { LayoutGrid, RefreshCw } from "lucide-react";
-import { MatrixShell } from "@/ui/foundation";
+import { RefreshCw } from "lucide-react";
 import { Toast } from "@/ui/feedback";
 import { useStatusVM, useRunsVM, useTasksVM } from "@/viewmodels";
 import {
@@ -27,7 +26,6 @@ export function DashboardPage() {
   const [selectedTask, setSelectedTask] = useState<TaskWithSchedule | null>(null);
   const [showAddTaskModal, setShowAddTaskModal] = useState(false);
 
-
   const handleRefreshAll = () => {
     statusVM.refresh();
     runsVM.refresh();
@@ -35,46 +33,36 @@ export function DashboardPage() {
   };
 
   return (
-    <MatrixShell
-      title="Runner"
-      showRain
-      showAvatar
-      avatarName="runner"
-      headerStatus={
-        statusVM.isOnline ? (
-          <span className="flex items-center">
-            <span className="w-1.5 h-1.5 bg-success rounded-full mr-2 animate-pulse"></span>
-            System Online
-          </span>
-        ) : (
-          <span className="flex items-center text-error">
-            <span className="w-1.5 h-1.5 bg-error rounded-full mr-2"></span>
-            {statusVM.error || "Offline"}
-          </span>
-        )
-      }
-      headerRight={
-        <div className="flex items-center gap-4">
-          <a
-            href="#library"
-            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em] inline-flex items-center gap-1.5"
-          >
-            <LayoutGrid size={14} /> Library
-          </a>
-          <button
-            onClick={handleRefreshAll}
-            className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em] inline-flex items-center gap-1.5"
-          >
-            <RefreshCw size={14} /> Refresh
-          </button>
+    <>
+      {/* Status bar + Refresh */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-4 text-caption text-matrix-muted uppercase font-bold">
+          {statusVM.isOnline ? (
+            <span className="flex items-center">
+              <span className="w-1.5 h-1.5 bg-success rounded-full mr-2 animate-pulse"></span>
+              System Online
+            </span>
+          ) : (
+            <span className="flex items-center text-error">
+              <span className="w-1.5 h-1.5 bg-error rounded-full mr-2"></span>
+              {statusVM.error || "Offline"}
+            </span>
+          )}
         </div>
-      }
-    >
-      <div className="grid grid-cols-12 gap-6">
+        <button
+          onClick={handleRefreshAll}
+          className="matrix-header-chip matrix-header-action text-caption uppercase font-bold tracking-[0.2em] inline-flex items-center gap-1.5"
+        >
+          <RefreshCw size={14} /> Refresh
+        </button>
+      </div>
+
+      {/* Main grid */}
+      <div className="grid grid-cols-12 gap-4">
         {/* Left Column - 4/12 */}
-        <div className="col-span-12 lg:col-span-4 space-y-6">
+        <div className="col-span-12 lg:col-span-4 space-y-4">
           {/* Matrix Clock */}
-          <div 
+          <div
             className="matrix-panel p-6 flex justify-center relative overflow-hidden"
             style={{
               backgroundImage: `
@@ -86,7 +74,7 @@ export function DashboardPage() {
             }}
           >
             {/* Scanline overlay */}
-            <div 
+            <div
               className="absolute inset-0 pointer-events-none opacity-30"
               style={{
                 backgroundImage: `repeating-linear-gradient(
@@ -108,14 +96,11 @@ export function DashboardPage() {
           <TrendChart data={runsVM.trendData} />
 
           {/* Upcoming Tasks */}
-          <UpcomingTasks
-            items={tasksVM.upcomingTasks}
-            count={8}
-          />
+          <UpcomingTasks items={tasksVM.upcomingTasks} count={8} />
         </div>
 
         {/* Right Column - 8/12 */}
-        <div className="col-span-12 lg:col-span-8 space-y-6">
+        <div className="col-span-12 lg:col-span-8 space-y-4">
           {/* Tasks & Schedules */}
           <TaskSchedule
             tasks={tasksVM.tasks}
@@ -185,6 +170,6 @@ export function DashboardPage() {
           className="border-error"
         />
       )}
-    </MatrixShell>
+    </>
   );
 }

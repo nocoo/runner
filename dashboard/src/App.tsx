@@ -1,26 +1,15 @@
-import { useState, useEffect } from "react";
-import { DashboardPage, LibraryPage } from "./pages";
+import { BrowserRouter, Routes, Route } from "react-router";
+import { DashboardLayout } from "@/components/DashboardLayout";
+import { DashboardPage } from "@/pages/DashboardPage";
 
-type Page = "dashboard" | "library";
+const App = () => (
+  <BrowserRouter>
+    <Routes>
+      <Route element={<DashboardLayout />}>
+        <Route path="/" element={<DashboardPage />} />
+      </Route>
+    </Routes>
+  </BrowserRouter>
+);
 
-function getPageFromHash(): Page {
-  const hash = window.location.hash.slice(1);
-  if (hash === "library") return "library";
-  return "dashboard";
-}
-
-export default function App() {
-  const [page, setPage] = useState<Page>(getPageFromHash);
-
-  useEffect(() => {
-    const handleHashChange = () => setPage(getPageFromHash());
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
-
-  if (page === "library") {
-    return <LibraryPage />;
-  }
-
-  return <DashboardPage />;
-}
+export default App;

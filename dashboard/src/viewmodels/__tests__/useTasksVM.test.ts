@@ -118,7 +118,9 @@ describe("useTasksVM", () => {
     }));
 
     await result.current.trigger("heartbeat");
-    await waitFor(() => result.current.triggerState === "success");
+    await waitFor(() => {
+      expect(result.current.triggerState).toBe("success");
+    });
 
     result.current.clearTriggerResult();
 
@@ -153,7 +155,9 @@ describe("useTasksVM", () => {
     }));
 
     await result.current.refresh();
-    await waitFor(() => result.current.state === "success");
+    await waitFor(() => {
+      expect(result.current.state).toBe("success");
+    });
 
     const firstCountdown = result.current.upcomingTasks[0]?.countdown ?? 0;
 
