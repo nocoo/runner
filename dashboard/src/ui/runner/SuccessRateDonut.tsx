@@ -9,6 +9,7 @@ import { calculateSuccessRate, getRunsLastNDays } from "@/models/transforms";
 
 interface SuccessRateDonutProps {
   runs: RunSummary[];
+  className?: string;
 }
 
 interface DonutSegment {
@@ -98,7 +99,7 @@ function DonutRing({
   );
 }
 
-export function SuccessRateDonut({ runs }: SuccessRateDonutProps) {
+export function SuccessRateDonut({ runs, className }: SuccessRateDonutProps) {
   const segments = useMemo((): DonutSegment[] => {
     const today = getRunsLastNDays(runs, 1);
     const week = getRunsLastNDays(runs, 7);
@@ -127,8 +128,8 @@ export function SuccessRateDonut({ runs }: SuccessRateDonutProps) {
   }, [runs]);
 
   return (
-    <AsciiBox title="Success Rate" subtitle="donut">
-      <div className="flex justify-around items-start">
+    <AsciiBox title="Success Rate" subtitle="donut" className={className} bodyClassName="flex flex-col">
+      <div className="flex-1 flex justify-around items-center">
         {segments.map((seg) => (
           <DonutRing key={seg.label} {...seg} />
         ))}

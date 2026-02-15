@@ -8,6 +8,7 @@ import type { RunSummary } from "@/models/types";
 
 interface DurationDistributionProps {
   runs: RunSummary[];
+  className?: string;
 }
 
 interface DurationBucket {
@@ -34,7 +35,7 @@ function computeDuration(run: RunSummary): number | null {
   return (end - start) / 1000;
 }
 
-export function DurationDistribution({ runs }: DurationDistributionProps) {
+export function DurationDistribution({ runs, className }: DurationDistributionProps) {
   const buckets = useMemo((): DurationBucket[] => {
     const result: DurationBucket[] = BUCKET_DEFS.map((d) => ({
       ...d,
@@ -59,8 +60,8 @@ export function DurationDistribution({ runs }: DurationDistributionProps) {
   const maxCount = Math.max(1, ...buckets.map((b) => b.count));
 
   return (
-    <AsciiBox title="Duration" subtitle="distribution">
-      <div className="space-y-2">
+    <AsciiBox title="Duration" subtitle="distribution" className={className} bodyClassName="flex flex-col">
+      <div className="flex-1 flex flex-col justify-center space-y-2">
         {buckets.map((bucket) => {
           const widthPct = (bucket.count / maxCount) * 100;
           return (

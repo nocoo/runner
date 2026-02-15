@@ -8,6 +8,7 @@ import type { RunSummary } from "@/models/types";
 
 interface RunTimelineProps {
   runs: RunSummary[];
+  className?: string;
 }
 
 interface TimelineEntry {
@@ -29,7 +30,7 @@ function exitCodeToColor(exitCode: number | null): string {
   return "rgba(255, 65, 65, 0.4)";                       // failed
 }
 
-export function RunTimeline({ runs }: RunTimelineProps) {
+export function RunTimeline({ runs, className }: RunTimelineProps) {
   const { entries, rowCount } = useMemo(() => {
     const now = Date.now();
     const windowStart = now - HOURS_WINDOW * 60 * 60 * 1000;
@@ -99,8 +100,8 @@ export function RunTimeline({ runs }: RunTimelineProps) {
   const chartHeight = rowCount * (rowHeight + 2) + 20;
 
   return (
-    <AsciiBox title="Timeline" subtitle="24h">
-      <div className="relative" style={{ height: `${chartHeight}px` }}>
+    <AsciiBox title="Timeline" subtitle="24h" className={className} bodyClassName="flex flex-col">
+      <div className="flex-1 relative" style={{ minHeight: `${chartHeight}px` }}>
         {/* Hour grid lines + labels */}
         {HOUR_LABELS.map((hour) => {
           const now = new Date();

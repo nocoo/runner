@@ -29,16 +29,16 @@ export function HistoryPage() {
         </div>
       </div>
 
-      {/* Visualizations row: Donut + Duration + Timeline */}
-      <div className="grid grid-cols-12 gap-4 mb-4">
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3">
-          <SuccessRateDonut runs={runsVM.runs} />
+      {/* Visualizations row: Donut + Duration + Timeline — equal height */}
+      <div className="grid grid-cols-12 gap-4 mb-4 items-stretch">
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex">
+          <SuccessRateDonut runs={runsVM.runs} className="flex-1" />
         </div>
-        <div className="col-span-12 sm:col-span-6 lg:col-span-3">
-          <DurationDistribution runs={runsVM.runs} />
+        <div className="col-span-12 sm:col-span-6 lg:col-span-3 flex">
+          <DurationDistribution runs={runsVM.runs} className="flex-1" />
         </div>
-        <div className="col-span-12 lg:col-span-6">
-          <RunTimeline runs={runsVM.runs} />
+        <div className="col-span-12 lg:col-span-6 flex">
+          <RunTimeline runs={runsVM.runs} className="flex-1" />
         </div>
       </div>
 
