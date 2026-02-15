@@ -8,6 +8,10 @@ import {
   RunHeatmap,
   TrendChart,
   RunDetailModal,
+  SuccessRateDonut,
+  DurationDistribution,
+  TaskStatsChart,
+  RunTimeline,
 } from "@/ui/runner";
 
 export function HistoryPage() {
@@ -25,9 +29,22 @@ export function HistoryPage() {
         </div>
       </div>
 
-      {/* Visualizations row — placeholder, will be filled with 4 new viz components */}
+      {/* Visualizations row */}
       <div className="grid grid-cols-12 gap-4 mb-4">
-        {/* SuccessRateDonut, DurationDistribution, TaskStatsChart, RunTimeline go here */}
+        <div className="col-span-12 lg:col-span-4">
+          <SuccessRateDonut runs={runsVM.runs} />
+        </div>
+        <div className="col-span-12 lg:col-span-4">
+          <DurationDistribution runs={runsVM.runs} />
+        </div>
+        <div className="col-span-12 lg:col-span-4">
+          <TaskStatsChart runs={runsVM.runs} />
+        </div>
+      </div>
+
+      {/* Timeline */}
+      <div className="mb-4">
+        <RunTimeline runs={runsVM.runs} />
       </div>
 
       {/* Run History table */}
