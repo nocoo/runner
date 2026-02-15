@@ -1,37 +1,6 @@
 import { describe, test, expect, beforeEach } from "bun:test";
 import { render, fireEvent } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
 import { SettingsPage } from "../SettingsPage";
-
-// Mock useStatusVM
-const mockStatusVM = {
-  data: {
-    version: "1.2.3",
-    last_run: { id: "r1", task: "backup", exit_code: 0, finished_at: "2026-01-01T00:00:00Z" },
-    next_scheduled: null,
-    total_runs_today: 42,
-    success_rate_today: 0.95,
-  },
-  state: "success" as const,
-  error: null,
-  refresh: async () => {},
-  successRatePercent: "95%",
-  lastRunStatus: "OK",
-  lastRunTask: "backup",
-  isOnline: true,
-};
-
-// We need to test with the real component since it uses useStatusVM internally.
-// The component will make a fetch call that will fail in tests, but we can still
-// test the rendering structure.
-
-function renderSettings() {
-  return render(
-    <MemoryRouter>
-      <SettingsPage />
-    </MemoryRouter>
-  );
-}
 
 describe("SettingsPage", () => {
   beforeEach(() => {
