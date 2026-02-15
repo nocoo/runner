@@ -129,7 +129,7 @@ export function RunDetailModal({ run, loading, output, outputLoading, outputErro
 
             {/* Footer hint */}
             <div className="mt-4 text-right text-caption text-matrix-dim">
-              Press <kbd className="px-1.5 py-0.5 bg-matrix-ghost/20 rounded text-xs">Esc</kbd> to close
+              Press <kbd className="px-1.5 py-0.5 bg-matrix-ghost/20 text-xs">Esc</kbd> to close
             </div>
           </>
         ) : null}

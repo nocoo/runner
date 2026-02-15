@@ -163,7 +163,7 @@ export function RunHeatmap({ data }: RunHeatmapProps) {
                         return (
                           <span
                             key={key}
-                            className="rounded-[2px] border border-transparent"
+                            className="border border-transparent"
                             style={{ width: CELL_SIZE, height: CELL_SIZE }}
                           />
                         );
@@ -177,7 +177,7 @@ export function RunHeatmap({ data }: RunHeatmapProps) {
                         <span
                           key={key}
                           title={`${dayLabels[colIdx]}日 ${CHINESE_HOURS[slot]}时 (${formatSlotRange(slot)}): ${cell.count} runs (${cell.success} ✓, ${cell.failed} ✗)`}
-                          className="rounded-[2px] border border-matrix-ghost cursor-default"
+                          className="border border-matrix-ghost cursor-default"
                           style={{
                             width: CELL_SIZE,
                             height: CELL_SIZE,
@@ -206,7 +206,7 @@ export function RunHeatmap({ data }: RunHeatmapProps) {
               {[0, 1, 2, 3, 4].map((level) => (
                 <span
                   key={level}
-                  className="rounded-[2px] border border-matrix-ghost"
+                  className="border border-matrix-ghost"
                   style={{
                     width: 10,
                     height: 10,

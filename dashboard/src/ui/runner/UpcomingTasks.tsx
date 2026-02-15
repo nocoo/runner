@@ -106,7 +106,7 @@ function UpcomingTaskRow({ item, isFirst }: UpcomingTaskRowProps) {
 
   return (
     <div
-      className={`flex items-center gap-3 py-2 px-2 rounded ${
+      className={`flex items-center gap-3 py-2 px-2 ${
         isFirst
           ? "bg-matrix-panel-strong border border-matrix-ghost"
           : "hover:bg-matrix-panel/50"
