@@ -1,10 +1,11 @@
 import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react-swc";
+import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "path";
 import { apiPlugin } from "./src/api/vite-plugin-api";
 
 export default defineConfig({
-  plugins: [react(), apiPlugin()],
+  plugins: [tailwindcss(), react(), apiPlugin()],
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
