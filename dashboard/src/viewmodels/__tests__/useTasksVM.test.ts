@@ -38,7 +38,9 @@ describe("useTasksVM", () => {
 
     await result.current.refresh();
 
-    await waitFor(() => result.current.state === "success");
+    await waitFor(() => {
+      expect(result.current.state).toBe("success");
+    });
 
     expect(result.current.tasks.length).toBe(2);
     expect(result.current.schedules.length).toBe(1);
