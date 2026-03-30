@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 7009",
+    "dev": "vite --port 7008",
     "build": "tsc && vite build",
-    "preview": "vite preview --port 7009",
+    "preview": "vite preview --port 7008",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",

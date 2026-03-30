@@ -38,4 +38,4 @@ bun install
 bun run dev
 ```
 
-默认地址：`http://localhost:7009`
+默认地址：`http://localhost:7008`
