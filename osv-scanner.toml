@@ -1,0 +1,9 @@
+# osv-scanner configuration
+# https://google.github.io/osv-scanner/
+
+[[PackageOverrides]]
+
+# Example: ignore a specific vulnerability
+# [[IgnoredVulns]]
+# id = "GHSA-xxxx-xxxx-xxxx"
+# reason = "Not applicable"
