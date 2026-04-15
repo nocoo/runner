@@ -1,0 +1,12 @@
+# gitleaks configuration
+# https://github.com/gitleaks/gitleaks
+
+title = "gitleaks config"
+
+[allowlist]
+description = "global allowlist"
+paths = [
+  '''(^|/)bun\.lock$''',
+  '''(^|/)Package\.resolved$''',
+  '''\.png$''',
+]

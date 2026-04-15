@@ -1,13 +1,11 @@
-#!/usr/bin/env sh
-. "$(dirname "$0")/_/h"
-
-set -e
-
-echo "🧪 Running dashboard tests..."
-bun --cwd dashboard test --bail
-echo "✅ Dashboard tests passed."
-
-echo ""
-echo "🧪 Running Swift tests..."
-swift test --package-path runner-swift
-echo "✅ Swift tests passed."
+#!/bin/bash
+set -euo pipefail
+echo "=== L1: Swift Tests ==="
+cd runner-swift && swift test 2>&1
+cd ..
+echo "=== L1: Dashboard Tests ==="
+cd dashboard && bun test 2>&1
+cd ..
+echo "=== G1: Dashboard Lint ==="
+cd dashboard && bun run lint 2>&1
+cd ..
