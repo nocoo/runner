@@ -24,4 +24,14 @@ jobs:
       - name: Lint
         run: cd dashboard && bun run lint
       - name: Typecheck
-        run: cd dashboard && tsc --noEmit
+        run: cd dashboard && bun run typecheck
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        with:
+          args: --config .gitleaks.toml
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+      - name: OSV-Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2
+        with:
+          config: osv-scanner.toml
