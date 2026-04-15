@@ -1,0 +1,27 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  swift-tests:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift Test
+        run: cd runner-swift && swift test
+  dashboard-quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install
+        run: cd dashboard && bun install
+      - name: Test
+        run: cd dashboard && bun test
+      - name: Lint
+        run: cd dashboard && bun run lint
+      - name: Typecheck
+        run: cd dashboard && tsc --noEmit
