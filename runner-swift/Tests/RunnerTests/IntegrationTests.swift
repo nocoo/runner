@@ -158,22 +158,28 @@ struct IntegrationTests {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
         
-        // Execute a fast task
+        // Execute a task that takes long enough to be observed as "running"
         let task = Task(
             id: "cleanup_test",
             executor: .shell,
             description: "Cleanup test",
             timeout: 60,
-            command: "echo done",
+            command: "sleep 2 && echo done",
             prompt: nil,
             workdir: nil
         )
-        
+
         let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
-        
-        // Task is running
-        let runningBefore = try await storage.getRunningTasks()
+
+        // Poll until the task appears as running (executor spawns a background process)
+        var runningBefore: [RunSummary] = []
+        let pollDeadline = Date().addingTimeInterval(3)
+        while Date() < pollDeadline {
+            runningBefore = try await storage.getRunningTasks()
+            if runningBefore.count == 1 { break }
+            try await _Concurrency.Task.sleep(nanoseconds: 100_000_000) // 100ms
+        }
         #expect(runningBefore.count == 1)
         
         // Wait for completion

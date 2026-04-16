@@ -172,10 +172,10 @@ describe("useTasksVM", () => {
       { id: "heartbeat", executor: "shell", description: "Heartbeat", timeout: 60, command: "echo hi" },
     ];
     const schedules: Schedule[] = [
-      { task: "heartbeat", hour: 9, minute: 0, weekday: "*" },
+      { task: "heartbeat", hour: "*", minute: "*/10", weekday: "*" },
     ];
 
-    const now = new Date("2026-01-30T08:50:00Z");
+    const now = new Date();
 
     const { result } = renderHook(() => useTasksVM({
       fetchTasks: async () => tasks,
