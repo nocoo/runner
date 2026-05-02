@@ -20,7 +20,7 @@ jobs:
       - name: Install
         run: cd dashboard && bun install
       - name: Test
-        run: cd dashboard && bun test
+        run: cd dashboard && bun run test
       - name: Lint
         run: cd dashboard && bun run lint
       - name: Typecheck
