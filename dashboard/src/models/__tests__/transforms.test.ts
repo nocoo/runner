@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import {
   runsToHeatmap,
   runsToTrend,
@@ -232,6 +232,22 @@ describe("transforms", () => {
       const original = [...sampleRuns];
       sortRunsByDate(sampleRuns, "desc");
       expect(sampleRuns).toEqual(original);
+    });
+
+    test("places running tasks (no finished_at) at top in desc and bottom in asc", () => {
+      const runs: RunSummary[] = [
+        { id: "a", task: "t", exit_code: 0, started_at: "2026-01-20T09:00:00Z", finished_at: "2026-01-20T10:00:00Z" },
+        { id: "running1", task: "t", exit_code: 0, started_at: "2026-01-20T09:00:00Z", finished_at: undefined as unknown as string },
+        { id: "b", task: "t", exit_code: 0, started_at: "2026-01-20T09:00:00Z", finished_at: "2026-01-21T10:00:00Z" },
+        { id: "running2", task: "t", exit_code: 0, started_at: "2026-01-20T09:00:00Z", finished_at: undefined as unknown as string },
+      ];
+      const desc = sortRunsByDate(runs, "desc");
+      expect(["running1", "running2"]).toContain(desc[0].id);
+      expect(["running1", "running2"]).toContain(desc[1].id);
+
+      const asc = sortRunsByDate(runs, "asc");
+      expect(["running1", "running2"]).toContain(asc[2].id);
+      expect(["running1", "running2"]).toContain(asc[3].id);
     });
   });
 

@@ -1,4 +1,4 @@
-import { describe, test, expect, mock } from "bun:test";
+import { describe, test, expect, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useAddTaskVM } from "../useAddTaskVM";
 
@@ -175,8 +175,8 @@ describe("useAddTaskVM", () => {
   });
 
   test("submit calls createTask and onSuccess on success", async () => {
-    const mockCreateTask = mock(async () => ({ success: true, id: "my_task" }));
-    const mockOnSuccess = mock(() => {});
+    const mockCreateTask = vi.fn(async () => ({ success: true, id: "my_task" }));
+    const mockOnSuccess = vi.fn(() => {});
 
     const { result } = renderHook(() =>
       useAddTaskVM({
@@ -204,7 +204,7 @@ describe("useAddTaskVM", () => {
   });
 
   test("submit sets error state on failure", async () => {
-    const mockCreateTask = mock(async () => {
+    const mockCreateTask = vi.fn(async () => {
       throw new Error("API error");
     });
 
@@ -231,7 +231,7 @@ describe("useAddTaskVM", () => {
   });
 
   test("submit returns false without calling API when validation fails", async () => {
-    const mockCreateTask = mock(async () => ({ success: true, id: "x" }));
+    const mockCreateTask = vi.fn(async () => ({ success: true, id: "x" }));
 
     const { result } = renderHook(() =>
       useAddTaskVM({
@@ -249,7 +249,7 @@ describe("useAddTaskVM", () => {
   });
 
   test("reset clears all form data and state", async () => {
-    const mockCreateTask = mock(async () => {
+    const mockCreateTask = vi.fn(async () => {
       throw new Error("fail");
     });
 
@@ -281,7 +281,7 @@ describe("useAddTaskVM", () => {
 
   test("submit builds correct task object for http executor", async () => {
     let capturedTask: unknown = null;
-    const mockCreateTask = mock(async (task: unknown) => {
+    const mockCreateTask = vi.fn(async (task: unknown) => {
       capturedTask = task;
       return { success: true, id: "http_task" };
     });
@@ -317,7 +317,7 @@ describe("useAddTaskVM", () => {
 
   test("submit builds correct task object for opencode executor", async () => {
     let capturedTask: unknown = null;
-    const mockCreateTask = mock(async (task: unknown) => {
+    const mockCreateTask = vi.fn(async (task: unknown) => {
       capturedTask = task;
       return { success: true, id: "opencode_task" };
     });

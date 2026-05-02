@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { Schedule, Task } from "@/models/types";
 import { useTasksVM } from "../useTasksVM";
@@ -189,9 +189,64 @@ describe("useTasksVM", () => {
 
     await result.current.refresh();
 
-    await waitFor(() => result.current.state === "success");
+    await waitFor(() => {
+      expect(result.current.state).toBe("success");
+    });
 
     expect(result.current.upcomingTasks.length).toBeGreaterThan(0);
     expect(result.current.upcomingTasks[0].countdown).toBeGreaterThan(0);
+  });
+
+  test("uses default deps when none provided", async () => {
+    const originalFetch = globalThis.fetch;
+    const calls: string[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : input.toString();
+      calls.push(url);
+      const body = url.includes("schedules") ? "[]" : url.includes("trigger") ? '{"task":"x","exit_code":0,"stdout":"","stderr":""}' : "[]";
+      return new Response(body, { status: 200, headers: { "Content-Type": "application/json" } });
+    }) as unknown as typeof fetch;
+
+    try {
+      const { result, unmount } = renderHook(() => useTasksVM());
+      await waitFor(() => {
+        expect(result.current.state).toBe("success");
+      });
+      await result.current.trigger("x");
+      await waitFor(() => {
+        expect(result.current.triggerState).toBe("success");
+      });
+      unmount();
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+
+    expect(calls.length).toBeGreaterThan(0);
+  });
+
+  test("non-Error thrown values get stringified for refresh and trigger", async () => {
+    const { result } = renderHook(() => useTasksVM({
+      fetchTasks: async () => {
+        throw "string-error";
+      },
+      fetchSchedules: async () => [],
+      triggerTask: async () => {
+        throw "trigger-string-error";
+      },
+      timeProvider: () => new Date("2026-01-30T10:00:00Z"),
+      tickMs: 10_000,
+      watchData: false,
+      autoRefresh: false,
+    }));
+
+    await result.current.refresh();
+    await waitFor(() => {
+      expect(result.current.error).toBe("string-error");
+    });
+
+    await result.current.trigger("x");
+    await waitFor(() => {
+      expect(result.current.triggerError).toBe("trigger-string-error");
+    });
   });
 });

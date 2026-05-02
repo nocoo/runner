@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeEach, afterEach } from "bun:test";
+import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { formatDuration, formatDurationMs, formatRelativeTime, formatDate, formatTimeUTC8, formatExitCode, formatNumber, formatPercent } from "../format";
 
 describe("format", () => {
@@ -19,9 +19,10 @@ describe("format", () => {
       expect(formatDuration(0)).toBe("0s");
     });
 
-    test("handles undefined/null", () => {
+    test("handles undefined/null/NaN", () => {
       expect(formatDuration(undefined as unknown as number)).toBe("-");
       expect(formatDuration(null as unknown as number)).toBe("-");
+      expect(formatDuration(NaN)).toBe("-");
     });
   });
 
@@ -95,6 +96,10 @@ describe("format", () => {
     test("handles invalid date", () => {
       expect(formatDate("invalid")).toBe("-");
     });
+
+    test("handles empty string", () => {
+      expect(formatDate("")).toBe("-");
+    });
   });
 
   describe("formatTimeUTC8", () => {
@@ -116,6 +121,15 @@ describe("format", () => {
     test("formats failure exit code", () => {
       expect(formatExitCode(1)).toBe("FAILED");
       expect(formatExitCode(127)).toBe("FAILED");
+    });
+
+    test("formats null/undefined as RUNNING", () => {
+      expect(formatExitCode(null)).toBe("RUNNING");
+      expect(formatExitCode(undefined as unknown as number)).toBe("RUNNING");
+    });
+
+    test("formats -1 as INTERRUPTED", () => {
+      expect(formatExitCode(-1)).toBe("INTERRUPTED");
     });
   });
 

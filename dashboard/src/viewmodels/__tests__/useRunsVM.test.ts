@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import type { RunsIndex, RunDetail } from "@/models/types";
 import { useRunsVM } from "../useRunsVM";
@@ -30,8 +30,9 @@ describe("useRunsVM", () => {
       autoRefresh: false,
     }));
 
-    await result.current.refresh();
-    await waitFor(() => result.current.state === "success");
+    await act(async () => {
+      await result.current.refresh();
+    });
 
     expect(result.current.runs[0].id).toBe("2");
     expect(result.current.pagedRuns.length).toBe(1);

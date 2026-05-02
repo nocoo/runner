@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { 
   getDateKey, 
   getDaysAgo, 
@@ -56,6 +56,14 @@ describe("date", () => {
     test("handles wildcard", () => {
       expect(getWeekday("*")).toBe("Daily");
     });
+
+    test("returns string passthrough for cron expressions", () => {
+      expect(getWeekday("1-5")).toBe("1-5");
+    });
+
+    test("returns ? for out-of-range index", () => {
+      expect(getWeekday(99)).toBe("?");
+    });
   });
 
   describe("formatScheduleTime", () => {
@@ -66,6 +74,14 @@ describe("date", () => {
 
     test("formats wildcard hour", () => {
       expect(formatScheduleTime("*", 20)).toBe("*:20");
+    });
+
+    test("formats wildcard minute", () => {
+      expect(formatScheduleTime(7, "*")).toBe("07:*");
+    });
+
+    test("passes through string hour and minute", () => {
+      expect(formatScheduleTime("1-5", "0,30")).toBe("1-5:0,30");
     });
   });
 

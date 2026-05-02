@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["src/*"]
     },
-    "types": ["bun-types", "@testing-library/dom"]
+    "types": ["@testing-library/dom"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

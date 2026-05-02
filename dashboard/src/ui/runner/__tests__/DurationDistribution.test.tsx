@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { DurationDistribution } from "../DurationDistribution";
 import type { RunSummary } from "@/models/types";
