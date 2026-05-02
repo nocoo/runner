@@ -7,9 +7,9 @@
     "dev": "vite --port 7008",
     "build": "tsc && vite build",
     "preview": "vite preview --port 7008",
-    "test": "NODE_OPTIONS=--no-experimental-webstorage TZ=UTC vitest run",
+    "test": "TZ=UTC vitest run",
     "test:watch": "NODE_OPTIONS=--no-experimental-webstorage TZ=UTC vitest",
-    "test:coverage": "NODE_OPTIONS=--no-experimental-webstorage TZ=UTC vitest run --coverage",
+    "test:coverage": "TZ=UTC vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --max-warnings=0 \"src/**/*.{ts,tsx}\""
   },
