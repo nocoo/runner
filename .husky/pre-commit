@@ -4,8 +4,8 @@ echo "=== L1: Swift Tests ==="
 cd runner-swift && swift test 2>&1
 cd ..
 echo "=== L1: Dashboard Tests ==="
-cd dashboard && bun test 2>&1
+cd dashboard && npm test 2>&1
 cd ..
 echo "=== G1: Dashboard Lint ==="
-cd dashboard && bun run lint 2>&1
+cd dashboard && npm run lint 2>&1
 cd ..
