@@ -2,7 +2,7 @@ import { afterEach, vi } from "vitest";
 import { cleanup, configure } from "@testing-library/react";
 
 declare global {
-  // eslint-disable-next-line no-var
+  // biome-ignore lint: must use var in declare global
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
