@@ -9,7 +9,7 @@ import {
   LogOut,
   Menu,
   X,
-  Github,
+  GitBranch,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -373,7 +373,7 @@ export function DashboardLayout() {
               aria-label="GitHub repository"
               className="flex h-7 w-7 items-center justify-center text-matrix-dim hover:text-matrix-primary transition-colors"
             >
-              <Github className="h-4 w-4" strokeWidth={1.5} />
+              <GitBranch className="h-4 w-4" strokeWidth={1.5} />
             </a>
           </div>
         </header>
