@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/brand/icon-rounded.png" alt="Runner logo" width="180" height="180" />
+</p>
+
 # Runner 文档入口 🚦
 
 macOS 上的声明式任务调度器，通过 `launchd` 触发、`opencode` 执行 AI 任务。README 负责概览与导航，细节请阅读 `docs/`。
@@ -124,3 +128,5 @@ bun run dev
 - 主要目录：`runner-swift/`、`data/`、`dashboard/`、`launchd/`
 - 开发流程：先构建 `runner`，再按需运行 `./runner auto` 或 Dashboard
 - 测试与覆盖率目标：UT 覆盖率 90%，按上方命令执行
+
+Logo assets and usage: [guide](docs/07-logo-usage.md) · [identity study](https://hexly.ai/logos/runner).

@@ -256,7 +256,8 @@ export function DashboardLayout() {
     <div className="relative flex h-full w-[240px] flex-col bg-[var(--matrix-bg)] border-r border-matrix-primary/20 overflow-hidden">
       {/* Header */}
       <div className="relative z-10 flex h-12 items-center justify-between px-4">
-        <span className="font-mono text-sm font-bold uppercase tracking-widest text-matrix-primary glow-text">
+        <span className="flex items-center gap-2 font-mono text-sm font-bold uppercase tracking-widest text-matrix-primary glow-text">
+          <img src="/logo-64.png" alt="" width={24} height={24} className="h-6 w-6 shrink-0 object-contain" />
           [RUNNER]
         </span>
         <button
@@ -296,9 +297,7 @@ export function DashboardLayout() {
       {/* User footer */}
       <div className="relative z-10 border-t border-matrix-primary/15 px-3 py-2.5">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center border border-matrix-primary/30 bg-matrix-primary/10 font-mono text-xs text-matrix-primary">
-            RN
-          </div>
+          <img src="/logo-64.png" alt="Runner" width={28} height={28} className="h-7 w-7 shrink-0 object-contain" />
           <div className="flex-1 min-w-0">
             <p className="font-mono text-xs text-matrix-primary truncate">Runner</p>
             <p className="font-mono text-[10px] text-matrix-dim truncate">

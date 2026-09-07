@@ -1,0 +1,115 @@
+{
+	"foreground": "logo.png",
+	"presentation": "assets/brand/icon.png",
+	"derivatives": [
+		{
+			"path": "dashboard/public/logo-24.png",
+			"role": "transparent",
+			"size": 24
+		},
+		{
+			"path": "dashboard/public/logo-32.png",
+			"role": "transparent",
+			"size": 32
+		},
+		{
+			"path": "dashboard/public/logo-48.png",
+			"role": "transparent",
+			"size": 48
+		},
+		{
+			"path": "dashboard/public/logo-64.png",
+			"role": "transparent",
+			"size": 64
+		},
+		{
+			"path": "dashboard/public/logo-128.png",
+			"role": "transparent",
+			"size": 128
+		},
+		{
+			"path": "dashboard/public/logo-192.png",
+			"role": "transparent",
+			"size": 192
+		},
+		{
+			"path": "dashboard/public/logo-256.png",
+			"role": "transparent",
+			"size": 256
+		},
+		{
+			"path": "dashboard/public/logo-512.png",
+			"role": "transparent",
+			"size": 512
+		},
+		{
+			"path": "dashboard/public/favicon.png",
+			"role": "transparent",
+			"size": 32
+		},
+		{
+			"path": "dashboard/public/favicon.ico",
+			"role": "transparent"
+		},
+		{
+			"path": "dashboard/public/apple-touch-icon.png",
+			"role": "platform-tile",
+			"size": 180
+		},
+		{
+			"path": "dashboard/public/favicon-16.png",
+			"role": "transparent",
+			"size": 16
+		},
+		{
+			"path": "dashboard/public/favicon-32.png",
+			"role": "transparent",
+			"size": 32
+		},
+		{
+			"path": "dashboard/public/favicon-48.png",
+			"role": "transparent",
+			"size": 48
+		},
+		{
+			"path": "dashboard/public/favicon-64.png",
+			"role": "transparent",
+			"size": 64
+		},
+		{
+			"path": "dashboard/public/favicon-128.png",
+			"role": "transparent",
+			"size": 128
+		},
+		{
+			"path": "dashboard/public/favicon-180.png",
+			"role": "transparent",
+			"size": 180
+		},
+		{
+			"path": "dashboard/public/favicon-192.png",
+			"role": "transparent",
+			"size": 192
+		},
+		{
+			"path": "dashboard/public/favicon-256.png",
+			"role": "transparent",
+			"size": 256
+		},
+		{
+			"path": "dashboard/public/favicon-512.png",
+			"role": "transparent",
+			"size": 512
+		},
+		{
+			"path": "dashboard/public/app-icon-192.png",
+			"role": "platform-tile",
+			"size": 192
+		},
+		{
+			"path": "dashboard/public/app-icon-512.png",
+			"role": "platform-tile",
+			"size": 512
+		}
+	]
+}

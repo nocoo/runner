@@ -1,0 +1,34 @@
+{
+	"project": "runner",
+	"series": "material",
+	"study": "2026-09-07-01",
+	"finishing": "01",
+	"archive": "https://github.com/nocoo/hexly.ai/tree/main/artwork/logo-family/runner/2026-09-07-01",
+	"review": "https://hexly.ai/logos/runner",
+	"masters": {
+		"logo.png": {
+			"sha256": "8a388497c330de53d8848238cad6d2e5e3c5647c6da6658e4b7a7c9468213347",
+			"source": "artwork/logo-family/runner/2026-09-07-01/finishing/01/exports/runner-transparent-2048.png",
+			"width": 2048,
+			"height": 2048
+		},
+		"assets/brand/icon.png": {
+			"sha256": "5a9f17a7f344b91e9d20cc66862b3bbbc7357b35c71909e66c64c3eef9b7659d",
+			"source": "artwork/logo-family/runner/2026-09-07-01/finishing/01/exports/runner-icon-2048.png",
+			"width": 2048,
+			"height": 2048
+		},
+		"assets/brand/icon-rounded.png": {
+			"sha256": "e29a99dd1691c68c9bcdb00144fb75b6b4af02fdf8d80f4779309b7fc91fef87",
+			"source": "artwork/logo-family/runner/2026-09-07-01/finishing/01/exports/runner-rounded-2048.png",
+			"width": 2048,
+			"height": 2048
+		},
+		"assets/brand/background.png": {
+			"sha256": "5215526508d32253e5ff269a517df08ddeb0745548b024259d0bf438ae492de9",
+			"source": "artwork/logo-family/runner/2026-09-07-01/finishing/01/background.png",
+			"width": 2048,
+			"height": 2048
+		}
+	}
+}

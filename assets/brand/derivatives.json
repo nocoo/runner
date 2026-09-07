@@ -1,0 +1,136 @@
+{
+  "source": "logo.png",
+  "files": [
+    {
+      "path": "dashboard/public/logo-24.png",
+      "role": "transparent",
+      "size": 24,
+      "sha256": "a3d9ec017c5905c3d3067dbfa856291f6985eff842c1fc8eabc75d4acccef3a5"
+    },
+    {
+      "path": "dashboard/public/logo-32.png",
+      "role": "transparent",
+      "size": 32,
+      "sha256": "c8f02e2c9c8ccfa5e40d2f90745d723c6a1791055fd01bdb0c235bffa327a74e"
+    },
+    {
+      "path": "dashboard/public/logo-48.png",
+      "role": "transparent",
+      "size": 48,
+      "sha256": "35d9a3a74931a43c4e0ccd50c8f8e79626cfb484f3baee6e4dd2e133fd0e48db"
+    },
+    {
+      "path": "dashboard/public/logo-64.png",
+      "role": "transparent",
+      "size": 64,
+      "sha256": "37e5e0a0d4b8737686da00bbb77559afe6234811a240d9fe59b0afe10976cbc7"
+    },
+    {
+      "path": "dashboard/public/logo-128.png",
+      "role": "transparent",
+      "size": 128,
+      "sha256": "6e081f42f1248c265112a84461f5ed02d4f7f31cd6e4b1197562573b3d2ae0e3"
+    },
+    {
+      "path": "dashboard/public/logo-192.png",
+      "role": "transparent",
+      "size": 192,
+      "sha256": "f2f8cd5362cc2b2bad575aff4b7a20a506a58529a878ed2f5e23033d45542872"
+    },
+    {
+      "path": "dashboard/public/logo-256.png",
+      "role": "transparent",
+      "size": 256,
+      "sha256": "eaf1027fc6f0b3878b2e44a1b544f4004b985676f564a856b5c71f6861baac6c"
+    },
+    {
+      "path": "dashboard/public/logo-512.png",
+      "role": "transparent",
+      "size": 512,
+      "sha256": "aed782aea68ba9c9012f4b00a47d724e5051e62a4a583609c22c3cd854926319"
+    },
+    {
+      "path": "dashboard/public/favicon.png",
+      "role": "transparent",
+      "size": 32,
+      "sha256": "c8f02e2c9c8ccfa5e40d2f90745d723c6a1791055fd01bdb0c235bffa327a74e"
+    },
+    {
+      "path": "dashboard/public/favicon.ico",
+      "role": "transparent",
+      "sha256": "1f5d33d0c8adb2deb2ff9f6aeb65788df607caa73dcf0a98d96ead1b8546c69f"
+    },
+    {
+      "path": "dashboard/public/apple-touch-icon.png",
+      "role": "platform-tile",
+      "size": 180,
+      "sha256": "21c34a6a26e9b1a4441b37af70e4f07f1689931885c7f23e1ff112db99beda0d"
+    },
+    {
+      "path": "dashboard/public/favicon-16.png",
+      "role": "transparent",
+      "size": 16,
+      "sha256": "bc8a559cfe89eb927365f88457321b432905fc567667add9a061ddecc3629d7f"
+    },
+    {
+      "path": "dashboard/public/favicon-32.png",
+      "role": "transparent",
+      "size": 32,
+      "sha256": "c8f02e2c9c8ccfa5e40d2f90745d723c6a1791055fd01bdb0c235bffa327a74e"
+    },
+    {
+      "path": "dashboard/public/favicon-48.png",
+      "role": "transparent",
+      "size": 48,
+      "sha256": "35d9a3a74931a43c4e0ccd50c8f8e79626cfb484f3baee6e4dd2e133fd0e48db"
+    },
+    {
+      "path": "dashboard/public/favicon-64.png",
+      "role": "transparent",
+      "size": 64,
+      "sha256": "37e5e0a0d4b8737686da00bbb77559afe6234811a240d9fe59b0afe10976cbc7"
+    },
+    {
+      "path": "dashboard/public/favicon-128.png",
+      "role": "transparent",
+      "size": 128,
+      "sha256": "6e081f42f1248c265112a84461f5ed02d4f7f31cd6e4b1197562573b3d2ae0e3"
+    },
+    {
+      "path": "dashboard/public/favicon-180.png",
+      "role": "transparent",
+      "size": 180,
+      "sha256": "381e697e127e8b1bf12c32146f16f56bf0b4ede34f829084327a971009d57496"
+    },
+    {
+      "path": "dashboard/public/favicon-192.png",
+      "role": "transparent",
+      "size": 192,
+      "sha256": "f2f8cd5362cc2b2bad575aff4b7a20a506a58529a878ed2f5e23033d45542872"
+    },
+    {
+      "path": "dashboard/public/favicon-256.png",
+      "role": "transparent",
+      "size": 256,
+      "sha256": "eaf1027fc6f0b3878b2e44a1b544f4004b985676f564a856b5c71f6861baac6c"
+    },
+    {
+      "path": "dashboard/public/favicon-512.png",
+      "role": "transparent",
+      "size": 512,
+      "sha256": "aed782aea68ba9c9012f4b00a47d724e5051e62a4a583609c22c3cd854926319"
+    },
+    {
+      "path": "dashboard/public/app-icon-192.png",
+      "role": "platform-tile",
+      "size": 192,
+      "sha256": "c25b6918b4216aeb40355a7ec74721babb871662e4d4a4560fb79a703abd4a2c"
+    },
+    {
+      "path": "dashboard/public/app-icon-512.png",
+      "role": "platform-tile",
+      "size": 512,
+      "sha256": "0edcad233f77dfad8c076643136d41b7fe3f8f951c6161ee8784aa36373a58f8"
+    }
+  ]
+}
