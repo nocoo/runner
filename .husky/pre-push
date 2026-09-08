@@ -1,20 +1,19 @@
 #!/usr/bin/env sh
-. "$(dirname "$0")/_/h"
 
 set -e
 
 echo "🧪 Running dashboard tests..."
-bun --cwd dashboard test --bail
+bun run --cwd dashboard test
 echo "✅ Dashboard tests passed."
 
 echo ""
 echo "🧪 Running Swift tests..."
-swift test --package-path runner-swift
+swift test --package-path runner-swift --no-parallel
 echo "✅ Swift tests passed."
 
 echo ""
 echo "🔍 Running dashboard lint..."
-bun --cwd dashboard run lint
+bun run --cwd dashboard lint
 echo "✅ Dashboard lint passed."
 
 echo ""

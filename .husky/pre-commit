@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 echo "=== L1: Swift Tests ==="
-cd runner-swift && swift test 2>&1
+cd runner-swift && swift test --no-parallel 2>&1
 cd ..
 echo "=== L1: Dashboard Tests ==="
 cd dashboard && npm test 2>&1

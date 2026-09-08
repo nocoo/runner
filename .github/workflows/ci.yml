@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Swift Test
-        run: cd runner-swift && swift test
+        run: cd runner-swift && swift test --no-parallel
   dashboard-quality:
     runs-on: ubuntu-latest
     steps:
