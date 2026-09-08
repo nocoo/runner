@@ -54,6 +54,16 @@ struct ExecutorTests {
         try? FileManager.default.removeItem(at: tempDir)
     }
 
+    func makeCompletionGate(in tempDir: URL) -> (releaseFile: URL, command: String) {
+        let releaseFile = tempDir.appendingPathComponent("release-completion")
+        let command = "until [ -f '\(releaseFile.path)' ]; do sleep 0.1; done"
+        return (releaseFile, command)
+    }
+
+    func releaseCompletionGate(_ releaseFile: URL) throws {
+        try Data().write(to: releaseFile, options: .atomic)
+    }
+
     // MARK: - Script Builder Tests
 
     @Test("Script builder includes command, paths, and timeout")
@@ -121,7 +131,8 @@ struct ExecutorTests {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
         
-        let task = makeTask(command: "echo hello")
+        let completionGate = makeCompletionGate(in: tempDir)
+        let task = makeTask(command: completionGate.command)
         
         let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
@@ -137,6 +148,22 @@ struct ExecutorTests {
         #expect(index.runs[0].task == "test")
         #expect(index.runs[0].exitCode == nil) // Still running
         #expect(index.runs[0].pid != nil)
+
+        try releaseCompletionGate(completionGate.releaseFile)
+
+        if isRunnerAvailable() {
+            let deadline = Date().addingTimeInterval(8)
+            var completed = false
+            while Date() < deadline {
+                let latestIndex = try await storage.loadRunsIndex()
+                if latestIndex.runs.first?.exitCode != nil {
+                    completed = true
+                    break
+                }
+                try await _Concurrency.Task.sleep(nanoseconds: 200_000_000)
+            }
+            #expect(completed)
+        }
     }
     
     @Test("Execute creates output header")
@@ -241,7 +268,8 @@ struct ExecutorTests {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
         
-        let task = makeTask(command: "echo done")
+        let completionGate = makeCompletionGate(in: tempDir)
+        let task = makeTask(command: completionGate.command)
         
         let executor = makeExecutor(storage: storage, tempDir: tempDir)
         _ = try await executor.execute(task: task, trigger: "test")
@@ -250,6 +278,8 @@ struct ExecutorTests {
         let indexBefore = try await storage.loadRunsIndex()
         #expect(indexBefore.runs[0].exitCode == nil)
         #expect(indexBefore.runs[0].pid != nil)
+
+        try releaseCompletionGate(completionGate.releaseFile)
         
         // Wait for completion
         if !isRunnerAvailable() {
@@ -307,15 +337,17 @@ struct ExecutorTests {
         let (tempDir, storage) = try await createTempStorage()
         defer { cleanup(tempDir) }
         
-        let task = makeTask(command: "echo done")
+        let completionGate = makeCompletionGate(in: tempDir)
+        let task = makeTask(command: completionGate.command)
         
         let executor = makeExecutor(storage: storage, tempDir: tempDir)
         let result = try await executor.execute(task: task, trigger: "test")
         
         // Script should exist initially
         let scriptPath = tempDir.appendingPathComponent("runs/.\(result.id).sh")
-        try await _Concurrency.Task.sleep(nanoseconds: 100_000_000) // 100ms
         #expect(FileManager.default.fileExists(atPath: scriptPath.path))
+
+        try releaseCompletionGate(completionGate.releaseFile)
         
         // Wait for completion
         if isRunnerAvailable() {
