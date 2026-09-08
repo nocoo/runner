@@ -54,14 +54,61 @@ struct ExecutorTests {
         try? FileManager.default.removeItem(at: tempDir)
     }
 
-    func makeCompletionGate(in tempDir: URL) -> (releaseFile: URL, command: String) {
+    struct CompletionGate {
+        let releaseFile: URL
+        let command: String
+    }
+
+    enum CompletionGateError: Error {
+        case scriptCleanupTimedOut
+    }
+
+    func makeCompletionGate(in tempDir: URL) -> CompletionGate {
         let releaseFile = tempDir.appendingPathComponent("release-completion")
         let command = "until [ -f '\(releaseFile.path)' ]; do sleep 0.1; done"
-        return (releaseFile, command)
+        return CompletionGate(releaseFile: releaseFile, command: command)
     }
 
     func releaseCompletionGate(_ releaseFile: URL) throws {
         try Data().write(to: releaseFile, options: .atomic)
+    }
+
+    func waitForScriptsToBeRemoved(in tempDir: URL) async throws {
+        let runsDir = tempDir.appendingPathComponent("runs")
+        let deadline = Date().addingTimeInterval(8)
+
+        while Date() < deadline {
+            let pendingScripts = (try? FileManager.default.contentsOfDirectory(atPath: runsDir.path))?.contains {
+                $0.hasPrefix(".") && $0.hasSuffix(".sh")
+            } ?? false
+            if !pendingScripts {
+                return
+            }
+            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000)
+        }
+
+        throw CompletionGateError.scriptCleanupTimedOut
+    }
+
+    func withCompletionGate<T>(
+        in tempDir: URL,
+        operation: (CompletionGate) async throws -> T
+    ) async throws -> T {
+        let completionGate = makeCompletionGate(in: tempDir)
+        defer { try? releaseCompletionGate(completionGate.releaseFile) }
+
+        do {
+            let result = try await operation(completionGate)
+            try releaseCompletionGate(completionGate.releaseFile)
+            try await waitForScriptsToBeRemoved(in: tempDir)
+            cleanup(tempDir)
+            return result
+        } catch {
+            try? releaseCompletionGate(completionGate.releaseFile)
+            try await waitForScriptsToBeRemoved(in: tempDir)
+            cleanup(tempDir)
+            throw error
+        }
     }
 
     // MARK: - Script Builder Tests
@@ -129,43 +176,42 @@ struct ExecutorTests {
     @Test("Execute starts background task")
     func executeStartsBackgroundTask() async throws {
         let (tempDir, storage) = try await createTempStorage()
-        defer { cleanup(tempDir) }
-        
-        let completionGate = makeCompletionGate(in: tempDir)
-        let task = makeTask(command: completionGate.command)
-        
-        let executor = makeExecutor(storage: storage, tempDir: tempDir)
-        let result = try await executor.execute(task: task, trigger: "test")
-        
-        // The task starts in background, so exit code 0 means it launched successfully
-        #expect(result.exitCode == 0)
-        #expect(result.output.contains("background"))
-        
-        // Check that run was added to index
-        let index = try await storage.loadRunsIndex()
-        #expect(index.runs.count == 1)
-        #expect(index.runs[0].id == result.id)
-        #expect(index.runs[0].task == "test")
-        #expect(index.runs[0].exitCode == nil) // Still running
-        #expect(index.runs[0].pid != nil)
 
-        try releaseCompletionGate(completionGate.releaseFile)
+        try await withCompletionGate(in: tempDir) { completionGate in
+            let task = makeTask(command: completionGate.command)
+            let executor = makeExecutor(storage: storage, tempDir: tempDir)
+            let result = try await executor.execute(task: task, trigger: "test")
 
-        if isRunnerAvailable() {
-            let deadline = Date().addingTimeInterval(8)
-            var completed = false
-            while Date() < deadline {
-                let latestIndex = try await storage.loadRunsIndex()
-                if latestIndex.runs.first?.exitCode != nil {
-                    completed = true
-                    break
+            // The task starts in background, so exit code 0 means it launched successfully
+            #expect(result.exitCode == 0)
+            #expect(result.output.contains("background"))
+
+            // Check that run was added to index
+            let index = try await storage.loadRunsIndex()
+            #expect(index.runs.count == 1)
+            #expect(index.runs[0].id == result.id)
+            #expect(index.runs[0].task == "test")
+            #expect(index.runs[0].exitCode == nil) // Still running
+            #expect(index.runs[0].pid != nil)
+
+            try releaseCompletionGate(completionGate.releaseFile)
+
+            if isRunnerAvailable() {
+                let deadline = Date().addingTimeInterval(8)
+                var completed = false
+                while Date() < deadline {
+                    let latestIndex = try await storage.loadRunsIndex()
+                    if latestIndex.runs.first?.exitCode != nil {
+                        completed = true
+                        break
+                    }
+                    try await _Concurrency.Task.sleep(nanoseconds: 200_000_000)
                 }
-                try await _Concurrency.Task.sleep(nanoseconds: 200_000_000)
+                #expect(completed)
             }
-            #expect(completed)
         }
     }
-    
+
     @Test("Execute creates output header")
     func executeCreatesOutputHeader() async throws {
         let (tempDir, storage) = try await createTempStorage()
@@ -266,36 +312,35 @@ struct ExecutorTests {
     @Test("Execute updates index after completion")
     func executeUpdatesIndex() async throws {
         let (tempDir, storage) = try await createTempStorage()
-        defer { cleanup(tempDir) }
-        
-        let completionGate = makeCompletionGate(in: tempDir)
-        let task = makeTask(command: completionGate.command)
-        
-        let executor = makeExecutor(storage: storage, tempDir: tempDir)
-        _ = try await executor.execute(task: task, trigger: "test")
-        
-        // Initially running
-        let indexBefore = try await storage.loadRunsIndex()
-        #expect(indexBefore.runs[0].exitCode == nil)
-        #expect(indexBefore.runs[0].pid != nil)
 
-        try releaseCompletionGate(completionGate.releaseFile)
-        
-        // Wait for completion
-        if !isRunnerAvailable() {
-            return
+        try await withCompletionGate(in: tempDir) { completionGate in
+            let task = makeTask(command: completionGate.command)
+            let executor = makeExecutor(storage: storage, tempDir: tempDir)
+            _ = try await executor.execute(task: task, trigger: "test")
+
+            // Initially running
+            let indexBefore = try await storage.loadRunsIndex()
+            #expect(indexBefore.runs[0].exitCode == nil)
+            #expect(indexBefore.runs[0].pid != nil)
+
+            try releaseCompletionGate(completionGate.releaseFile)
+
+            // Runner availability only determines whether completion fields are asserted.
+            if !isRunnerAvailable() {
+                return
+            }
+
+            let deadline = Date().addingTimeInterval(8)
+            var indexAfter = try await storage.loadRunsIndex()
+            while Date() < deadline && indexAfter.runs[0].exitCode == nil {
+                try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
+                indexAfter = try await storage.loadRunsIndex()
+            }
+
+            #expect(indexAfter.runs[0].exitCode == 0)
+            #expect(indexAfter.runs[0].finishedAt != nil)
+            #expect(indexAfter.runs[0].pid == nil)
         }
-
-        let deadline = Date().addingTimeInterval(8)
-        var indexAfter = try await storage.loadRunsIndex()
-        while Date() < deadline && indexAfter.runs[0].exitCode == nil {
-            try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
-            indexAfter = try await storage.loadRunsIndex()
-        }
-
-        #expect(indexAfter.runs[0].exitCode == 0)
-        #expect(indexAfter.runs[0].finishedAt != nil)
-        #expect(indexAfter.runs[0].pid == nil)
     }
     
     // MARK: - Timeout Tests
@@ -335,31 +380,17 @@ struct ExecutorTests {
     @Test("Execute cleans up script after completion")
     func executeScriptCleanup() async throws {
         let (tempDir, storage) = try await createTempStorage()
-        defer { cleanup(tempDir) }
-        
-        let completionGate = makeCompletionGate(in: tempDir)
-        let task = makeTask(command: completionGate.command)
-        
-        let executor = makeExecutor(storage: storage, tempDir: tempDir)
-        let result = try await executor.execute(task: task, trigger: "test")
-        
-        // Script should exist initially
-        let scriptPath = tempDir.appendingPathComponent("runs/.\(result.id).sh")
-        #expect(FileManager.default.fileExists(atPath: scriptPath.path))
 
-        try releaseCompletionGate(completionGate.releaseFile)
-        
-        // Wait for completion
-        if isRunnerAvailable() {
-            let deadline = Date().addingTimeInterval(5)
-            while Date() < deadline {
-                if !FileManager.default.fileExists(atPath: scriptPath.path) {
-                    break
-                }
-                try await _Concurrency.Task.sleep(nanoseconds: 200_000_000) // 200ms
-            }
+        try await withCompletionGate(in: tempDir) { completionGate in
+            let task = makeTask(command: completionGate.command)
+            let executor = makeExecutor(storage: storage, tempDir: tempDir)
+            let result = try await executor.execute(task: task, trigger: "test")
 
-            #expect(!FileManager.default.fileExists(atPath: scriptPath.path))
+            // Script should exist while the completion gate is closed.
+            let scriptPath = tempDir.appendingPathComponent("runs/.\(result.id).sh")
+            #expect(FileManager.default.fileExists(atPath: scriptPath.path))
+
+            try releaseCompletionGate(completionGate.releaseFile)
         }
     }
     
