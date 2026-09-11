@@ -136,20 +136,6 @@ public actor Storage: RunRepository, ConfigRepository {
         try content.write(to: path, atomically: true, encoding: .utf8)
     }
     
-    public func appendOutput(id: String, content: String) throws {
-        let path = dataDir.appendingPathComponent("runs/\(id).output")
-        if fileIO.fileExists(atPath: path.path) {
-            let handle = try fileIO.openFileHandleForWriting(to: path)
-            handle.seekToEndOfFile()
-            if let data = content.data(using: .utf8) {
-                handle.write(data)
-            }
-            try fileIO.closeFileHandle(handle)
-        } else {
-            try content.write(to: path, atomically: true, encoding: .utf8)
-        }
-    }
-    
     public func writeRunDetail(_ detail: RunDetail) throws {
         let path = dataDir.appendingPathComponent("runs/\(detail.id).json")
         try writeJSON(detail, to: path)

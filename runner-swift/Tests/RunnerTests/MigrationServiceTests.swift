@@ -344,13 +344,15 @@ struct ConfigMigrationTests {
         #expect(result.tasksCount == 2)
         
         // Verify data in SQLite
-        let migratedTask1 = try await sqliteStorage.loadTask(id: "heartbeat")
+        let migratedTasks = try await sqliteStorage.loadTasks()
+        #expect(migratedTasks.count == 2)
+        let migratedTask1 = migratedTasks.first { $0.id == "heartbeat" }
         #expect(migratedTask1 != nil)
         #expect(migratedTask1?.executor == .shell)
         #expect(migratedTask1?.description == "Heartbeat check")
         #expect(migratedTask1?.command == "echo 'alive'")
         
-        let migratedTask2 = try await sqliteStorage.loadTask(id: "backup")
+        let migratedTask2 = migratedTasks.first { $0.id == "backup" }
         #expect(migratedTask2 != nil)
         #expect(migratedTask2?.executor == .opencode)
         #expect(migratedTask2?.prompt == "Backup the database")

@@ -37,9 +37,6 @@ public protocol RunRepository: Sendable {
     
     /// Write output content (overwrites existing)
     func writeOutput(id: String, content: String) async throws
-    
-    /// Append content to output
-    func appendOutput(id: String, content: String) async throws
 }
 
 // MARK: - Config Repository Protocol
