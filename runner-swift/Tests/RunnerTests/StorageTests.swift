@@ -202,21 +202,6 @@ struct StorageTests {
         #expect(content == "Hello, World!")
     }
     
-    @Test("Append output")
-    func appendOutput() async throws {
-        let (tempDir, storage) = try await createTempStorage()
-        defer { cleanup(tempDir) }
-        
-        try await storage.initialize()
-        
-        try await storage.writeOutput(id: "test-123", content: "Line 1\n")
-        try await storage.appendOutput(id: "test-123", content: "Line 2\n")
-        
-        let path = tempDir.appendingPathComponent("runs/test-123.output")
-        let content = try String(contentsOf: path, encoding: .utf8)
-        #expect(content == "Line 1\nLine 2\n")
-    }
-    
     // MARK: - RunDetail Tests
     
     @Test("Write run detail")

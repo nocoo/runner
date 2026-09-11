@@ -433,21 +433,6 @@ extension SQLiteStorage: RunRepository {
         let path = outputPath(for: id)
         try content.write(to: path, atomically: true, encoding: .utf8)
     }
-    
-    public func appendOutput(id: String, content: String) async throws {
-        let path = outputPath(for: id)
-        
-        if FileManager.default.fileExists(atPath: path.path) {
-            let handle = try FileHandle(forWritingTo: path)
-            defer { try? handle.close() }
-            try handle.seekToEnd()
-            if let data = content.data(using: .utf8) {
-                try handle.write(contentsOf: data)
-            }
-        } else {
-            try content.write(to: path, atomically: true, encoding: .utf8)
-        }
-    }
 }
 
 // MARK: - ConfigRepository Implementation
@@ -539,23 +524,6 @@ extension SQLiteStorage {
         }
     }
     
-    /// Load a single task by ID
-    public func loadTask(id: String) async throws -> Task? {
-        try await dbQueue.read { db in
-            guard let record = try TaskRecord.fetchOne(db, key: id) else {
-                return nil
-            }
-            return record.toModel()
-        }
-    }
-    
-    /// Delete a task by ID
-    public func deleteTask(id: String) async throws {
-        try await dbQueue.write { db in
-            try TaskRecord.deleteOne(db, key: id)
-        }
-    }
-    
     /// Check if tasks are stored in SQLite
     public func hasTasksInSQLite() async throws -> Bool {
         try await dbQueue.read { db in
@@ -587,23 +555,6 @@ extension SQLiteStorage {
             try record.insert(db)
         }
     }
-    
-    /// Delete all schedules for a task
-    public func deleteSchedulesForTask(id: String) async throws {
-        try await dbQueue.write { db in
-            try ScheduleRecord
-                .filter(Column("task") == id)
-                .deleteAll(db)
-        }
-    }
-    
-    /// Check if schedules are stored in SQLite
-    public func hasSchedulesInSQLite() async throws -> Bool {
-        try await dbQueue.read { db in
-            let count = try ScheduleRecord.fetchCount(db)
-            return count > 0
-        }
-    }
 }
 
 // MARK: - State SQLite Operations
@@ -611,7 +562,7 @@ extension SQLiteStorage {
 extension SQLiteStorage {
     
     /// State keys used in the key-value store
-    public enum StateKey: String, Sendable {
+    enum StateKey: String {
         case version = "version"
         case lastRunId = "last_run_id"
         case lastRunTask = "last_run_task"
@@ -619,23 +570,6 @@ extension SQLiteStorage {
         case lastRunFinishedAt = "last_run_finished_at"
         case totalRunsToday = "total_runs_today"
         case successRateToday = "success_rate_today"
-    }
-    
-    /// Get a state value by key
-    public func getStateValue(key: StateKey) async throws -> String? {
-        let keyString = key.rawValue
-        return try await dbQueue.read { db in
-            try StateRecord.fetchOne(db, key: keyString)?.value
-        }
-    }
-    
-    /// Set a state value
-    public func setStateValue(key: StateKey, value: String) async throws {
-        let keyString = key.rawValue
-        try await dbQueue.write { db in
-            let record = StateRecord(key: keyString, value: value, updatedAt: nil)
-            try record.save(db)
-        }
     }
     
     /// Load SystemState from SQLite

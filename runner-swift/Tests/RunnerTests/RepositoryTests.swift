@@ -83,14 +83,6 @@ actor MockRunRepository: RunRepository {
     func writeOutput(id: String, content: String) async throws {
         outputs[id] = content
     }
-    
-    func appendOutput(id: String, content: String) async throws {
-        if let existing = outputs[id] {
-            outputs[id] = existing + content
-        } else {
-            outputs[id] = content
-        }
-    }
 }
 
 /// In-memory mock implementation of ConfigRepository for testing
@@ -274,25 +266,14 @@ struct RunRepositoryTests {
         #expect(loaded == nil)
     }
     
-    @Test("writeOutput and appendOutput")
+    @Test("writeOutput stores content")
     func outputOperations() async throws {
         let mock = MockRunRepository()
         
         try await mock.writeOutput(id: "test-1", content: "Line 1\n")
-        try await mock.appendOutput(id: "test-1", content: "Line 2\n")
         
         let output = await mock.outputs["test-1"]
-        #expect(output == "Line 1\nLine 2\n")
-    }
-    
-    @Test("appendOutput creates if not exists")
-    func appendOutputCreates() async throws {
-        let mock = MockRunRepository()
-        
-        try await mock.appendOutput(id: "test-1", content: "First line\n")
-        
-        let output = await mock.outputs["test-1"]
-        #expect(output == "First line\n")
+        #expect(output == "Line 1\n")
     }
     
     @Test("completeRun updates run with exit code, duration and finished time")

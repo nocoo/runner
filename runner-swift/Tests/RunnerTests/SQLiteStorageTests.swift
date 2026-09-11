@@ -438,38 +438,6 @@ struct SQLiteStorageTasksTests {
         #expect(tasks[0].headers?["Authorization"] == "Bearer token")
     }
     
-    @Test("deleteTask removes task")
-    func deleteTaskRemoves() async throws {
-        let storage = try SQLiteStorage(inMemory: true)
-        
-        let task = Task(id: "t1", executor: .shell, description: "test", command: "echo")
-        try await storage.saveTask(task)
-        
-        try await storage.deleteTask(id: "t1")
-        
-        let tasks = try await storage.loadTasks()
-        #expect(tasks.isEmpty)
-    }
-    
-    @Test("loadTask returns single task by id")
-    func loadTaskById() async throws {
-        let storage = try SQLiteStorage(inMemory: true)
-        
-        try await storage.saveTask(Task(id: "t1", executor: .shell, description: "first", command: "echo 1"))
-        try await storage.saveTask(Task(id: "t2", executor: .shell, description: "second", command: "echo 2"))
-        
-        let task = try await storage.loadTask(id: "t2")
-        #expect(task?.id == "t2")
-        #expect(task?.description == "second")
-    }
-    
-    @Test("loadTask returns nil for missing")
-    func loadTaskMissing() async throws {
-        let storage = try SQLiteStorage(inMemory: true)
-        
-        let task = try await storage.loadTask(id: "nonexistent")
-        #expect(task == nil)
-    }
 }
 
 @Suite("SQLiteStorage Schedules Tests")
@@ -530,23 +498,5 @@ struct SQLiteStorageSchedulesTests {
         
         let schedules = try await storage.loadSchedules()
         #expect(schedules.count == 2)
-    }
-    
-    @Test("deleteSchedulesForTask removes all schedules")
-    func deleteSchedulesForTask() async throws {
-        let storage = try SQLiteStorage(inMemory: true)
-        
-        try await storage.saveTask(Task(id: "t1", executor: .shell, description: "test", command: "echo"))
-        try await storage.saveTask(Task(id: "t2", executor: .shell, description: "test2", command: "echo2"))
-        
-        try await storage.addSchedule(Schedule(task: "t1", hour: AnyCodable(9), minute: AnyCodable(0), weekday: AnyCodable("*")))
-        try await storage.addSchedule(Schedule(task: "t1", hour: AnyCodable(17), minute: AnyCodable(0), weekday: AnyCodable("*")))
-        try await storage.addSchedule(Schedule(task: "t2", hour: AnyCodable(12), minute: AnyCodable(0), weekday: AnyCodable("*")))
-        
-        try await storage.deleteSchedulesForTask(id: "t1")
-        
-        let schedules = try await storage.loadSchedules()
-        #expect(schedules.count == 1)
-        #expect(schedules[0].task == "t2")
     }
 }
