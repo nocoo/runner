@@ -25,6 +25,7 @@ jobs:
       lint-command: "bun run lint"
       typecheck-command: "bun run typecheck"
       security: false
+      coverage-path: ""
       disabled-check-reasons: '{"security": "security scans run at repository root in separate security job"}'
 
   security:
