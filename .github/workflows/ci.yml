@@ -9,14 +9,14 @@ on:
 
 jobs:
   swift-tests:
-    uses: nocoo/base-ci/.github/workflows/test-job.yml@ab52d72877d386c9a8fd224e9ac868e88be90539
+    uses: nocoo/base-ci/.github/workflows/test-job.yml@ad43150de3a2be2fa464b5cd2f921dc4fa9f8f0f
     with:
       runner: "macos-latest"
       runtime: "none"
       command: "cd runner-swift && swift test --no-parallel"
 
   dashboard-quality:
-    uses: nocoo/base-ci/.github/workflows/quality.yml@ab52d72877d386c9a8fd224e9ac868e88be90539
+    uses: nocoo/base-ci/.github/workflows/quality.yml@ad43150de3a2be2fa464b5cd2f921dc4fa9f8f0f
     with:
       runtime-version: "1.4.2"
       install-policy: "blocked"
@@ -26,10 +26,9 @@ jobs:
       typecheck-command: "bun run typecheck"
       security: false
       disabled-check-reasons: '{"security": "security scans run at repository root in separate security job"}'
-    secrets: inherit
 
   security:
-    uses: nocoo/base-ci/.github/workflows/security.yml@ab52d72877d386c9a8fd224e9ac868e88be90539
+    uses: nocoo/base-ci/.github/workflows/security.yml@ad43150de3a2be2fa464b5cd2f921dc4fa9f8f0f
     with:
       lockfiles: "bun.lock,dashboard/bun.lock"
       osv-config: "osv-scanner.toml"
