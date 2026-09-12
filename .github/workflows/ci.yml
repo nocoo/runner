@@ -24,7 +24,13 @@ jobs:
       test-command: "bun run test"
       lint-command: "bun run lint"
       typecheck-command: "bun run typecheck"
-      lockfiles: "dashboard/bun.lock"
+      security: false
+      disabled-check-reasons: '{"security": "security scans run at repository root in separate security job"}'
+    secrets: inherit
+
+  security:
+    uses: nocoo/base-ci/.github/workflows/security.yml@ab52d72877d386c9a8fd224e9ac868e88be90539
+    with:
+      lockfiles: "bun.lock,dashboard/bun.lock"
       osv-config: "osv-scanner.toml"
       gitleaks-config: ".gitleaks.toml"
-    secrets: inherit
