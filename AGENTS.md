@@ -2,7 +2,7 @@
 
 macOS CLI scheduler for local shell, OpenCode and HTTP tasks with a local web dashboard.
 Profile: native-tool (Swift CLI) + ts-web.
-Direction: [README.md](README.md). Frameworks must preserve this handbook.
+Human overview: [README.md](README.md). Direction: [architecture](docs/05-architecture.md). Frameworks must preserve this handbook. Maintain this root `AGENTS.md` as the only project handbook; do not create a `CLAUDE.md` alias, copy or import.
 
 ## Sources of Truth
 
@@ -52,23 +52,22 @@ swiftlint --config runner-swift/.swiftlint.yml runner-swift
 
 ## Verification
 
-6DQ = L1/L2/L3 + G1/G2 + D1 (test isolation). Status: `enforced`, `planned`, `manual`, or `N/A`; partial enforcement below does not certify the full required bar.
-L1 requires statements, branches, functions and lines each ≥95%, with no skipped/focused tests; preserve any stricter package threshold. Native tools must identify unmeasured metrics as gaps.
-G1 requires check-only strict analysis/formatting with zero errors/warnings. G2 requires dependency and secret scans, with missing required scanners failing.
+6DQ = L1/L2/L3 + G2 + D1 (test isolation); the former G1 dimension was merged into L1 on 2026-09-21. Status: `enforced`, `planned`, `manual`, or `N/A`; partial enforcement below does not certify the full required bar.
+L1 requires statements, branches, functions and lines each ≥95%, with no skipped/focused tests; preserve any stricter package threshold. Native tools must identify unmeasured metrics as gaps. L1 also includes check-only strict analysis/formatting with zero errors/warnings (the former G1 contract). G2 requires dependency and secret scans, with missing required scanners failing.
 
 | Dimension | Status | Required proof and current evidence/gap |
 |---|---|---|
 | L1 Swift | planned | Hooks/CI run Swift Testing without coverage. Require all four 95% or explicitly identify unavailable native metrics; current plain tests are not coverage proof. |
 | L1 TypeScript | planned | Dashboard coverage config sets all four 95%, but hooks/CI run plain `test`, with broad UI/API exclusions. Wire the coverage command and full source scope. |
+| L1 static (former G1, Swift / TS) | planned | ESLint zero-warning gate and CI typecheck exist; pre-push SwiftLint is not strict and no formatter gate covers both languages. |
 | L2 CLI / HTTP | planned | Integration tests execute real local shell/storage flows in unique temporary directories, but may omit binary-result assertions when Runner is missing. Vite HTTP route coverage is not automated at 100%. |
 | L3 dashboard / CLI | manual | Exercise real local command execution, outputs/history and dashboard pages with disposable data. No full Playwright/system-workflow gate exists; CLI is applicable, not N/A. |
-| G1 Swift / TS | planned | ESLint zero-warning gate and CI typecheck exist; pre-push SwiftLint is not strict and no formatter gate covers both languages. |
 | G2 | planned | CI scans Bun lockfiles and secrets; hooks lack scanners and Swift Package.resolved dependency coverage is not configured. |
 | D1 | planned | Swift suites use temporary UUID directories, but ordinary CLI/dashboard default to root data and no checked fixture marker/destructive cleanup guard exists. |
 
 Pre-commit runs all Swift tests, dashboard tests and ESLint. Pre-push repeats tests/lint and runs SwiftLint. Neither hook enforces coverage, pushed-ref/index snapshots or G2; CI adds types and security. Ensure normal Husky wrappers are installed so both hooks execute.
 
-Target hooks: pre-commit checks G1 + L1 against the index snapshot (`git checkout-index`) in <30s; pre-push checks L2 and G2 in parallel against every stdin push ref/commit in <3min, plus build where applicable. L3 runs in CI or an explicit manual lane.
+Target hooks: pre-commit checks unified L1 (types, check-only lint, coverage) against the index snapshot (`git checkout-index`) in <30s; pre-push checks L2 and G2 in parallel against every stdin push ref/commit in <3min, plus build where applicable. L3 runs in CI or an explicit manual lane.
 Never bypass commit/push hooks, force-push, or use autofix in checks. Documentation changes do not authorize deploying or implementing new gates.
 
 ## Resources / Isolation
